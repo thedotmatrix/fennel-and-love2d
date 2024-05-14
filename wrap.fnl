@@ -1,5 +1,6 @@
 (local fennel (require :lib.fennel))
 (require :love.event)
+(import-macros {: incf} :sample-macros)
 
 ; wrapper layout
 (local (w h) (love.window.getMode))
