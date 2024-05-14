@@ -37,15 +37,18 @@
                 coro (coroutine.create (partial fennel.repl))
                 options {:readChunk (fn [{: stack-size}]
                                       (io-channel:push [:read (< 0 stack-size)])
-                                      (coroutine.yield))
+                                      (coroutine.yield {: stack-size}))
                          :onValues (fn [vals]
-                                     (io-channel:push [:write vals]))
+                                     (io-channel:push [:write vals])
+                                     (love.event.push "vals" vals)) ;; dupe stdio for gui repl
                          :onError (fn [errtype err]
-                                    (io-channel:push [:write [err]]))
+                                    (io-channel:push [:write [err]])
+                                    (love.event.push "err" errtype err)) ;; dupe stdio for gui repl
                          :moduleName "lib.fennel"}]
             ;; this thread will send "eval" events for us to consume:
             (coroutine.resume coro options)
             (thread:start "eval" io-channel)
             (set love.handlers.eval
                  (fn [input]
-                   (coroutine.resume coro input)))))}
+                   (coroutine.resume coro input)))
+            coro))}

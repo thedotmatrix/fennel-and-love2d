@@ -6,6 +6,8 @@
 ;; see the wiki: https://github.com/bakpakin/Fennel/wiki/Repl
 ;; to run: fennel -c love-repl.fnl > main.lua && love .
 (local fennel (require :lib.fennel))
+(local stdio (require :lib.stdio))
+(require :love.event)
 (local input []) ; store characters as they are typed
 (local buffer []) ; output that has been printed
 (var incomplete? false)
@@ -19,21 +21,25 @@
   (each [line (msg:gmatch "([^\n]+)")]
     (table.insert buffer [[0.9 0.4 0.5] line])))
 
-;; create the repl inside a coroutine
-(local repl (coroutine.create (partial fennel.repl)))
-
-;; start it using the options table
-(coroutine.resume repl {:readChunk coroutine.yield
-                        :onValues out
-                        :onError err})
+;; create the repl inside a coroutine OR hook into stdio repl instead
+;; start it using the options table OR setup stdio event callbacks
+(var repl nil)
+(set love.handlers.startrepl (fn [web?] (if web? 
+  (do 
+    (set repl (coroutine.create (partial fennel.repl)))
+    (coroutine.resume repl {:readChunk coroutine.yield :onValues out :onError err}))
+  (do 
+    (set repl (stdio.start))
+    (set love.handlers.vals out)
+    (set love.handlers.err err)))))
 
 (fn enter []
   (let [input-text (table.concat (doto input (table.insert "\n")))
         ;; send the input to the repl
         (_ {: stack-size}) (coroutine.resume repl input-text)]
-    (set incomplete? (< 0 stack-size)))
+    (set incomplete? (< 0 stack-size))
   ;; clear the input table afterwards
-  (while (next input) (table.remove input)))
+  (while (next input) (table.remove input))))
 
 {:keypressed (fn keypressed [key]
   (match key

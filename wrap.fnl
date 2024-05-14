@@ -1,5 +1,5 @@
 (local fennel (require :lib.fennel))
-(local repl (require :lib.stdio))
+(require :love.event)
 
 ; wrapper layout
 (local (w h) (love.window.getMode))
@@ -25,7 +25,7 @@
   (set-moder :mode-editor)
   (canvasl:setFilter "nearest" "nearest")
   (canvasr:setFilter "nearest" "nearest")
-  (when (and false (~= :web (. args 1))) (repl.start))) ; no console repl
+  (love.event.push "startrepl" (= :web (. args 1))))
 (fn safelyl [f]
   (xpcall f #(set-model :error-mode namel $ (fennel.traceback))))
 (fn safelyr [f]

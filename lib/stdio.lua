@@ -56,12 +56,16 @@ local function start_repl()
     local _arg_10_ = _9_
     local stack_size = _arg_10_["stack-size"]
     io_channel:push({"read", (0 < stack_size)})
-    return coroutine.yield()
+    return coroutine.yield(_arg_10_, stack_size)
   end
   local function _12_(vals)
+    table.concat(vals, "\9")
+    love.event.push("vals", vals) -- dupe stdout for GUI repl
     return io_channel:push({"write", vals})
   end
   local function _13_(errtype, err)
+    --print(table.concat(err, "\9"))
+    love.event.push("err", errtype, err) -- dupe stdout for GUI repl
     return io_channel:push({"write", {err}})
   end
   options = {readChunk = _11_, onValues = _12_, onError = _13_, moduleName = "lib.fennel"}
@@ -71,6 +75,6 @@ local function start_repl()
     return coroutine.resume(coro, input)
   end
   love.handlers.eval = _14_
-  return nil
+  return coro
 end
 return {start = start_repl}
