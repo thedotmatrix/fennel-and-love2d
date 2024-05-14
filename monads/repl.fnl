@@ -5,16 +5,20 @@
 (local output [])
 (var incomplete? false)
 (var repl nil)
+(var std false)
 
 (fn out [xs] (icollect [_ x (ipairs xs) :into output] x))
 (fn err [_errtype msg]
   (each [line (msg:gmatch "([^\n]+)")]
     (table.insert output [[0.9 0.4 0.5] line])))
 (fn _G.print [...] (out [...]) nil)
+(fn inp [stdin in] 
+  (when std (io.stdout:write in))
+  (when (~= in "\n") (print [[0.5 0.4 0.9] in])))
 
 ;; create the repl hooking into stdio if available, otherwise standalone repl
 ;; start it using the options table OR setup stdio event callbacks
-(fn love.handlers.repl [web?]
+(fn start [web?]
   (if web? 
     (do 
       (set repl (coroutine.create (partial fennel.repl)))
@@ -24,11 +28,14 @@
         :onError err}))
     (do
       (set repl (stdio.start))
+      (set std true)
+      (set love.handlers.inp inp)
       (set love.handlers.vals out)
       (set love.handlers.err err))))
 
 (fn enter []
   (let [input-text (table.concat (doto input (table.insert "\n")))
+        _ (inp std input-text)
         (_ {: stack-size}) (coroutine.resume repl input-text)]
         ;; clear the input table afterwards
         (while (next input) (table.remove input))
@@ -55,4 +62,4 @@
           (love.graphics.print "> " 2 (- h fh 2)))
         (love.graphics.print (table.concat input) 15 (- h fh 2))))
 
-{: keypressed : textinput : draw }
+{: start : keypressed : textinput : draw }

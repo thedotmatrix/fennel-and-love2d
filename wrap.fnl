@@ -1,5 +1,4 @@
 (local fennel (require :lib.fennel))
-(require :love.event)
 (local (w h) (love.window.getMode))
 (var scale 1)
 (local windows {:l nil :r nil})
@@ -20,7 +19,7 @@
   (enter-monad :r :monads.editor)
   (canvasl:setFilter "nearest" "nearest")
   (canvasr:setFilter "nearest" "nearest")
-  (love.event.push "repl" (= :web (. args 1))))
+  (windows.l.monad.start (= :web (. args 1))))
 
 (fn love.draw []
   (love.graphics.setCanvas canvasl)

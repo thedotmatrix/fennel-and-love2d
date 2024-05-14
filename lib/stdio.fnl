@@ -1,16 +1,23 @@
 (local fennel (require :lib.fennel))
 (require :love.event)
 
+;; FIXME blocking io -> delayed / out of order stdout waiting for stdin
+;; repl works fine from both the console and the GUI
+;; but the console output is terrible
+;; not using this much, so low priority fix imho
 (fn prompt [cont?]
   (io.write (if cont? ".." ">> ")) 
-  (io.flush) 
+  (io.flush)
   (.. (tostring (io.read)) "\n"))
 
-(fn looper [event channel]
+(fn looper [loop channel]
   (match (channel:demand)
     [:write vals] (do (io.write (table.concat vals "\t")) (io.write "\n"))
-    [:read cont?] (love.event.push event (prompt cont?)))
-  (looper event channel))
+    [:read cont?] (let [in (prompt cont?)]
+      (love.event.push "inp" false in)
+      (love.event.push loop in)))
+  (looper loop channel))
+(match ... (loop channel) (looper loop channel))
 
 (fn start []
   (let [code (love.filesystem.read "lib/stdio.fnl")
@@ -28,11 +35,9 @@
           :onError (fn [errtype err]
             (io-channel:push [:write [err]])
             (love.event.push "err" errtype err))}]
-        (set love.handlers.eval (fn [input] (coroutine.resume coro input)))
         (coroutine.resume coro options)
+        (set love.handlers.eval (fn [input] (coroutine.resume coro input)))
         (thread:start "eval" io-channel)
         coro))
 
-;; nil on require, loop initialized on coroutine creation
-(match ... (event channel) (looper event channel))
 {: start}
