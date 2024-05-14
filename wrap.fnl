@@ -1,6 +1,6 @@
 (local fennel (require :lib.fennel))
 (require :love.event)
-(import-macros {: incf} :sample-macros)
+(import-macros {: incf} :macros.sample-macros)
 
 ; wrapper layout
 (local (w h) (love.window.getMode))
@@ -22,15 +22,15 @@
       (match (pcall moder.activate ...)
         (false msg) (print namer "activate error" msg))))
 (fn love.load [args]
-  (set-model :mode-repl)
-  (set-moder :mode-editor)
+  (set-model :monads.mode-repl)
+  (set-moder :monads.mode-editor)
   (canvasl:setFilter "nearest" "nearest")
   (canvasr:setFilter "nearest" "nearest")
   (love.event.push "startrepl" (= :web (. args 1))))
 (fn safelyl [f]
-  (xpcall f #(set-model :error-mode namel $ (fennel.traceback))))
+  (xpcall f #(set-model :monads.error-mode namel $ (fennel.traceback))))
 (fn safelyr [f]
-  (xpcall f #(set-moder :error-mode namer $ (fennel.traceback))))
+  (xpcall f #(set-moder :monads.error-mode namer $ (fennel.traceback))))
 
 ; love2d functions
 (fn love.draw []
