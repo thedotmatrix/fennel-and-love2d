@@ -35,6 +35,7 @@
           :onError (fn [errtype err]
             (io-channel:push [:write [err]])
             (love.event.push "err" errtype err))}]
+        (io.stdout:setvbuf "no")
         (coroutine.resume coro options)
         (set love.handlers.eval (fn [input] (coroutine.resume coro input)))
         (thread:start "eval" io-channel)
