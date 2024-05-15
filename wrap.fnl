@@ -1,9 +1,10 @@
 (local fennel (require :lib.fennel))
 (local (w h) (love.window.getMode))
 (var scale 1)
-(local windows {:l nil :r nil})
-(local canvasl (love.graphics.newCanvas (/ w 2) h))
-(local canvasr (love.graphics.newCanvas (/ w 2) h))
+(local windows {:console nil :game nil})
+(local console (love.graphics.newCanvas (/ w 2) h))
+(local game (love.graphics.newCanvas w h))
+(var dev? true)
 
 (fn enter-monad [window name ...]
   (let [monad (require name)]
@@ -15,42 +16,42 @@
   (xpcall func #(enter-monad :monads.error name $ (fennel.traceback))))
 
 (fn love.load [args]
-  (enter-monad :l :monads.repl)
-  (enter-monad :r :monads.editor)
-  (canvasl:setFilter "nearest" "nearest")
-  (canvasr:setFilter "nearest" "nearest")
-  (windows.l.monad.start (= :web (. args 1))))
+  (love.graphics.setFont (love.graphics.newFont 12 "mono")) ;; 12pt*64=512px
+  (enter-monad :console :monads.repl)
+  (enter-monad :game :monads.editor)
+  (console:setFilter "nearest" "nearest")
+  (game:setFilter "nearest" "nearest")
+  (windows.console.monad.start (= :web (. args 1))))
 
 (fn love.draw []
-  (love.graphics.setCanvas canvasl)
-  (love.graphics.clear 0.2 0.2 0.2 1)
-  (love.graphics.setColor 1 1 1 1)
-  (safely windows.l.monad.draw windows.l.name)
-  (love.graphics.setCanvas canvasr)
-  (love.graphics.clear 0.8 0.8 0.8 1)
-  (love.graphics.setColor 0 0 0 1)
-  (safely windows.r.monad.draw windows.r.name)
+  (love.graphics.setCanvas console)
+  (safely (windows.console.monad.draw (/ w 2) h) windows.console.name)
+  (love.graphics.setCanvas game)
+  (safely (windows.game.monad.draw w h) windows.game.name)
   (love.graphics.setCanvas)
   (love.graphics.setColor 1 1 1 1)
-  (love.graphics.draw canvasl 0 0 0 scale scale)
-  (love.graphics.draw canvasr (/ w 2) 0 0 scale scale))
+  (love.graphics.draw game 0 0 0 scale scale)
+  (love.graphics.setColor 1 1 1 0.88)
+  (if dev? (love.graphics.draw console 0 0 0 scale scale))
+  (love.graphics.setColor 1 1 1 1))
 
 (fn love.update [dt]
-  (when windows.l.monad.update 
-    (safely #(windows.l.monad.update dt) windows.l.name))
-  (when windows.r.monad.update 
-    (safely #(windows.r.monad.update dt) windows.r.name)))
+  (when windows.console.monad.update 
+    (safely #(windows.console.monad.update dt) windows.console.name))
+  (when windows.game.monad.update 
+    (safely #(windows.game.monad.update dt) windows.game.name)))
 
-(fn love.keypressed [key]
-  (if (and (love.keyboard.isDown "lctrl" "rctrl") (= key "q"))
-      (love.event.quit)
-      (let [lfunc windows.l.monad.keypressed
-            lname windows.l.name
-            rfunc windows.r.monad.keypressed
-            rname windows.l.name]
-            (when lfunc (safely #(lfunc key) lname))
-            (when rfunc (safely #(rfunc key) rname)))))
+(fn love.keypressed [key scancode repeat?]
+  (match key
+    :escape (love.event.quit)
+    :lctrl (set dev? (not dev?))
+    _ (let [consolefunc windows.console.monad.keypressed
+            consolename windows.console.name
+            gamefunc windows.game.monad.keypressed
+            gamename windows.console.name]
+        (when (and dev? consolefunc) (safely #(consolefunc key) consolename))
+        (when gamefunc (safely #(gamefunc key) gamename)))))
 
 (fn love.textinput [text]
-  (when windows.l.monad.textinput 
-    (safely #(windows.l.monad.textinput text) windows.l.name)))
+  (when (and dev? windows.console.monad.textinput)
+    (safely #(windows.console.monad.textinput text) windows.console.name)))

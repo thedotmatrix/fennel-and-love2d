@@ -1,6 +1,8 @@
 (local fennel (require :lib.fennel))
 (local stdio (require :lib.stdio))
 (require :love.event)
+(local tst "1234567890123456789012345678901234567890123456789012345678901234")
+(local msg "press [left ctrl] to show/hide")
 (local input [])
 (local output [])
 (var incomplete? false)
@@ -48,18 +50,20 @@
 
 (fn textinput [text] (table.insert input text))
 
-(fn draw [] ;; FIXME wrong (w h)
-  (let [(w h) (love.window.getMode)
-        fh (: (love.graphics.getFont) :getHeight)]
-        ;; draw every line in the output (wasteful but easy)
-        (for [i (length output) 1 -1]
-          (match (. output i) line (love.graphics.print line 2 (* i (+ fh 2)))))
-        ;; draw the input text at the bottom
-        (love.graphics.line 0 (- h fh 4) w (- h fh 4))
-        ;; prompt character
-        (if incomplete?
-          (love.graphics.print "_ " 2 (- h fh 2))
-          (love.graphics.print "> " 2 (- h fh 2)))
-        (love.graphics.print (table.concat input) 15 (- h fh 2))))
+(fn draw [w h] (fn []
+  (let [fh (: (love.graphics.getFont) :getHeight)]
+    (love.graphics.clear 0 0 0 1)
+    (love.graphics.setColor 1 1 1 1)
+    (love.graphics.printf msg 0 0 w :center)
+    ;; draw every line in the output (wasteful but easy)
+    (for [i (length output) 1 -1]
+      (match (. output i) line (love.graphics.print line 2 (* i (+ fh 2)))))
+    ;; draw the input text at the bottom
+    (love.graphics.line 0 (- h fh 4) w (- h fh 4))
+    ;; prompt character
+    (if incomplete?
+      (love.graphics.print "_ " 2 (- h fh 2))
+      (love.graphics.print "> " 2 (- h fh 2)))
+    (love.graphics.print (table.concat input) 15 (- h fh 2)))))
 
 {: start : keypressed : textinput : draw }

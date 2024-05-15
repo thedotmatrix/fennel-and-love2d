@@ -4,7 +4,7 @@ love.conf = function(t)
   t.modules.joystick = false
   t.modules.physics = false
   t.window.width = 1024
-  t.window.height = 512
+  t.window.height = 576
   t.window.vsync = false
   t.version = "11.5"
 end
