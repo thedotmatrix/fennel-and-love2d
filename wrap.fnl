@@ -1,6 +1,8 @@
 (local fennel (require :lib.fennel))
 (local (w h) (love.window.getMode))
+(var (sw sh) (love.window.getMode))
 (var scale 1)
+(var fs? false)
 (local windows {:console nil :game nil})
 (local console (love.graphics.newCanvas (/ w 2) h))
 (local game (love.graphics.newCanvas w h))
@@ -18,22 +20,28 @@
 (fn love.load [args]
   (love.graphics.setFont (love.graphics.newFont 12 "mono")) ;; 12pt*64=512px
   (enter-monad :console :monads.repl)
-  (enter-monad :game :monads.editor)
+  (enter-monad :game :monads.howtolove)
   (console:setFilter "nearest" "nearest")
   (game:setFilter "nearest" "nearest")
   (windows.console.monad.start (= :web (. args 1))))
 
+(fn love.resize []
+  (set (sw sh) (love.window.getMode))
+  (set scale (math.min (/ sw w) (/ sh h))))
+
 (fn love.draw []
-  (love.graphics.setCanvas console)
-  (safely (windows.console.monad.draw (/ w 2) h) windows.console.name)
-  (love.graphics.setCanvas game)
-  (safely (windows.game.monad.draw w h) windows.game.name)
-  (love.graphics.setCanvas)
-  (love.graphics.setColor 1 1 1 1)
-  (love.graphics.draw game 0 0 0 scale scale)
-  (love.graphics.setColor 1 1 1 0.88)
-  (if dev? (love.graphics.draw console 0 0 0 scale scale))
-  (love.graphics.setColor 1 1 1 1))
+  (let [mx (/ (- sw (* scale w)) 2)
+        my (/ (- sh (* scale h)) 2)]
+    (love.graphics.setCanvas console)
+    (safely (windows.console.monad.draw (/ w 2) h) windows.console.name)
+    (love.graphics.setCanvas game)
+    (safely (windows.game.monad.draw w h) windows.game.name)
+    (love.graphics.setCanvas)
+    (love.graphics.setColor 1 1 1 1)
+    (love.graphics.draw game mx my 0 scale scale)
+    (love.graphics.setColor 1 1 1 0.88)
+    (if dev? (love.graphics.draw console mx my 0 scale scale))
+    (love.graphics.setColor 1 1 1 1)))
 
 (fn love.update [dt]
   (when windows.console.monad.update 
@@ -45,6 +53,7 @@
   (match key
     :escape (love.event.quit)
     :lctrl (set dev? (not dev?))
+    "f11" (love.window.setFullscreen (do (set fs? (not fs?)) fs?) "desktop")
     _ (let [consolefunc windows.console.monad.keypressed
             consolename windows.console.name
             gamefunc windows.game.monad.keypressed
