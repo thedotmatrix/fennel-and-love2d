@@ -23,7 +23,8 @@
   (enter-monad :game :monads.howtolove)
   (console:setFilter "nearest" "nearest")
   (game:setFilter "nearest" "nearest")
-  (windows.console.monad.start (= :web (. args 1))))
+  (safely (windows.console.monad.start (= :web (. args 1))) windows.console.name)
+  (safely (windows.game.monad.init) windows.game.name))
 
 (fn love.resize []
   (set (sw sh) (love.window.getMode))
