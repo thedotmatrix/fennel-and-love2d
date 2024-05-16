@@ -4,10 +4,32 @@
 (var chapter 1)
 
 (fn init1 [] (print 123))
-(fn draw1 [w h] (love.graphics.printf "Hello World!" 0 (/ h 2) w :center))
+(fn draw1 [w h] (love.graphics.printf "Installation" 0 (/ h 2) w :center))
 
-(fn init2 [] )
-(fn draw2 [w h] )
+(fn init2 [] 
+  (print (+ 3 4))
+  (let [a 5 b 3] (print (+ a b)))
+  (let [sheep 3 test 20 PANTS 1040 asdfghjkl 42] nil)
+  (let [sheep 3 SHEEP 10 sHeEp 200] nil)
+  (let [a (- 20 10) b (* 20 10) c (/ 20 10) d (^ 20 10)] nil)
+  (let [a 10.4 b 2.63 c 0.1 pi 3.141592] nil)
+  (let [X 5 Y 3 Z (+ X Y) X 2 Y 40] (print Z))
+  (let [text "Hello World!"] nil)
+  (let [name "Daniel" 
+        age 25
+        text (.. "Hello, my name is " name ", and I'm " age " years old.")]
+      (print text))
+  ;; test8 te8st -- Good
+  ;; 8test -- Bad, error!
+  ;; and      break   do    else      elseif
+  ;; end      false   for   function  if
+  ;; in       local   nil   not       or
+  ;; repeat   return  then  true      until   while
+  ;; -- keywords, don't overload ever
+  (var coins 0)
+  (set coins (+ coins 1))
+  (incf coins 1))
+(fn draw2 [w h] (love.graphics.printf "Variables" 0 (/ h 2) w :center))
 
 (fn init [] 
   (case chapter
