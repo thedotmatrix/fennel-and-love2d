@@ -66,6 +66,21 @@
   (if (love.keyboard.isDown "down") (incf ENV.y (* 50 dt)))
   (print (.. "( \t" ENV.x "\t , \t" ENV.y "\t )")))
 
+(fn draw7 [w h]
+  (love.graphics.printf "Tables and for loops" 0 (/ h 2) w :center)
+  (each [i frt (ipairs ENV.fruits)]
+    (love.graphics.print frt 100 (+ 100 (* 50 i)))))
+(fn init7 [] 
+  (tset ENV :fruits ["apple" "banana"])
+  (print (# ENV.fruits))
+  (table.insert ENV.fruits "pear")
+  (print (# ENV.fruits))
+  (table.insert ENV.fruits "pineapple")
+  (for [i 1 (# ENV.fruits)] (print (. ENV.fruits i)))
+  (table.remove ENV.fruits 2)
+  (tset ENV.fruits 1 "tomato")
+  (each [i v (ipairs ENV.fruits)] (print (.. i ", " v))))
+
 (fn init [] 
   (set ENV {})
   (case chapter
@@ -74,7 +89,8 @@
       3 (init3)
       4 (init4)
       5 (init5)
-      6 (init6)))
+      6 (init6)
+      7 (init7)))
 
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
@@ -86,7 +102,8 @@
       3 (draw3 w h)
       4 (draw4 w h)
       5 (draw5 w h)
-      6 (draw6 w h))
+      6 (draw6 w h)
+      7 (draw7 w h))
     (love.graphics.printf title 0 0 w :center)
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
 
