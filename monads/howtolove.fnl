@@ -3,9 +3,10 @@
 (local navi "<-- \t \t chapter %d \t \t -->")
 (var chapter 1)
 
-(fn init1 [] (print 123))
 (fn draw1 [w h] (love.graphics.printf "Installation" 0 (/ h 2) w :center))
+(fn init1 [] (print 123))
 
+(fn draw2 [w h] (love.graphics.printf "Variables" 0 (/ h 2) w :center))
 (fn init2 [] 
   (print (+ 3 4))
   (let [a 5 b 3] (print (+ a b)))
@@ -29,12 +30,25 @@
   (var coins 0)
   (set coins (+ coins 1))
   (incf coins 1))
-(fn draw2 [w h] (love.graphics.printf "Variables" 0 (/ h 2) w :center))
+
+(fn draw3 [w h] (love.graphics.printf "Functions" 0 (/ h 2) w :center))
+(fn init3 [] 
+  (let [example (fn [] (print "Hello World!"))] (example))
+  (do (fn example [] (print "Hello World!")) (example)) ;; use let, avoid do
+  (let [sayNumber (fn [num] (print (.. "I like the number " num)))]
+    ;; (print num) -- lua would print nil, fennel has a compiler error
+    (sayNumber 15)
+    (sayNumber 2)
+    (sayNumber 44)
+    (sayNumber 100))
+  (let [giveMeFive (fn [] 5) a (giveMeFive)] (print a))
+  (let [sum (fn [a b] (+ a b))] (print (sum 200 95))))
 
 (fn init [] 
   (case chapter
       1 (init1)
-      2 (init2)))
+      2 (init2)
+      3 (init3)))
 
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
@@ -42,7 +56,8 @@
     (love.graphics.setColor 1 1 1 1)
     (case chapter
       1 (draw1 w h)
-      2 (draw2 w h))
+      2 (draw2 w h)
+      3 (draw3 w h))
     (love.graphics.printf title 0 0 w :center)
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
 
