@@ -44,20 +44,30 @@
   (let [giveMeFive (fn [] 5) a (giveMeFive)] (print a))
   (let [sum (fn [a b] (+ a b))] (print (sum 200 95))))
 
+(fn draw4 [w h]
+  (love.graphics.printf "What is LÖVE" 0 (/ h 2) w :center)
+  (love.graphics.circle "fill" 10 10 100 25)
+  (love.graphics.rectangle "line" 200 30 120 100)
+  (love.graphics.rectangle "fill" 100 200 50 80))
+(fn init4 []
+  (let [test (fn [a b] (+ a b))] (test 10 20)))
+
 (fn init [] 
   (case chapter
       1 (init1)
       2 (init2)
-      3 (init3)))
+      3 (init3)
+      4 (init4)))
 
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
-    (love.graphics.clear 0.22 0.22 0.22 1)
-    (love.graphics.setColor 1 1 1 1)
+    (love.graphics.clear 0.1 0.1 0.1 1)
+    (love.graphics.setColor 0.9 0.9 0.9 1)
     (case chapter
       1 (draw1 w h)
       2 (draw2 w h)
-      3 (draw3 w h))
+      3 (draw3 w h)
+      4 (draw4 w h))
     (love.graphics.printf title 0 0 w :center)
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
 
