@@ -113,6 +113,32 @@
   (tset ENV :pressed? (love.keyboard.isDown "space"))
   (ENV.tick.update dt))
 
+(fn load11 [] (set title "Classes")
+  (tset ENV :Object (require "lib.classic"))
+  (tset ENV :Shape (ENV.Object:extend))
+  (tset ENV.Shape :new (fn [self x y]
+    (tset self :x x)
+    (tset self :y y)
+    (tset self :s 100)))
+  (tset ENV.Shape :update (fn [self dt] (incf self.x (* self.s dt))))
+  (tset ENV :Rectangle (ENV.Shape:extend))
+  (tset ENV.Rectangle :new (fn [self x y w h] 
+    (ENV.Rectangle.super.new self x y)
+    (tset self :w w)
+    (tset self :h h)))
+  (tset ENV.Rectangle :draw (fn [self]
+    (love.graphics.rectangle "line" self.x self.y self.w self.h)))
+  (tset ENV :Circle (ENV.Shape:extend))
+  (tset ENV.Circle :new (fn [self x y r]
+    (ENV.Circle.super.new self x y)
+    (tset self :r r)))
+  (tset ENV.Circle :draw (fn [self]
+    (love.graphics.circle "line" self.x self.y self.r)))
+  (tset ENV :s1 (ENV.Rectangle 100 100 200 50))
+  (tset ENV :s2 (ENV.Circle 350 80 40)))
+(fn draw11 [] (ENV.s1:draw) (ENV.s2:draw))
+(fn update11 [dt] (ENV.s1:update dt) (ENV.s2:update dt))
+
 (fn load [] 
   (set ENV {})
   (case chapter
@@ -125,7 +151,8 @@
       7 (load7)
       8 (load8)
       9 (load9)
-      10 (load10)))
+      10 (load10)
+      11 (load11)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
@@ -138,14 +165,16 @@
       6 (draw6 w h)
       7 (draw7 w h)
       8 (draw8 w h)
-      10 (draw10 w h))
+      10 (draw10 w h)
+      11 (draw11 w h))
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
 (fn update [dt w h]
   (case chapter
     5 (update5 dt)
     6 (update6 dt)
     8 (update8 dt)
-    10 (update10 dt)))
+    10 (update10 dt)
+    11 (update11 dt)))
 (fn keypressed [key]
   (local old chapter)
   (match key
