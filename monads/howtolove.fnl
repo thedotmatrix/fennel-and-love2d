@@ -136,8 +136,20 @@
     (love.graphics.circle "line" self.x self.y self.r)))
   (tset ENV :s1 (ENV.Rectangle 100 100 200 50))
   (tset ENV :s2 (ENV.Circle 350 80 40)))
-(fn draw11 [] (ENV.s1:draw) (ENV.s2:draw))
+(fn draw11 [w h] (ENV.s1:draw) (ENV.s2:draw))
 (fn update11 [dt] (ENV.s1:update dt) (ENV.s2:update dt))
+
+(fn load12 [] (set title "Images")
+  (tset ENV :myImage (love.graphics.newImage "bin/howtolove/sheep.png")))
+(fn draw12 [w h] 
+  (let [iw (ENV.myImage:getWidth)
+        ih (ENV.myImage:getHeight)
+        r1 (/ math.pi 4)
+        r2 (/ math.pi 2)]
+      (love.graphics.setColor 1 0.78 0.15 0.5)
+      (love.graphics.draw ENV.myImage 100 100 r1 2 2 (/ iw 2) (/ ih 2))
+      (love.graphics.setColor 1 1 1)
+      (love.graphics.draw ENV.myImage 200 100 r2 2 2 (/ iw 2) (/ ih 2))))
 
 (fn load [] 
   (set ENV {})
@@ -152,7 +164,8 @@
       8 (load8)
       9 (load9)
       10 (load10)
-      11 (load11)))
+      11 (load11)
+      12 (load12)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
@@ -166,7 +179,8 @@
       7 (draw7 w h)
       8 (draw8 w h)
       10 (draw10 w h)
-      11 (draw11 w h))
+      11 (draw11 w h)
+      12 (draw12 w h))
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
 (fn update [dt w h]
   (case chapter
