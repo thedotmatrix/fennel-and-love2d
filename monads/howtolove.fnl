@@ -1,14 +1,13 @@
 (import-macros {: incf : decf : clamp} :macros.math)
-(local title "sheepolution how to love")
+(local header "sheepolution how to love")
 (local navi "<---left-shift--- \t \t chapter %d \t \t ---right-shift--->")
 (var chapter 1)
+(var title nil)
 (var ENV {})
 
-(fn draw1 [w h] (love.graphics.printf "Installation" 0 (/ h 2) w :center))
-(fn init1 [] (print 123))
+(fn load1 [] (set title "Installation") (print 123))
 
-(fn draw2 [w h] (love.graphics.printf "Variables" 0 (/ h 2) w :center))
-(fn init2 [] 
+(fn load2 [] (set title "Variables")
   (print (+ 3 4))
   (let [a 5 b 3] (print (+ a b)))
   (let [X 5 Y 3 Z (+ X Y) X 2 Y 40] (print Z))
@@ -20,8 +19,7 @@
   (set coins (+ coins 1))
   (incf coins 1))
 
-(fn draw3 [w h] (love.graphics.printf "Functions" 0 (/ h 2) w :center))
-(fn init3 [] 
+(fn load3 [] (set title "Functions")
   (let [example (fn [] (print "Hello World!"))] (example))
   (do (fn example [] (print "Hello World!")) (example)) ;; use let, avoid do
   (let [sayNumber (fn [num] (print (.. "I like the number " num)))]
@@ -33,23 +31,18 @@
   (let [giveMeFive (fn [] 5) a (giveMeFive)] (print a))
   (let [sum (fn [a b] (+ a b))] (print (sum 200 95))))
 
+(fn load4 [] (set title "What is LÖVE")
+  (let [test (fn [a b] (+ a b))] (test 10 20)))
 (fn draw4 [w h]
-  (love.graphics.printf "What is LÖVE" 0 (/ h 2) w :center)
   (love.graphics.circle "fill" 10 10 100 25)
   (love.graphics.rectangle "line" 200 30 120 100)
   (love.graphics.rectangle "fill" 100 200 50 80))
-(fn init4 [] (let [test (fn [a b] (+ a b))] (test 10 20)))
 
-(fn draw5 [w h]
-  (love.graphics.printf "Moving a rectangle" 0 (/ h 2) w :center)
-  (love.graphics.rectangle "line" ENV.x 50 200 150))
-(fn init5 [] (tset ENV :x 100))
+(fn load5 [] (set title "Moving a rectangle") (tset ENV :x 100))
+(fn draw5 [w h] (love.graphics.rectangle "line" ENV.x 50 200 150))
 (fn update5 [dt] (incf ENV.x (* 5 dt)) (print ENV.x))
 
-(fn draw6 [w h]
-  (love.graphics.printf "If Statements" 0 (/ h 2) w :center)
-  (love.graphics.rectangle "line" ENV.x ENV.y 200 150))
-(fn init6 [] 
+(fn load6 [] (set title "If Statements (use arrow keys to move)")
   (tset ENV :x 100)
   (tset ENV :y 50)
   (if (and (< 5 9) (> 14 7)) (print "Both statements are true"))
@@ -59,6 +52,7 @@
   (if nil (print 3))
   (if 5 (print 4))
   (if "hello" (print 5)))
+(fn draw6 [w h] (love.graphics.rectangle "line" ENV.x ENV.y 200 150))
 (fn update6 [dt] 
   (if (love.keyboard.isDown "left") (decf ENV.x (* 100 dt)))
   (if (love.keyboard.isDown "right") (incf ENV.x (* 100 dt)))
@@ -66,11 +60,7 @@
   (if (love.keyboard.isDown "down") (incf ENV.y (* 50 dt)))
   (print (.. "( \t" ENV.x "\t , \t" ENV.y "\t )")))
 
-(fn draw7 [w h]
-  (love.graphics.printf "Tables and for loops" 0 (/ h 2) w :center)
-  (each [i frt (ipairs ENV.fruits)]
-    (love.graphics.print frt 100 (+ 100 (* 50 i)))))
-(fn init7 [] 
+(fn load7 [] (set title "Tables and loops")
   (tset ENV :fruits ["apple" "banana"])
   (print (# ENV.fruits))
   (table.insert ENV.fruits "pear")
@@ -80,43 +70,64 @@
   (table.remove ENV.fruits 2)
   (tset ENV.fruits 1 "tomato")
   (each [i v (ipairs ENV.fruits)] (print (.. i ", " v))))
+(fn draw7 [w h]
+  (each [i frt (ipairs ENV.fruits)] 
+    (love.graphics.print frt 100 (+ 100 (* 50 i)))))
 
-(fn init [] 
+(fn load8 [] (set title "Objects (press space to rectangle)")
+  (tset ENV :listOfRectangles [])
+  (tset ENV :pressed? false))
+(fn draw8 [w h]
+  (each [i rect (ipairs ENV.listOfRectangles)]
+    (love.graphics.rectangle "line" rect.x rect.y rect.w rect.h)))
+(fn update8 [dt]
+  (when (and (not ENV.pressed?) (love.keyboard.isDown "space"))
+    (let [rect {}
+        createRect (fn []
+          (set rect.x 100)
+          (set rect.y 100)
+          (set rect.w 70)
+          (set rect.h 90)
+          (set rect.speed 100)
+          (table.insert ENV.listOfRectangles rect))]
+        (createRect)))
+  (tset ENV :pressed? (love.keyboard.isDown "space"))
+  (each [i rect (ipairs ENV.listOfRectangles)]
+    (incf rect.x (* rect.speed dt))))
+
+(fn load [] 
   (set ENV {})
   (case chapter
-      1 (init1)
-      2 (init2)
-      3 (init3)
-      4 (init4)
-      5 (init5)
-      6 (init6)
-      7 (init7)))
-
+      1 (load1)
+      2 (load2)
+      3 (load3)
+      4 (load4)
+      5 (load5)
+      6 (load6)
+      7 (load7)
+      8 (load8)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
     (love.graphics.setColor 0.9 0.9 0.9 1)
+    (love.graphics.printf header 0 0 w :center)
+    (love.graphics.printf title 0 (/ h 2) w :center)
     (case chapter
-      1 (draw1 w h)
-      2 (draw2 w h)
-      3 (draw3 w h)
       4 (draw4 w h)
       5 (draw5 w h)
       6 (draw6 w h)
-      7 (draw7 w h))
-    (love.graphics.printf title 0 0 w :center)
+      7 (draw7 w h)
+      8 (draw8 w h))
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
-
 (fn update [dt w h]
   (case chapter
     5 (update5 dt)
-    6 (update6 dt)))
-
+    6 (update6 dt)
+    8 (update8 dt)))
 (fn keypressed [key]
   (local old chapter)
   (match key
     :lshift (do (decf chapter 1) (clamp chapter 1 24))
     :rshift (do (incf chapter 1) (clamp chapter 2 24)))
-  (when (~= old chapter) (init)))
-
-{: init : draw : update : keypressed}
+  (when (~= old chapter) (load)))
+{: load : draw : update : keypressed}

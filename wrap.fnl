@@ -24,11 +24,7 @@
   (console:setFilter "nearest" "nearest")
   (game:setFilter "nearest" "nearest")
   (safely (windows.console.monad.start (= :web (. args 1))) windows.console.name)
-  (safely (windows.game.monad.init) windows.game.name))
-
-(fn love.resize []
-  (set (sw sh) (love.window.getMode))
-  (set scale (math.min (/ sw w) (/ sh h))))
+  (safely (windows.game.monad.load) windows.game.name))
 
 (fn love.draw []
   (let [mx (/ (- sw (* scale w)) 2)
@@ -65,3 +61,7 @@
 (fn love.textinput [text]
   (when (and dev? windows.console.monad.textinput)
     (safely #(windows.console.monad.textinput text) windows.console.name)))
+
+(fn love.resize []
+  (set (sw sh) (love.window.getMode))
+  (set scale (math.min (/ sw w) (/ sh h))))
