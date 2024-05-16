@@ -95,6 +95,8 @@
   (each [i rect (ipairs ENV.listOfRectangles)]
     (incf rect.x (* rect.speed dt))))
 
+(fn load9 [] (set title "Multiple files and scope (TBD)"))
+
 (fn load [] 
   (set ENV {})
   (case chapter
@@ -105,7 +107,8 @@
       5 (load5)
       6 (load6)
       7 (load7)
-      8 (load8)))
+      8 (load8)
+      9 (load9)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
