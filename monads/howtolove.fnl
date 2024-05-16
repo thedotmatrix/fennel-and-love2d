@@ -151,6 +151,20 @@
       (love.graphics.setColor 1 1 1)
       (love.graphics.draw ENV.myImage 200 100 r2 2 2 (/ iw 2) (/ ih 2))))
 
+(fn load13 [] (set title "Detecting collision")
+  (tset ENV :r1 {:x 10 :y 100 :w 100 :h 100})
+  (tset ENV :r2 {:x 250 :y 120 :w 150 :h 120})
+  (tset ENV :checkCollision (fn [a b]
+    (let [al a.x ar (+ a.x a.w) at a.y ab (+ a.y a.h)
+          bl b.x br (+ b.x b.w) bt b.y bb (+ b.y b.h)]
+        (and (> ar bl) (< al br) (> ab at) (< at bb))))))
+(fn draw13 [w h]
+  (let [mode (if (ENV.checkCollision ENV.r1 ENV.r2) "fill" "line")]
+    (love.graphics.rectangle mode ENV.r1.x ENV.r1.y ENV.r1.w ENV.r1.h)
+    (love.graphics.rectangle mode ENV.r2.x ENV.r2.y ENV.r2.w ENV.r2.h)))
+(fn update13 [dt]
+  (incf ENV.r1.x (* 100 dt)))
+
 (fn load [] 
   (set ENV {})
   (case chapter
@@ -165,7 +179,8 @@
       9 (load9)
       10 (load10)
       11 (load11)
-      12 (load12)))
+      12 (load12)
+      13 (load13)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
@@ -180,7 +195,8 @@
       8 (draw8 w h)
       10 (draw10 w h)
       11 (draw11 w h)
-      12 (draw12 w h))
+      12 (draw12 w h)
+      13 (draw13 w h))
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
 (fn update [dt w h]
   (case chapter
@@ -188,7 +204,8 @@
     6 (update6 dt)
     8 (update8 dt)
     10 (update10 dt)
-    11 (update11 dt)))
+    11 (update11 dt)
+    13 (update13 dt)))
 (fn keypressed [key]
   (local old chapter)
   (match key
