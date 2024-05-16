@@ -97,6 +97,22 @@
 
 (fn load9 [] (set title "Multiple files and scope (TBD)"))
 
+(fn load10 [] (set title "Libraries (... wait for it)")
+  (tset ENV :tick (require "lib.tick"))
+  (tset ENV :drawRectangle? false)
+  (tset ENV :x 30)
+  (tset ENV :y 50)
+  (tset ENV :pressed? false)
+  (ENV.tick.delay (fn [] (tset ENV :drawRectangle? true)) 2))
+(fn draw10 [w h]
+  (if ENV.drawRectangle? (love.graphics.rectangle "fill" ENV.x ENV.y 300 200)))
+(fn update10 [dt] 
+  (when (and (not ENV.pressed?) (love.keyboard.isDown "space"))
+    (tset ENV :x (math.random 100 500))
+    (tset ENV :y (math.random 100 500)))
+  (tset ENV :pressed? (love.keyboard.isDown "space"))
+  (ENV.tick.update dt))
+
 (fn load [] 
   (set ENV {})
   (case chapter
@@ -108,7 +124,8 @@
       6 (load6)
       7 (load7)
       8 (load8)
-      9 (load9)))
+      9 (load9)
+      10 (load10)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
@@ -120,17 +137,19 @@
       5 (draw5 w h)
       6 (draw6 w h)
       7 (draw7 w h)
-      8 (draw8 w h))
+      8 (draw8 w h)
+      10 (draw10 w h))
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
 (fn update [dt w h]
   (case chapter
     5 (update5 dt)
     6 (update6 dt)
-    8 (update8 dt)))
+    8 (update8 dt)
+    10 (update10 dt)))
 (fn keypressed [key]
   (local old chapter)
   (match key
     :lshift (do (decf chapter 1) (clamp chapter 1 24))
-    :rshift (do (incf chapter 1) (clamp chapter 2 24)))
+    :rshift (do (incf chapter 1) (clamp chapter 1 24)))
   (when (~= old chapter) (load)))
 {: load : draw : update : keypressed}
