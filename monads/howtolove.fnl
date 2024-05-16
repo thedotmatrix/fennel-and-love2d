@@ -97,7 +97,7 @@
 
 (fn load9 [] (set title "Multiple files and scope (TBD)"))
 
-(fn load10 [] (set title "Libraries (... wait for it)")
+(fn load10 [] (set title "Libraries (... wait for it, then press space!)")
   (tset ENV :tick (require "lib.tick"))
   (tset ENV :drawRectangle? false)
   (tset ENV :x 30)
@@ -157,13 +157,82 @@
   (tset ENV :checkCollision (fn [a b]
     (let [al a.x ar (+ a.x a.w) at a.y ab (+ a.y a.h)
           bl b.x br (+ b.x b.w) bt b.y bb (+ b.y b.h)]
-        (and (> ar bl) (< al br) (> ab at) (< at bb))))))
+        (and (> ar bl) (< al br) (> ab bt) (< at bb))))))
 (fn draw13 [w h]
   (let [mode (if (ENV.checkCollision ENV.r1 ENV.r2) "fill" "line")]
     (love.graphics.rectangle mode ENV.r1.x ENV.r1.y ENV.r1.w ENV.r1.h)
     (love.graphics.rectangle mode ENV.r2.x ENV.r2.y ENV.r2.w ENV.r2.h)))
 (fn update13 [dt]
   (incf ENV.r1.x (* 100 dt)))
+
+(fn load14 [] (set title "Game: Shoot the enemy")
+  (tset ENV :pressed? false)
+  (tset ENV :Object (require "lib.classic"))
+  (tset ENV :Player (ENV.Object:extend))
+  (tset ENV.Player :new (fn [self]
+    (tset self :image (love.graphics.newImage "bin/howtolove/panda.png"))
+    (tset self :x 300)
+    (tset self :y 20)
+    (tset self :s 500)
+    (tset self :w (self.image:getWidth))
+    (tset self :h (self.image:getHeight))))
+  (tset ENV.Player :draw (fn [self] 
+    (love.graphics.draw self.image self.x self.y)))
+  (tset ENV.Player :update (fn [self dt w h]
+    (when (love.keyboard.isDown "left") (decf self.x (* self.s dt)))
+    (when (love.keyboard.isDown "right") (incf self.x (* self.s dt)))
+    (clamp self.x 0 (- w self.w))))
+  (tset ENV :Enemy (ENV.Object:extend))
+  (tset ENV.Enemy :new (fn [self]
+    (tset self :image (love.graphics.newImage "bin/howtolove/snake.png"))
+    (tset self :x 325)
+    (tset self :y 450)
+    (tset self :s 100)
+    (tset self :w (self.image:getWidth))
+    (tset self :h (self.image:getHeight))))
+  (tset ENV.Enemy :draw (fn [self w h]
+    (love.graphics.draw self.image self.x self.y)))
+  (tset ENV.Enemy :update (fn [self dt w h]
+    (incf self.x (* self.s dt))
+    (when (clamp self.x 0 (- w self.w)) (set self.s (* self.s -1)))))
+  (tset ENV :Bullet (ENV.Object:extend))
+  (tset ENV.Bullet :new (fn [self x y]
+    (tset self :image (love.graphics.newImage "bin/howtolove/bullet.png"))
+    (tset self :x x) 
+    (tset self :y y)
+    (tset self :s 700)
+    (tset self :w (self.image:getWidth))
+    (tset self :h (self.image:getHeight))))
+  (tset ENV.Bullet :draw (fn [self w h]
+    (love.graphics.draw self.image self.x self.y)))
+  (tset ENV.Bullet :update (fn [self dt w h]
+    (incf self.y (* self.s dt))))
+  (tset ENV :player (ENV.Player))
+  (tset ENV :enemy (ENV.Enemy))
+  (tset ENV :shots {})
+  (tset ENV :checkCollision (fn [a b]
+    (let [al a.x ar (+ a.x a.w) at a.y ab (+ a.y a.h)
+          bl b.x br (+ b.x b.w) bt b.y bb (+ b.y b.h)]
+        (and (> ar bl) (< al br) (> ab bt) (< at bb))))))
+(fn draw14 [w h] 
+  (ENV.player:draw) 
+  (ENV.enemy:draw)
+  (each [i v (ipairs ENV.shots)] (v:draw)))
+(fn update14 [dt w h]
+  (ENV.player:update dt w h)
+  (ENV.enemy:update dt w h)
+  (when (and (not ENV.pressed?) (love.keyboard.isDown "space"))
+    (let [b (ENV.Bullet 0 0)
+          bx (+ ENV.player.x (- (/ ENV.player.w 2) (/ b.w 2)))
+          by (+ ENV.player.y (/ ENV.player.h 2))]
+        (table.insert ENV.shots (ENV.Bullet bx by))))
+  (tset ENV :pressed? (love.keyboard.isDown "space"))
+  (each [i v (ipairs ENV.shots)] 
+    (v:update dt)
+    (when (ENV.checkCollision v ENV.enemy) (do
+      (if (> ENV.enemy.s 0) (incf ENV.enemy.s 50) (decf ENV.enemy.s 50))
+      (table.remove ENV.shots i)))
+    (when (> v.y h) (load14))))
 
 (fn load [] 
   (set ENV {})
@@ -180,7 +249,8 @@
       10 (load10)
       11 (load11)
       12 (load12)
-      13 (load13)))
+      13 (load13)
+      14 (load14)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
@@ -196,7 +266,8 @@
       10 (draw10 w h)
       11 (draw11 w h)
       12 (draw12 w h)
-      13 (draw13 w h))
+      13 (draw13 w h)
+      14 (draw14 w h))
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
 (fn update [dt w h]
   (case chapter
@@ -205,7 +276,8 @@
     8 (update8 dt)
     10 (update10 dt)
     11 (update11 dt)
-    13 (update13 dt)))
+    13 (update13 dt)
+    14 (update14 dt w h)))
 (fn keypressed [key]
   (local old chapter)
   (match key

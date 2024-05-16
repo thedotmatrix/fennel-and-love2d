@@ -44,7 +44,7 @@
   (when windows.console.monad.update 
     (safely #(windows.console.monad.update dt) windows.console.name))
   (when windows.game.monad.update 
-    (safely #(windows.game.monad.update dt) windows.game.name)))
+    (safely #(windows.game.monad.update dt w h) windows.game.name)))
 
 (fn love.keypressed [key scancode repeat?]
   (match key

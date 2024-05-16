@@ -6,8 +6,10 @@
 
 (fn clamp [val ?low ?hi]
   `(let [lower# (or ,?low (* -1 math.huge))
-         upper# (or ,?hi math.huge)]
-  (set ,val (math.min (math.max ,val lower#) upper#))))
+         upper# (or ,?hi math.huge)
+         old# ,val]
+  (set ,val (math.min (math.max ,val lower#) upper#))
+  (~= old# ,val)))
 
 (fn with [t keys ?body]
   `(let [,keys ,t]
