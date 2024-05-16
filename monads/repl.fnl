@@ -48,13 +48,16 @@
 (fn textinput [text] (table.insert input text))
 
 (fn draw [w h] (fn []
-  (let [fh (: (love.graphics.getFont) :getHeight)]
+  (let [fh (: (love.graphics.getFont) :getHeight)
+        len (length output)
+        lst (if (> (- len 32) 0) (- len 32) 1)]
     (love.graphics.clear 0 0 0 1)
     (love.graphics.setColor 1 1 1 1)
     (love.graphics.printf msg 0 0 w :center)
-    ;; draw every line in the output (wasteful but easy)
-    (for [i (length output) 1 -1]
-      (match (. output i) line (love.graphics.print line 2 (* i (+ fh 2)))))
+    ;; draw the last 33 lines of output
+    (for [i len lst -1]
+      (match (. output i) line 
+        (love.graphics.print line 2 (* (+ (- i lst) 1) (+ fh 2)))))
     ;; draw the input text at the bottom
     (love.graphics.line 0 (- h fh 4) w (- h fh 4))
     ;; prompt character

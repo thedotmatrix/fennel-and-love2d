@@ -2,6 +2,7 @@
 (local title "sheepolution how to love")
 (local navi "<-- \t \t chapter %d \t \t -->")
 (var chapter 1)
+(var ENV {})
 
 (fn draw1 [w h] (love.graphics.printf "Installation" 0 (/ h 2) w :center))
 (fn init1 [] (print 123))
@@ -52,12 +53,24 @@
 (fn init4 []
   (let [test (fn [a b] (+ a b))] (test 10 20)))
 
+(fn draw5 [w h]
+  (love.graphics.printf "Moving a rectangle" 0 (/ h 2) w :center)
+  (love.graphics.rectangle "line" ENV.x 50 200 150))
+(fn init5 []
+  ;; x = 100 in love.load (workaround for now until live editor)
+  (tset ENV :x 100))
+(fn update5 [dt]
+  (incf ENV.x (* 5 dt))
+  (print ENV.x))
+
 (fn init [] 
+  (set ENV {})
   (case chapter
       1 (init1)
       2 (init2)
       3 (init3)
-      4 (init4)))
+      4 (init4)
+      5 (init5)))
 
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
@@ -67,16 +80,20 @@
       1 (draw1 w h)
       2 (draw2 w h)
       3 (draw3 w h)
-      4 (draw4 w h))
+      4 (draw4 w h)
+      5 (draw5 w h))
     (love.graphics.printf title 0 0 w :center)
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
 
-(fn update [dt])
+(fn update [dt]
+  (case chapter
+    5 (update5 dt)))
 
 (fn keypressed [key]
+  (local old chapter)
   (match key
     :left (do (decf chapter 1) (clamp chapter 1 24))
     :right (do (incf chapter 1) (clamp chapter 2 24)))
-  (init))
+  (when (~= old chapter) (init)))
 
 {: init : draw : update : keypressed}
