@@ -282,6 +282,41 @@
       (incf ENV.arrow.x (* ENV.arrow.s (math.cos aangle) dt))
       (incf ENV.arrow.y (* ENV.arrow.s (math.sin aangle) dt)))))
 
+(fn load17 [] (set title "Animation")
+  (tset ENV :anim0 {})
+  (tset ENV :anim1 {})
+  (tset ENV :anim2 {})
+  (tset ENV :anim3 {})
+  (tset ENV :frame 1)
+  (tset ENV :image1 (love.graphics.newImage "bin/howtolove/jump.png"))
+  (tset ENV :image2 (love.graphics.newImage "bin/howtolove/jump_2.png"))
+  (tset ENV :image3 (love.graphics.newImage "bin/howtolove/jump_3.png"))
+  (let [fw 117 fh 233
+        w1 (ENV.image1:getWidth) h1 (ENV.image1:getHeight) 
+        w2 (ENV.image2:getWidth) h2 (ENV.image2:getHeight)
+        w3 (ENV.image3:getWidth) h3 (ENV.image3:getHeight)]
+    (for [f 1 5 1]
+      (table.insert ENV.anim0
+        (love.graphics.newImage (.. "bin/howtolove/jump" f ".png")))
+      (table.insert ENV.anim1
+        (love.graphics.newQuad (* (- f 1) fw) 0 fw fh w1 h1))
+      (let [j (% (- f 1) 3) i (math.floor (/ (- f 1) 3))]
+        (print (.. j "," i))
+        (table.insert ENV.anim2
+          (love.graphics.newQuad (* j fw) (* i fh) fw fh w2 h2))
+        (table.insert ENV.anim3
+          (love.graphics.newQuad  (+ 1 (* j (+ fw 2))) 
+                                  (+ 1 (* i (+ fh 2)))
+                                  fw fh w3 h3))))))
+(fn draw17 []
+  (love.graphics.draw (. ENV.anim0 (math.floor ENV.frame)) 0 100)
+  (love.graphics.draw ENV.image1 (. ENV.anim1 (math.floor ENV.frame)) 100 100)
+  (love.graphics.draw ENV.image2 (. ENV.anim2 (math.floor ENV.frame)) 200 100)
+  (love.graphics.draw ENV.image3 (. ENV.anim3 (math.floor ENV.frame)) 300 100))
+(fn update17 [dt]
+  (incf ENV.frame (* 10 dt))
+  (when (clamp ENV.frame 1 5) (tset ENV :frame 1)))
+
 (fn load [] 
   (set ENV {})
   (case chapter
@@ -300,13 +335,15 @@
       13 (load13)
       14 (load14)
       15 (load15)
-      16 (load16)))
+      16 (load16)
+      17 (load17)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
     (love.graphics.setColor 0.9 0.9 0.9 1)
     (love.graphics.printf header 0 0 w :center)
     (love.graphics.printf title 0 (/ h 2) w :center)
+    (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center)
     (case chapter
       4 (draw4 w h)
       5 (draw5 w h)
@@ -318,8 +355,8 @@
       12 (draw12 w h)
       13 (draw13 w h)
       14 (draw14 w h)
-      16 (draw16 w h))
-    (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
+      16 (draw16 w h)
+      17 (draw17 w h)))))
 (fn update [dt w h]
   (case chapter
     5 (update5 dt)
@@ -329,7 +366,8 @@
     11 (update11 dt)
     13 (update13 dt)
     14 (update14 dt w h)
-    16 (update16 dt)))
+    16 (update16 dt)
+    17 (update17 dt)))
 (fn keypressed [key]
   (local old chapter)
   (match key
