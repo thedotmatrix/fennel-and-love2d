@@ -402,7 +402,11 @@
   (when (and (not ENV.pressed?) (love.keyboard.isDown "space")) (ENV.sfx:play))
   (tset ENV :pressed? (love.keyboard.isDown "space")))
 
-(fn load [] 
+(fn load20 [] (set title "Debugging (TBD)"))
+
+(fn load []
+  (when ENV.song (ENV.song:stop))
+  (when ENV.sfx (ENV.sfx:stop))
   (set ENV {})
   (case chapter
       1 (load1)
@@ -423,7 +427,8 @@
       16 (load16)
       17 (load17)
       18 (load18)
-      19 (load19)))
+      19 (load19)
+      20 (load20)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
