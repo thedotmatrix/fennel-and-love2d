@@ -392,6 +392,16 @@
         (tset ENV.pc :y oy))
       (tset ENV :pressed? (or l r u d))))
 
+(fn load19 [] (set title "Audio")
+  (tset ENV :song (love.audio.newSource "bin/howtolove/song.ogg" "stream"))
+  (ENV.song:setLooping true)
+  (ENV.song:play)
+  (tset ENV :sfx (love.audio.newSource "bin/howtolove/sfx.ogg" "static"))
+  (tset ENV :pressed? false))
+(fn update19 [dt]
+  (when (and (not ENV.pressed?) (love.keyboard.isDown "space")) (ENV.sfx:play))
+  (tset ENV :pressed? (love.keyboard.isDown "space")))
+
 (fn load [] 
   (set ENV {})
   (case chapter
@@ -412,7 +422,8 @@
       15 (load15)
       16 (load16)
       17 (load17)
-      18 (load18)))
+      18 (load18)
+      19 (load19)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
@@ -445,7 +456,8 @@
     14 (update14 dt w h)
     16 (update16 dt)
     17 (update17 dt)
-    18 (update18 dt)))
+    18 (update18 dt)
+    19 (update19 dt)))
 (fn keypressed [key]
   (local old chapter)
   (match key
