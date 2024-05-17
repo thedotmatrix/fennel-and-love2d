@@ -236,6 +236,52 @@
 
 (fn load15 [] (set title "Sharing your game (TBD)"))
 
+(fn load16 [] (set title "Angles and distance")
+  (tset ENV :circle {})
+  (tset ENV.circle :x 100)
+  (tset ENV.circle :y 100)
+  (tset ENV.circle :r 25)
+  (tset ENV.circle :s 200)
+  (tset ENV.circle :a 0)
+  (tset ENV :distance (fn [x1 y1 x2 y2]
+    (math.sqrt (+ (^ (- x1 x2) 2) (^ (- y1 y2) 2)))))
+  (tset ENV :arrow {})
+  (tset ENV.arrow :x 200)
+  (tset ENV.arrow :y 200)
+  (tset ENV.arrow :s 300)
+  (tset ENV.arrow :a 0)
+  (tset ENV.arrow :i (love.graphics.newImage "bin/howtolove/arrow_right.png"))
+  (tset ENV.arrow :ox (/ (ENV.arrow.i:getWidth) 2))
+  (tset ENV.arrow :oy (/ (ENV.arrow.i:getHeight) 2)))
+(fn draw16 [w h]
+  (love.graphics.circle "line" ENV.circle.x ENV.circle.y ENV.circle.r)
+  (love.graphics.print (.. "angle: " ENV.circle.a) 10 10)
+  (love.graphics.line ENV.circle.x ENV.circle.y ENV.mx ENV.my)
+  (love.graphics.line ENV.circle.x ENV.circle.y ENV.mx ENV.circle.y)
+  (love.graphics.line ENV.mx ENV.my ENV.mx ENV.circle.y)
+  (love.graphics.circle "line" ENV.circle.x ENV.circle.y ENV.cd)
+  (love.graphics.draw ENV.arrow.i ENV.arrow.x ENV.arrow.y ENV.arrow.a 1 1 
+                      ENV.arrow.ox ENV.arrow.oy)
+  (love.graphics.circle "fill" ENV.mx ENV.my 5))
+(fn update16 [dt]
+  (let [(mx my) (love.mouse.getPosition)
+        cangle (math.atan2 (- my ENV.circle.y) (- mx ENV.circle.x))
+        cdist (ENV.distance ENV.circle.x ENV.circle.y mx my)
+        aangle (math.atan2 (- my ENV.arrow.y) (- mx ENV.arrow.x))
+        adist (ENV.distance ENV.arrow.x ENV.arrow.y mx my)
+        agap (ENV.distance 0 ENV.arrow.oy ENV.arrow.ox ENV.arrow.oy)]
+    (tset ENV :mx mx)
+    (tset ENV :my my)
+    (tset ENV.circle :a cangle)
+    (tset ENV :cd cdist)
+    (when (< cdist 400)
+      (incf ENV.circle.x (* ENV.circle.s (math.cos cangle) (/ cdist 100) dt))
+      (incf ENV.circle.y (* ENV.circle.s (math.sin cangle) (/ cdist 100) dt)))
+    (tset ENV.arrow :a aangle)
+    (when (> adist agap)
+      (incf ENV.arrow.x (* ENV.arrow.s (math.cos aangle) dt))
+      (incf ENV.arrow.y (* ENV.arrow.s (math.sin aangle) dt)))))
+
 (fn load [] 
   (set ENV {})
   (case chapter
@@ -253,7 +299,8 @@
       12 (load12)
       13 (load13)
       14 (load14)
-      15 (load15)))
+      15 (load15)
+      16 (load16)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
@@ -270,7 +317,8 @@
       11 (draw11 w h)
       12 (draw12 w h)
       13 (draw13 w h)
-      14 (draw14 w h))
+      14 (draw14 w h)
+      16 (draw16 w h))
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center))))
 (fn update [dt w h]
   (case chapter
@@ -280,7 +328,8 @@
     10 (update10 dt)
     11 (update11 dt)
     13 (update13 dt)
-    14 (update14 dt w h)))
+    14 (update14 dt w h)
+    16 (update16 dt)))
 (fn keypressed [key]
   (local old chapter)
   (match key
