@@ -317,6 +317,81 @@
   (incf ENV.frame (* 10 dt))
   (when (clamp ENV.frame 1 5) (tset ENV :frame 1)))
 
+(fn load18 [] (set title "Tiles")
+  (tset ENV :tilemap [1 0 0 1 1 0 1 1 1 0])
+  (tset ENV :tilemap2 [ [1 1 1 1 1 1 1 1 1 1]
+                        [1 0 0 0 0 0 0 0 0 1]
+                        [1 0 0 1 1 1 1 0 0 1]
+                        [1 0 0 0 0 0 0 0 0 1]
+                        [1 1 1 1 1 1 1 1 1 1] ])
+  (tset ENV :tilemap3 [ [1 1 1 1 1 1 1 1 1 1]
+                        [1 2 2 2 2 2 2 2 2 1]
+                        [1 2 3 4 5 5 4 3 2 1]
+                        [1 2 2 2 2 2 2 2 2 1]
+                        [1 1 1 1 1 1 1 1 1 1] ])
+  (tset ENV :tilemap4 [ [1 6 6 2 1 6 6 2]
+                        [3 0 0 4 5 0 0 3]
+                        [3 0 0 0 0 0 0 3]
+                        [4 2 0 0 0 0 1 5]
+                        [1 5 0 0 0 0 4 2]
+                        [3 0 0 0 0 0 0 3]
+                        [3 0 0 1 2 0 0 3]
+                        [4 6 6 5 4 6 6 5] ])
+  (tset ENV :colors [ [1 1 1] [1 0 0] [1 0 1] [0 0 1] [0 1 1] ])
+  (tset ENV :image (love.graphics.newImage "bin/howtolove/tile.png"))
+  (tset ENV :image2 (love.graphics.newImage "bin/howtolove/tileset.png"))
+  (tset ENV :tw (ENV.image:getWidth))
+  (tset ENV :th (ENV.image:getHeight))
+  (tset ENV :iw (ENV.image2:getWidth))
+  (tset ENV :ih (ENV.image2:getHeight))
+  (tset ENV :w (- (/ ENV.iw 3) 2))
+  (tset ENV :h (- (/ ENV.ih 2) 2))
+  (tset ENV :pc { :image (love.graphics.newImage "bin/howtolove/player.png") 
+                  :x 2 :y 2})
+  (tset ENV :pressed? false)
+  (tset ENV :quads {})
+  (for [i 0 1]
+    (for [j 0 2]
+      (table.insert ENV.quads (love.graphics.newQuad 
+        (+ 1 (* j (+ ENV.w 2))) (+ 1 (* i (+ ENV.h 2))) ENV.w ENV.h ENV.iw ENV.ih)))))
+(fn draw18 []
+  (each [i v (ipairs ENV.tilemap)]
+    (when (= v 1) (love.graphics.rectangle "line" (* i 25) 50 25 25)))
+  (each [i row (ipairs ENV.tilemap2)]
+    (each [j tile (ipairs row)]
+      (when (= tile 1) 
+        (love.graphics.rectangle "line" (* j 25) (+ 100 (* i 25)) 25 25))))
+  (each [i row (ipairs ENV.tilemap3)]
+    (each [j tile (ipairs row)]
+      (when (~= tile 0)
+        (love.graphics.setColor (. ENV.colors tile)) 
+        (love.graphics.rectangle "fill" (* j 25) (+ 300 (* i 25)) 25 25)
+        (love.graphics.draw ENV.image (+ (* j ENV.tw) 300) (+ 300 (* i ENV.th))))))
+  (love.graphics.setColor 1 1 1 1)
+  (each [i row (ipairs ENV.tilemap4)]
+    (each [j tile (ipairs row)]
+      (when (~= tile 0) 
+        (love.graphics.draw ENV.image2 (. ENV.quads tile) (+ 600 (* j ENV.w)) 
+                                                          (+ 0 (* i ENV.h))))))
+  (love.graphics.draw ENV.pc.image  (+ 600 (* ENV.pc.x ENV.w)) 
+                                    (+ 0 (* ENV.pc.y ENV.h))))
+(fn update18 [dt]
+  (let [l (love.keyboard.isDown "left")
+        r (love.keyboard.isDown "right")
+        u (love.keyboard.isDown "up")
+        d (love.keyboard.isDown "down")
+        ox ENV.pc.x
+        oy ENV.pc.y]
+      (when (not ENV.pressed?)
+        (when l (decf ENV.pc.x 1))
+        (when r (incf ENV.pc.x 1))
+        (when u (decf ENV.pc.y 1))
+        (when d (incf ENV.pc.y 1)))
+      (when (~= (. (. ENV.tilemap4 ENV.pc.y) ENV.pc.x) 0)
+        (tset ENV.pc :x ox)
+        (tset ENV.pc :y oy))
+      (tset ENV :pressed? (or l r u d))))
+
 (fn load [] 
   (set ENV {})
   (case chapter
@@ -336,7 +411,8 @@
       14 (load14)
       15 (load15)
       16 (load16)
-      17 (load17)))
+      17 (load17)
+      18 (load18)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
@@ -356,7 +432,8 @@
       13 (draw13 w h)
       14 (draw14 w h)
       16 (draw16 w h)
-      17 (draw17 w h)))))
+      17 (draw17 w h)
+      18 (draw18 w h)))))
 (fn update [dt w h]
   (case chapter
     5 (update5 dt)
@@ -367,7 +444,8 @@
     13 (update13 dt)
     14 (update14 dt w h)
     16 (update16 dt)
-    17 (update17 dt)))
+    17 (update17 dt)
+    18 (update18 dt)))
 (fn keypressed [key]
   (local old chapter)
   (match key
