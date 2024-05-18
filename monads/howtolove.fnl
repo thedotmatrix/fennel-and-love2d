@@ -1,6 +1,6 @@
 (import-macros {: incf : decf : clamp} :macros.math)
 (local header "sheepolution how to love")
-(local navi "<---left-shift--- \t \t chapter %d \t \t ---right-shift--->")
+(local navi "<---left-alt--- \t \t chapter %d \t \t ---right-alt--->")
 (var chapter 1)
 (var title nil)
 (var ENV {})
@@ -353,7 +353,8 @@
   (for [i 0 1]
     (for [j 0 2]
       (table.insert ENV.quads (love.graphics.newQuad 
-        (+ 1 (* j (+ ENV.w 2))) (+ 1 (* i (+ ENV.h 2))) ENV.w ENV.h ENV.iw ENV.ih)))))
+        (+ 1 (* j (+ ENV.w 2))) (+ 1 (* i (+ ENV.h 2))) 
+        ENV.w ENV.h ENV.iw ENV.ih)))))
 (fn draw18 []
   (each [i v (ipairs ENV.tilemap)]
     (when (= v 1) (love.graphics.rectangle "line" (* i 25) 50 25 25)))
@@ -366,7 +367,8 @@
       (when (~= tile 0)
         (love.graphics.setColor (. ENV.colors tile)) 
         (love.graphics.rectangle "fill" (* j 25) (+ 300 (* i 25)) 25 25)
-        (love.graphics.draw ENV.image (+ (* j ENV.tw) 300) (+ 300 (* i ENV.th))))))
+        (love.graphics.draw ENV.image (+ (* j ENV.tw) 300) 
+                                      (+ 300 (* i ENV.th))))))
   (love.graphics.setColor 1 1 1 1)
   (each [i row (ipairs ENV.tilemap4)]
     (each [j tile (ipairs row)]
@@ -404,6 +406,58 @@
 
 (fn load20 [] (set title "Debugging (TBD)"))
 
+(fn load21 [] (set title "Saving and loading (press space to save, resets on no coins")
+  (tset ENV :pc { :x 100 :y 100 :s 25 })
+  (tset ENV :pcimage (love.graphics.newImage "bin/howtolove/face.png"))
+  (tset ENV :coins {})
+  (for [i 1 25]
+    (table.insert ENV.coins 
+      { :x (love.math.random 50 650) :y (love.math.random 50 450)}))
+  (tset ENV :coinsize 10)
+  (tset ENV :coinimage (love.graphics.newImage "bin/howtolove/dollar.png"))
+  (tset ENV :checkCollision (fn [p1 p2 s1 s2]
+    (let [d (math.sqrt (+ (^ (- p1.x p2.x) 2) (^ (- p1.y p2.y) 2)))
+          s (+ s1 s2)]
+        (< d s))))
+  (tset ENV :lume (require "lib.lume"))
+  (tset ENV :pressed? false)
+  (when (love.filesystem.getInfo "savedata.txt")
+    (tset ENV :data (ENV.lume.deserialize
+      (love.filesystem.read "savedata.txt")))
+    (tset ENV :pc ENV.data.pc)
+    (tset ENV :coins ENV.data.coins)))
+(fn draw21 [] 
+  (love.graphics.setColor 0 0 0 1)
+  (love.graphics.circle "fill" ENV.pc.x ENV.pc.y ENV.pc.s)
+  (love.graphics.setColor 1 1 1 1)
+  (love.graphics.circle "line" ENV.pc.x ENV.pc.y ENV.pc.s)
+  (love.graphics.draw ENV.pcimage ENV.pc.x ENV.pc.y 0 1 1 
+                      (/ (ENV.pcimage:getWidth) 2) 
+                      (/ (ENV.pcimage:getHeight) 2))
+  (each [i v (ipairs ENV.coins)]
+    (love.graphics.setColor 0 0 0 1)
+    (love.graphics.circle "fill" v.x v.y ENV.coinsize)
+    (love.graphics.setColor 1 1 1 1)
+    (love.graphics.circle "line" v.x v.y ENV.coinsize)
+    (love.graphics.draw ENV.coinimage v.x v.y 0 1 1
+                        (/ (ENV.coinimage:getWidth) 2) 
+                        (/ (ENV.coinimage:getHeight) 2))))
+(fn update21 [dt]
+  (when (love.keyboard.isDown "left") (decf ENV.pc.x (* 200 dt)))
+  (when (love.keyboard.isDown "right") (incf ENV.pc.x (* 200 dt)))
+  (when (love.keyboard.isDown "up") (decf ENV.pc.y (* 200 dt)))
+  (when (love.keyboard.isDown "down") (incf ENV.pc.y (* 200 dt)))
+  (for [i (length ENV.coins) 1 -1]
+    (when (ENV.checkCollision ENV.pc (. ENV.coins i) ENV.pc.s ENV.coinsize)
+        (table.remove ENV.coins i)
+        (incf ENV.pc.s 1)))
+  (when (and (not ENV.pressed?) (love.keyboard.isDown "space"))
+    (love.filesystem.write "savedata.txt" 
+      (ENV.lume.serialize {:pc ENV.pc :coins ENV.coins})))
+  (tset ENV :pressed? (love.keyboard.isDown "space"))
+  (when (= (length ENV.coins) 0) (love.filesystem.remove "savedata.txt")))
+
+
 (fn load []
   (when ENV.song (ENV.song:stop))
   (when ENV.sfx (ENV.sfx:stop))
@@ -428,7 +482,8 @@
       17 (load17)
       18 (load18)
       19 (load19)
-      20 (load20)))
+      20 (load20)
+      21 (load21)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
@@ -449,7 +504,8 @@
       14 (draw14 w h)
       16 (draw16 w h)
       17 (draw17 w h)
-      18 (draw18 w h)))))
+      18 (draw18 w h)
+      21 (draw21 w h)))))
 (fn update [dt w h]
   (case chapter
     5 (update5 dt)
@@ -462,11 +518,12 @@
     16 (update16 dt)
     17 (update17 dt)
     18 (update18 dt)
-    19 (update19 dt)))
+    19 (update19 dt)
+    21 (update21 dt)))
 (fn keypressed [key]
   (local old chapter)
   (match key
-    :lshift (do (decf chapter 1) (clamp chapter 1 24))
-    :rshift (do (incf chapter 1) (clamp chapter 1 24)))
+    :lalt (do (decf chapter 1) (clamp chapter 1 24))
+    :ralt (do (incf chapter 1) (clamp chapter 1 24)))
   (when (~= old chapter) (load)))
 {: load : draw : update : keypressed}

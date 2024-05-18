@@ -23,7 +23,7 @@
   (enter-monad :game :monads.howtolove)
   (console:setFilter "nearest" "nearest")
   (game:setFilter "nearest" "nearest")
-  (safely (windows.console.monad.start (= :web (. args 1))) windows.console.name)
+  (safely (windows.console.monad.load (= :web (. args 1))) windows.console.name)
   (safely (windows.game.monad.load) windows.game.name))
 
 (fn love.draw []
