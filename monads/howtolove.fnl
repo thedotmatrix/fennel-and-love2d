@@ -457,6 +457,66 @@
   (tset ENV :pressed? (love.keyboard.isDown "space"))
   (when (= (length ENV.coins) 0) (love.filesystem.remove "savedata.txt")))
 
+(fn load22 [] (set title "Camera and Canvases")
+  (tset ENV :pc { :x 300 :y 100 :s 25 })
+  (tset ENV :pcimage (love.graphics.newImage "bin/howtolove/face.png"))
+  (tset ENV :coins {})
+  (for [i 1 25]
+    (table.insert ENV.coins 
+      { :x (love.math.random 50 650) :y (love.math.random 50 450)}))
+  (tset ENV :coinsize 10)
+  (tset ENV :coinimage (love.graphics.newImage "bin/howtolove/dollar.png"))
+  (tset ENV :checkCollision (fn [p1 p2 s1 s2]
+    (let [d (math.sqrt (+ (^ (- p1.x p2.x) 2) (^ (- p1.y p2.y) 2)))
+          s (+ s1 s2)]
+        (< d s))))
+  (tset ENV :score 0)
+  (tset ENV :shake 0)
+  (tset ENV :wait 0)
+  (tset ENV :sox 0)
+  (tset ENV :soy 0))
+(fn draw22 [w h] 
+  (love.graphics.push)
+  (love.graphics.translate (- (/ w 2) ENV.pc.x) (- (/ h 2) ENV.pc.y))
+  (when (> ENV.shake 0) (love.graphics.translate ENV.sox ENV.soy))
+  (love.graphics.setColor 0 0 0 1)
+  (love.graphics.circle "fill" ENV.pc.x ENV.pc.y ENV.pc.s)
+  (love.graphics.setColor 1 1 1 1)
+  (love.graphics.circle "line" ENV.pc.x ENV.pc.y ENV.pc.s)
+  (love.graphics.draw ENV.pcimage ENV.pc.x ENV.pc.y 0 1 1 
+                      (/ (ENV.pcimage:getWidth) 2) 
+                      (/ (ENV.pcimage:getHeight) 2))
+  (each [i v (ipairs ENV.coins)]
+    (love.graphics.setColor 0 0 0 1)
+    (love.graphics.circle "fill" v.x v.y ENV.coinsize)
+    (love.graphics.setColor 1 1 1 1)
+    (love.graphics.circle "line" v.x v.y ENV.coinsize)
+    (love.graphics.draw ENV.coinimage v.x v.y 0 1 1
+                        (/ (ENV.coinimage:getWidth) 2) 
+                        (/ (ENV.coinimage:getHeight) 2)))
+  (love.graphics.pop)
+  (love.graphics.print ENV.score 10 10))
+(fn update22 [dt] 
+  (let [oldcoins (length ENV.coins)]
+    (when (> ENV.shake 0)
+      (decf ENV.shake dt)
+      (if (> ENV.wait 0)
+        (decf ENV.wait dt)
+        (do
+          (tset ENV :sox (love.math.random -5 5))
+          (tset ENV :soy (love.math.random -5 5))
+          (tset ENV :wait 0.05))))
+    (when (love.keyboard.isDown "left") (decf ENV.pc.x (* 200 dt)))
+    (when (love.keyboard.isDown "right") (incf ENV.pc.x (* 200 dt)))
+    (when (love.keyboard.isDown "up") (decf ENV.pc.y (* 200 dt)))
+    (when (love.keyboard.isDown "down") (incf ENV.pc.y (* 200 dt)))
+    (for [i (length ENV.coins) 1 -1]
+      (when (ENV.checkCollision ENV.pc (. ENV.coins i) ENV.pc.s ENV.coinsize)
+          (table.remove ENV.coins i)
+          (incf ENV.pc.s 1)))
+    (when (~= oldcoins (length ENV.coins))
+      (incf ENV.score (- oldcoins (length ENV.coins)))
+      (tset ENV :shake 0.3))))
 
 (fn load []
   (when ENV.song (ENV.song:stop))
@@ -483,13 +543,13 @@
       18 (load18)
       19 (load19)
       20 (load20)
-      21 (load21)))
+      21 (load21)
+      22 (load22)))
 (fn draw [w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
     (love.graphics.setColor 0.9 0.9 0.9 1)
-    (love.graphics.printf header 0 0 w :center)
-    (love.graphics.printf title 0 (/ h 2) w :center)
+    (love.graphics.printf (.. header "\n" title) 0 0 w :center)
     (love.graphics.printf (: navi :format chapter) 0 (- h fh) w :center)
     (case chapter
       4 (draw4 w h)
@@ -505,7 +565,8 @@
       16 (draw16 w h)
       17 (draw17 w h)
       18 (draw18 w h)
-      21 (draw21 w h)))))
+      21 (draw21 w h)
+      22 (draw22 w h)))))
 (fn update [dt w h]
   (case chapter
     5 (update5 dt)
@@ -519,7 +580,8 @@
     17 (update17 dt)
     18 (update18 dt)
     19 (update19 dt)
-    21 (update21 dt)))
+    21 (update21 dt)
+    22 (update22 dt)))
 (fn keypressed [key]
   (local old chapter)
   (match key
