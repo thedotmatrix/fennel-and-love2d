@@ -32,13 +32,17 @@
     (love.graphics.setCanvas console)
     (safely (windows.console.monad.draw (/ w 2) h) windows.console.name)
     (love.graphics.setCanvas game)
-    (safely (windows.game.monad.draw w h) windows.game.name)
+    (safely (windows.game.monad.draw w h game) windows.game.name)
     (love.graphics.setCanvas)
     (love.graphics.setColor 1 1 1 1)
-    (love.graphics.draw game mx my 0 scale scale)
+    (love.graphics.push)
+    (love.graphics.translate mx my)
+    (love.graphics.scale scale scale)
+    (love.graphics.draw game 0 0 0 1 1)
     (love.graphics.setColor 1 1 1 0.88)
-    (if dev? (love.graphics.draw console mx my 0 scale scale))
-    (love.graphics.setColor 1 1 1 1)))
+    (if dev? (love.graphics.draw console 0 0 0 1 1))
+    (love.graphics.setColor 1 1 1 1)
+    (love.graphics.pop)))
 
 (fn love.update [dt]
   (when windows.console.monad.update 
@@ -63,10 +67,11 @@
         gamename windows.game.name]
     (when gamefunc (safely #(gamefunc key scancode) gamename))))
 
-(fn love.mousemoved [x y dx dy istouch]
+(fn love.mousemoved [x y dx dy istouch] ;; FIXME wrong x y given to game on scaled
   (let [gamefunc windows.game.monad.mousemoved
-        gamename windows.game.name]
-      (when gamefunc (safely #(gamefunc x y dx dy istouch) gamename))))
+        gamename windows.game.name
+        (tx ty) (love.graphics.inverseTransformPoint x y)]
+      (when gamefunc (safely #(gamefunc tx ty dx dy istouch) gamename))))
 
 (fn love.mousepressed [x y button istouch presses]
   (let [gamefunc windows.game.monad.mousepressed

@@ -55,6 +55,7 @@
     (love.graphics.clear 0 0 0 1)
     (love.graphics.setColor 1 1 1 1)
     (love.graphics.printf msg 0 0 w :center)
+    (love.graphics.printf (.. "FPS: " (love.timer.getFPS)) 0 0 w :left)
     ;; draw the last 33 lines of output
     (var i len)
     (var lst (if (> (- len 32) 0) (- len 32) 1))
