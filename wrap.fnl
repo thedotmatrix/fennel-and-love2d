@@ -20,11 +20,11 @@
 (fn love.load [args]
   (love.graphics.setFont (love.graphics.newFont 12 "mono")) ;; 12pt*64=512px
   (enter-monad :console :monads.repl)
-  (enter-monad :game :monads.howtolove)
+  (enter-monad :game :monads.rochambullet)
   (console:setFilter "nearest" "nearest")
   (game:setFilter "nearest" "nearest")
   (safely (windows.console.monad.load (= :web (. args 1))) windows.console.name)
-  (safely (windows.game.monad.load) windows.game.name))
+  (safely (windows.game.monad.load w h) windows.game.name))
 
 (fn love.draw []
   (let [mx (/ (- sw (* scale w)) 2)
@@ -54,9 +54,24 @@
     _ (let [consolefunc windows.console.monad.keypressed
             consolename windows.console.name
             gamefunc windows.game.monad.keypressed
-            gamename windows.console.name]
+            gamename windows.game.name]
         (when (and dev? consolefunc) (safely #(consolefunc key) consolename))
-        (when gamefunc (safely #(gamefunc key) gamename)))))
+        (when gamefunc (safely #(gamefunc key scancode repeat?) gamename)))))
+
+(fn love.keyreleased [key scancode]
+  (let [gamefunc windows.game.monad.keyreleased
+        gamename windows.game.name]
+    (when gamefunc (safely #(gamefunc key scancode) gamename))))
+
+(fn love.mousemoved [x y dx dy istouch]
+  (let [gamefunc windows.game.monad.mousemoved
+        gamename windows.game.name]
+      (when gamefunc (safely #(gamefunc x y dx dy istouch) gamename))))
+
+(fn love.mousepressed [x y button istouch presses]
+  (let [gamefunc windows.game.monad.mousepressed
+        gamename windows.game.name]
+      (when gamefunc (safely #(gamefunc x y button istouch presses) gamename))))
 
 (fn love.textinput [text]
   (when (and dev? windows.console.monad.textinput)
