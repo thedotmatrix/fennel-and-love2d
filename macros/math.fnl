@@ -11,10 +11,13 @@
   (set ,val (math.min (math.max ,val lower#) upper#))
   (~= old# ,val)))
 
+(fn arctan [x1 y1 x2 y2]
+  `(- (math.atan2 (- ,x1 ,x2) (- ,y2 ,y1)) (/ math.pi 2)))
+
 (fn with [t keys ?body]
   `(let [,keys ,t]
      (if ,?body
          ,?body
          ,keys)))
 
-{: incf : decf : clamp : with}
+{: incf : decf : clamp : arctan : with}

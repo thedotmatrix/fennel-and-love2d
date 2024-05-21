@@ -1,15 +1,11 @@
+(import-macros {: arctan} :macros.math)
 (local Character (require "rochambullet.character"))
 (local Player (Character:extend))
 (tset Player :new (fn [self x y]
-  (self.super.new self x y 256 0)
-  (set self.i (love.graphics.newImage "bin/howtolove/arrow_right.png"))
-  (set self.ox (/ (self.i:getWidth) 2))
-  (set self.oy (/ (self.i:getHeight) 2))
-  (set self.scale 0.5)
+  (self.super.new self x y 256 0 "bin/rochambullet/player.png" 0.25)
   (set self.keys {})
   (set self.dir [])
-  (set self.mx 0)
-  (set self.my 0)
+  (set self.threat -1)
   (set self.attack 0)
   (set self.duration (/ 1 8))
   self))
@@ -29,15 +25,21 @@
     [:s]     (set self.angle (* math.pi 0.50))
     [:n]     (set self.angle (* math.pi 1.50))
     )))
-(tset Player :draw (fn [pc w h]
-  (love.graphics.setColor 1 1 1 1)
+(tset Player :aiming (fn [self mx my]
+  (set self.aim (arctan mx my self.x self.y))))
+(tset Player :attacking (fn [self]
+  (set self.attack self.duration)))
+(tset Player :draw (fn [pc]
+  (match pc.threat 
+    -1 (love.graphics.setColor 0.25 0.25 1 1)
+    0 (love.graphics.setColor 1 1 0 1)
+    1 (love.graphics.setColor 1 0 0 1))
   (love.graphics.draw pc.i pc.x pc.y pc.angle pc.scale pc.scale pc.ox pc.oy)
-  (love.graphics.setColor 1 0.25 0.5 1)
-  (let [stdarc  (* (math.max pc.ox pc.oy) pc.scale)
-        attack  (* (math.sin (/ (* pc.attack math.pi) pc.duration)) 25) 
-        aim     (- (math.atan2 (- pc.mx pc.x) (- pc.y pc.my)) (/ math.pi 2))
-        arca    (- aim (/ math.pi 4))
-        arcb    (+ aim (/ math.pi 4))]
+  (love.graphics.setColor 1 1 1 1)
+  (let [stdarc  (* pc.size 2)
+        attack  (* (math.sin (/ (* pc.attack math.pi) pc.duration)) 25)
+        arca    (- pc.aim (/ math.pi 4))
+        arcb    (+ pc.aim (/ math.pi 4))]
     (if (> pc.attack 0)
       (love.graphics.arc "fill" "open" pc.x pc.y (+ stdarc attack) arca arcb)
       (love.graphics.arc "line" "open" pc.x pc.y stdarc arca arcb)))

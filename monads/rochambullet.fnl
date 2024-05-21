@@ -1,4 +1,4 @@
-(import-macros {: decf} :macros.math)
+(import-macros {: decf : arctan} :macros.math)
 (local Board (require "rochambullet.board"))
 (local board (Board 32 32))
 (local Player (require "rochambullet.player"))
@@ -23,7 +23,7 @@
   (let [tx    (/ (- (canvas:getWidth) w) 2)
         ty    (/ (- (canvas:getHeight) h) 2)]
     (centercanvas:setTransformation tx ty 0 1 1 0 0 0 0))
-  (for [i 1 4] (table.insert enemies (Enemy board.px)))
+  (for [i 1 128] (table.insert enemies (Enemy board.px)))
   (updateTransform w h))
 
 (fn draw [w h supercanvas] (fn []
@@ -32,25 +32,56 @@
   (love.graphics.applyTransform transform)
   (love.graphics.applyTransform centercanvas)
   (board:draw* 0 0)
-  (each [_ e (ipairs enemies)] (e:draw w h))
-  (player:draw w h)
+  (each [_ e (pairs enemies)] (e:draw* board.px))
+  (player:draw)
   (love.graphics.pop)
   (love.graphics.setCanvas supercanvas)
   (love.graphics.setShader shader)
   (love.graphics.push)
   (love.graphics.applyTransform (centercanvas:inverse))
-  (love.graphics.clear 0.1 0 0.2 1)
+  (love.graphics.clear 0.25 0 0.25 1)
   (love.graphics.draw canvas)
   (love.graphics.pop)
   (love.graphics.setShader)))
 
 (fn update [dt w h]
+  ;; player
   (when (> (length player.dir) 0)
     (player:update dt board.px)
-    (print (.. player.x ", " player.y))
+    ;(print (.. player.x ", " player.y))
     (updateTransform w h))
   (when (> player.attack 0) (decf player.attack dt))
-  (each [_ e (ipairs enemies)] (e:update dt board.px)))
+  ;; enemies
+  (var collision? false)
+  (each [_ e (pairs enemies)] 
+    (e:update dt board.px)
+    ;; player collision
+    (let [outer (player:collision? e.x e.y (* (+ player.size e.size) 2))
+          inner (player:collision? e.x e.y (* (+ player.size e.size) 0.5))
+          angle (arctan e.x e.y player.x player.y)]
+      (when (and (~= player.threat 1) outer) (do
+        (set player.threat 0)
+        ;(print (.. angle "=" player.aim))
+        (when (< (math.abs (- angle player.aim)) (/ math.pi 2))
+          (do (player:attacking) (set e.angle player.aim)))
+        (when inner (set player.threat 1))))
+      (set collision? (or collision? outer inner))))
+  (when (not collision?) (set player.threat -1))
+  ;; enemy collision
+  (local collided [])
+  (for [i 1 (length enemies)] ;; FIXME spatial hashmap avoid polynomial checks
+    (for [j 1 (length enemies)]
+      (when (~= i j)
+        (let [a (. enemies i)
+              b (. enemies j)
+              c (a:collision? b.x b.y (/ (+ a.size b.size) 2))]
+          (when c (do
+            (table.insert collided i)
+            ;(print (.. "collide: "  (math.floor a.x) "=" (math.floor b.x) " " 
+            ;                        (math.floor a.y) "=" (math.floor b.y)))
+            ))))))
+  (for [i (length collided) 1 -1]
+    (table.remove enemies (. collided i))))
 
 (fn keypressed [key scancode repeat?]
   (match key
@@ -70,11 +101,10 @@
 
 (fn mousemoved [x y dx dy istouch]
   (let [(tx ty) (transform:inverseTransformPoint x y)]
-    (set player.mx tx)
-    (set player.my ty)))
+    (player:aiming tx ty)))
 
 (fn mousepressed [x y button istouch presses]
   (let [(tx ty) (transform:inverseTransformPoint x y)]
-    (set player.attack player.duration)))
+    false))
 
 {: load : draw : update : keypressed : keyreleased : mousemoved : mousepressed}
