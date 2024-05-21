@@ -1,7 +1,6 @@
 (local fennel (require :lib.fennel))
 (local (w h) (love.window.getMode))
-(var (sw sh) (love.window.getMode))
-(var scale 1)
+(var transform (love.math.newTransform))
 (var fs? false)
 (local windows {:console nil :game nil})
 (local console (love.graphics.newCanvas (/ w 2) h))
@@ -27,22 +26,19 @@
   (safely (windows.game.monad.load w h) windows.game.name))
 
 (fn love.draw []
-  (let [mx (/ (- sw (* scale w)) 2)
-        my (/ (- sh (* scale h)) 2)]
-    (love.graphics.setCanvas console)
-    (safely (windows.console.monad.draw (/ w 2) h) windows.console.name)
-    (love.graphics.setCanvas game)
-    (safely (windows.game.monad.draw w h game) windows.game.name)
-    (love.graphics.setCanvas)
-    (love.graphics.setColor 1 1 1 1)
-    (love.graphics.push)
-    (love.graphics.translate mx my)
-    (love.graphics.scale scale scale)
-    (love.graphics.draw game 0 0 0 1 1)
-    (love.graphics.setColor 1 1 1 0.88)
-    (if dev? (love.graphics.draw console 0 0 0 1 1))
-    (love.graphics.setColor 1 1 1 1)
-    (love.graphics.pop)))
+  (love.graphics.setCanvas console)
+  (safely (windows.console.monad.draw (/ w 2) h) windows.console.name)
+  (love.graphics.setCanvas game)
+  (safely (windows.game.monad.draw w h game) windows.game.name)
+  (love.graphics.setCanvas)
+  (love.graphics.setColor 1 1 1 1)
+  (love.graphics.push)
+  (love.graphics.applyTransform transform)
+  (love.graphics.draw game 0 0 0 1 1)
+  (love.graphics.setColor 1 1 1 0.88)
+  (if dev? (love.graphics.draw console 0 0 0 1 1))
+  (love.graphics.setColor 1 1 1 1)
+  (love.graphics.pop))
 
 (fn love.update [dt]
   (when windows.console.monad.update 
@@ -67,21 +63,24 @@
         gamename windows.game.name]
     (when gamefunc (safely #(gamefunc key scancode) gamename))))
 
-(fn love.mousemoved [x y dx dy istouch] ;; FIXME wrong x y given to game on scaled
-  (let [gamefunc windows.game.monad.mousemoved
-        gamename windows.game.name
-        (tx ty) (love.graphics.inverseTransformPoint x y)]
-      (when gamefunc (safely #(gamefunc tx ty dx dy istouch) gamename))))
-
-(fn love.mousepressed [x y button istouch presses]
-  (let [gamefunc windows.game.monad.mousepressed
-        gamename windows.game.name]
-      (when gamefunc (safely #(gamefunc x y button istouch presses) gamename))))
-
 (fn love.textinput [text]
   (when (and dev? windows.console.monad.textinput)
     (safely #(windows.console.monad.textinput text) windows.console.name)))
 
 (fn love.resize []
-  (set (sw sh) (love.window.getMode))
-  (set scale (math.min (/ sw w) (/ sh h))))
+  (let [(sw sh) (love.window.getMode)
+        scale (math.min (/ sw w) (/ sh h))
+        mx (/ (- sw (* scale w)) 2)
+        my (/ (- sh (* scale h)) 2)]
+    (transform:setTransformation mx my 0 scale scale 0 0 0 0)))
+
+(fn love.mousemoved [x y dx dy istouch]
+  (let [gamefunc windows.game.monad.mousemoved
+        gamename windows.game.name
+        (tx ty) (transform:inverseTransformPoint x y)]
+    (when gamefunc (safely #(gamefunc tx ty dx dy istouch) gamename))))
+
+(fn love.mousepressed [x y button istouch presses]
+  (let [gamefunc windows.game.monad.mousepressed
+        gamename windows.game.name]
+    (when gamefunc (safely #(gamefunc x y button istouch presses) gamename))))
