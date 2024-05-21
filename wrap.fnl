@@ -1,10 +1,10 @@
 (local fennel (require :lib.fennel))
 (local (w h) (love.window.getMode))
-(var transform (love.math.newTransform))
-(var fs? false)
+(local transform (love.math.newTransform))
 (local windows {:console nil :game nil})
 (local console (love.graphics.newCanvas (/ w 2) h))
 (local game (love.graphics.newCanvas w h))
+(var fs? false)
 (var dev? true)
 
 (fn enter-monad [window name ...]
@@ -82,5 +82,6 @@
 
 (fn love.mousepressed [x y button istouch presses]
   (let [gamefunc windows.game.monad.mousepressed
-        gamename windows.game.name]
-    (when gamefunc (safely #(gamefunc x y button istouch presses) gamename))))
+        gamename windows.game.name
+        (tx ty) (transform:inverseTransformPoint x y)]
+    (when gamefunc (safely #(gamefunc tx ty button istouch presses) gamename))))
