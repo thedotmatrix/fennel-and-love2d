@@ -36,18 +36,18 @@
     [:s]     (set self.angle (* math.pi 0.50))
     [:n]     (set self.angle (* math.pi 1.50))
     )))
-(tset Player :draw (fn [self w h]
+(tset Player :draw (fn [pc w h]
   (love.graphics.setColor 1 1 1 1)
-  (love.graphics.draw self.i self.x self.y self.angle self.scale self.scale self.ox self.oy)
+  (love.graphics.draw pc.i pc.x pc.y pc.angle pc.scale pc.scale pc.ox pc.oy)
   (love.graphics.setColor 1 0.25 0.5 1)
-  (let [stdarc  (* (math.max self.ox self.oy) self.scale)
-        attack  (* (math.sin (/ (* self.attack math.pi) self.duration)) 25) 
-        aim     (- (math.atan2 (- self.mx self.x) (- self.y self.my)) (/ math.pi 2))
+  (let [stdarc  (* (math.max pc.ox pc.oy) pc.scale)
+        attack  (* (math.sin (/ (* pc.attack math.pi) pc.duration)) 25) 
+        aim     (- (math.atan2 (- pc.mx pc.x) (- pc.y pc.my)) (/ math.pi 2))
         arca    (- aim (/ math.pi 4))
         arcb    (+ aim (/ math.pi 4))]
-    (if (> self.attack 0)
-      (love.graphics.arc "fill" "open" self.x self.y (+ stdarc attack) arca arcb)
-      (love.graphics.arc "line" "open" self.x self.y stdarc arca arcb)))
+    (if (> pc.attack 0)
+      (love.graphics.arc "fill" "open" pc.x pc.y (+ stdarc attack) arca arcb)
+      (love.graphics.arc "line" "open" pc.x pc.y stdarc arca arcb)))
   (love.graphics.setColor 1 1 1 1)))
 (var player nil)
 (local board {:tiles 32 :tilepx 32})
@@ -83,24 +83,34 @@
     (love.mousemoved mx my 0 0 false)))
 (var canvas nil)
 (var shader nil)
+(local fov (/ -1 8)) ;; -1 (black hole) - 0 (regular sphere) - 1 (basically flat)
+(local centercanvas (love.math.newTransform))
 
 (fn load [w h]
   (set player (Player 0 0))
   (updateTransform w h)
-  (set canvas (love.graphics.newCanvas (* w 2) (* w 2)))
-  (set shader (love.graphics.newShader "bin/sphere.glsl")))
+  (set shader (love.graphics.newShader "bin/sphere.glsl"))
+  (let [csize (* w (+ fov 1.0))]
+    (set canvas (love.graphics.newCanvas csize csize)))
+  (let [tx (/ (- (canvas:getWidth) w) 2)
+        ty (/ (- (canvas:getHeight) h) 2)]
+    (centercanvas:setTransformation tx ty 0 1 1 0 0 0 0)))
 
 (fn draw [w h supercanvas] (fn []
   (love.graphics.setCanvas canvas)
-  (love.graphics.clear 0.1 0 0.2 1)
   (love.graphics.push)
   (love.graphics.applyTransform transform)
+  (love.graphics.applyTransform centercanvas)
   (drawBoards)
   (player:draw w h)
   (love.graphics.pop)
   (love.graphics.setCanvas supercanvas)
-  ;(love.graphics.setShader shader) FIXME shader code, no magic numbers here!
+  (love.graphics.setShader shader) ;FIXME shader code, no magic numbers here!
+  (love.graphics.push)
+  (love.graphics.applyTransform (centercanvas:inverse))
+  (love.graphics.clear 0.1 0 0.2 1)
   (love.graphics.draw canvas)
+  (love.graphics.pop)
   (love.graphics.setShader)))
 
 (fn update [dt w h]
