@@ -1,12 +1,42 @@
 (import-macros {: incf : decf : clamp} :macros.math)
 (local lume (require "lib.lume"))
 (local Object (require "lib.classic"))
+(local board {:tiles 32 :tilepx 32})
+(tset board :px (* board.tiles board.tilepx))
+(fn drawBoard [x y]
+  (love.graphics.push)
+  (love.graphics.translate (- x (/ board.px 2)) (- y (/ board.px 2)))
+  (for [j 0 (- board.tiles 1)] (for [i 0 (- board.tiles 1)]
+    (if (= (% (+ i j) 2) 0) 
+        (love.graphics.setColor 0.5 0.25 0.125 1)
+        (love.graphics.setColor 0.25 0.125 0 1))
+    (love.graphics.rectangle "fill" (* j board.tilepx)  (* i board.tilepx)
+                                    board.tilepx        board.tilepx)))
+  (love.graphics.setColor 1 1 1 1)
+  (love.graphics.rectangle "line" 0 0 board.px board.px)
+  (love.graphics.pop))
+(fn drawBoards [] ;; FIXME woefully inefficient, draw visible dupes only
+  (drawBoard (* board.px -1)  (* board.px -1))
+  (drawBoard (* board.px 0)   (* board.px -1))
+  (drawBoard (* board.px 1)   (* board.px -1))
+  (drawBoard (* board.px -1)  (* board.px 0))
+  (drawBoard (* board.px 0)   (* board.px 0))
+  (drawBoard (* board.px 1)   (* board.px 0))
+  (drawBoard (* board.px -1)  (* board.px 1))
+  (drawBoard (* board.px 0)   (* board.px 1))
+  (drawBoard (* board.px 1)   (* board.px 1)))
 (local Character (Object:extend))
 (tset Character :new (fn [self x y]
   (set self.x x)
   (set self.y y)
   (set self.speed 256)
-  (set self.angle 0)))
+  (set self.angle 0)
+  self))
+(tset Character :update (fn [self dt w h]
+  (incf self.x (* (math.cos self.angle) self.speed dt))
+  (incf self.y (* (math.sin self.angle) self.speed dt))
+  (set self.x (- (% (+ self.x (/ board.px 2)) board.px) (/ board.px 2)))
+  (set self.y (- (% (+ self.y (/ board.px 2)) board.px) (/ board.px 2)))))
 (local Player (Character:extend))
 (tset Player :new (fn [self x y]
   (Player.super:new x y)
@@ -19,7 +49,8 @@
   (set self.mx 0)
   (set self.my 0)
   (set self.attack 0)
-  (set self.duration (/ 1 8))))
+  (set self.duration (/ 1 8))
+  self))
 (tset Player :moving (fn [self]
   (set self.dir [])
   (when (and self.keys.down (not self.keys.up)) (table.insert self.dir :s))
@@ -50,30 +81,12 @@
       (love.graphics.arc "line" "open" pc.x pc.y stdarc arca arcb)))
   (love.graphics.setColor 1 1 1 1)))
 (var player nil)
-(local board {:tiles 32 :tilepx 32})
-(tset board :px (* board.tiles board.tilepx))
-(fn drawBoard [x y]
-  (love.graphics.push)
-  (love.graphics.translate (- x (/ board.px 2)) (- y (/ board.px 2)))
-  (for [j 0 (- board.tiles 1)] (for [i 0 (- board.tiles 1)]
-    (if (= (% (+ i j) 2) 0) 
-        (love.graphics.setColor 0.5 0.25 0.125 1)
-        (love.graphics.setColor 0.25 0.125 0 1))
-    (love.graphics.rectangle "fill" (* j board.tilepx)  (* i board.tilepx)
-                                    board.tilepx        board.tilepx)))
-  (love.graphics.setColor 1 1 1 1)
-  (love.graphics.rectangle "line" 0 0 board.px board.px)
-  (love.graphics.pop))
-(fn drawBoards [] 
-  (drawBoard (* board.px -1)  (* board.px -1))
-  (drawBoard (* board.px 0)   (* board.px -1))
-  (drawBoard (* board.px 1)   (* board.px -1))
-  (drawBoard (* board.px -1)  (* board.px 0))
-  (drawBoard (* board.px 0)   (* board.px 0))
-  (drawBoard (* board.px 1)   (* board.px 0))
-  (drawBoard (* board.px -1)  (* board.px 1))
-  (drawBoard (* board.px 0)   (* board.px 1))
-  (drawBoard (* board.px 1)   (* board.px 1)))
+(local Enemy (Character:extend))
+(tset Enemy :new (fn [self x y]
+  (Enemy.super:new x y))) ;; FIXME overwrites player object, lib.classic misuse
+(tset Enemy :draw (fn [self w h]
+  (love.graphics.circle "fill" self.x self.y (/ board.tilepx 4))))
+(local enemies [])
 (local transform (love.math.newTransform))
 (fn updateTransform [w h]
   (let [tx (- (/ w 2) player.x)
@@ -105,7 +118,7 @@
   (player:draw w h)
   (love.graphics.pop)
   (love.graphics.setCanvas supercanvas)
-  (love.graphics.setShader shader) ;FIXME shader code, no magic numbers here!
+  (love.graphics.setShader shader)
   (love.graphics.push)
   (love.graphics.applyTransform (centercanvas:inverse))
   (love.graphics.clear 0.1 0 0.2 1)
@@ -115,12 +128,9 @@
 
 (fn update [dt w h]
   (when (> (length player.dir) 0)
-    (incf player.x (* (math.cos player.angle) player.speed dt))
-    (incf player.y (* (math.sin player.angle) player.speed dt))
+    (player:update dt w h)
     (print (.. player.x ", " player.y))
-    (updateTransform w h)
-    (set player.x (- (% (+ player.x (/ board.px 2)) board.px) (/ board.px 2)))
-    (set player.y (- (% (+ player.y (/ board.px 2)) board.px) (/ board.px 2))))
+    (updateTransform w h))
   (when (> player.attack 0) (decf player.attack dt)))
 
 (fn keypressed [key scancode repeat?]
