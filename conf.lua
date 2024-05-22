@@ -1,6 +1,6 @@
 love.conf = function(t)
   t.version                 = "11.5"
-  t.title, t.identity       = "RoChamBULLET", "fennel+love2d"
+  t.identity                = "fennel+love2d game console"
   t.gammacorrect            = true
   t.modules.joystick        = false
   t.modules.physics         = false
