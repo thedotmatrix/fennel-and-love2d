@@ -1,4 +1,4 @@
-(import-macros {: incf} :macros.math)
+(import-macros {: incf} :mac.math)
 (local Object (require "lib.classic"))
 (local Character (Object:extend))
 (tset Character :new (fn [self x y speed angle image scale]

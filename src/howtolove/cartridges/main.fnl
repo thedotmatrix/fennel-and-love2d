@@ -1,4 +1,4 @@
-(import-macros {: incf : decf : clamp} :macros.math)
+(import-macros {: incf : decf : clamp} :mac.math)
 (local header "sheepolution how to love")
 (local navi "<---left-alt--- \t \t chapter %d \t \t ---right-alt--->")
 (var chapter 1)
@@ -140,7 +140,7 @@
 (fn update11 [dt] (ENV.s1:update dt) (ENV.s2:update dt))
 
 (fn load12 [] (set title "Images")
-  (tset ENV :myImage (love.graphics.newImage "assets/howtolove/sheep.png")))
+  (tset ENV :myImage (love.graphics.newImage "src/howtolove/assets/sheep.png")))
 (fn draw12 [w h] 
   (let [iw (ENV.myImage:getWidth)
         ih (ENV.myImage:getHeight)
@@ -170,7 +170,7 @@
   (tset ENV :Object (require "lib.classic"))
   (tset ENV :Player (ENV.Object:extend))
   (tset ENV.Player :new (fn [self]
-    (tset self :image (love.graphics.newImage "assets/howtolove/panda.png"))
+    (tset self :image (love.graphics.newImage "src/howtolove/assets/panda.png"))
     (tset self :x 300)
     (tset self :y 20)
     (tset self :s 500)
@@ -184,7 +184,7 @@
     (clamp self.x 0 (- w self.w))))
   (tset ENV :Enemy (ENV.Object:extend))
   (tset ENV.Enemy :new (fn [self]
-    (tset self :image (love.graphics.newImage "assets/howtolove/snake.png"))
+    (tset self :image (love.graphics.newImage "src/howtolove/assets/snake.png"))
     (tset self :x 325)
     (tset self :y 450)
     (tset self :s 100)
@@ -197,7 +197,7 @@
     (when (clamp self.x 0 (- w self.w)) (set self.s (* self.s -1)))))
   (tset ENV :Bullet (ENV.Object:extend))
   (tset ENV.Bullet :new (fn [self x y]
-    (tset self :image (love.graphics.newImage "assets/howtolove/bullet.png"))
+    (tset self :image (love.graphics.newImage "src/howtolove/assets/bullet.png"))
     (tset self :x x) 
     (tset self :y y)
     (tset self :s 700)
@@ -250,7 +250,7 @@
   (tset ENV.arrow :y 200)
   (tset ENV.arrow :s 300)
   (tset ENV.arrow :a 0)
-  (tset ENV.arrow :i (love.graphics.newImage "assets/howtolove/arrow_right.png"))
+  (tset ENV.arrow :i (love.graphics.newImage "src/howtolove/assets/arrow_right.png"))
   (tset ENV.arrow :ox (/ (ENV.arrow.i:getWidth) 2))
   (tset ENV.arrow :oy (/ (ENV.arrow.i:getHeight) 2)))
 (fn draw16 [w h]
@@ -288,16 +288,16 @@
   (tset ENV :anim2 {})
   (tset ENV :anim3 {})
   (tset ENV :frame 1)
-  (tset ENV :image1 (love.graphics.newImage "assets/howtolove/jump.png"))
-  (tset ENV :image2 (love.graphics.newImage "assets/howtolove/jump_2.png"))
-  (tset ENV :image3 (love.graphics.newImage "assets/howtolove/jump_3.png"))
+  (tset ENV :image1 (love.graphics.newImage "src/howtolove/assets/jump.png"))
+  (tset ENV :image2 (love.graphics.newImage "src/howtolove/assets/jump_2.png"))
+  (tset ENV :image3 (love.graphics.newImage "src/howtolove/assets/jump_3.png"))
   (let [fw 117 fh 233
         w1 (ENV.image1:getWidth) h1 (ENV.image1:getHeight) 
         w2 (ENV.image2:getWidth) h2 (ENV.image2:getHeight)
         w3 (ENV.image3:getWidth) h3 (ENV.image3:getHeight)]
     (for [f 1 5 1]
       (table.insert ENV.anim0
-        (love.graphics.newImage (.. "assets/howtolove/jump" f ".png")))
+        (love.graphics.newImage (.. "src/howtolove/assets/jump" f ".png")))
       (table.insert ENV.anim1
         (love.graphics.newQuad (* (- f 1) fw) 0 fw fh w1 h1))
       (let [j (% (- f 1) 3) i (math.floor (/ (- f 1) 3))]
@@ -338,15 +338,15 @@
                         [3 0 0 1 2 0 0 3]
                         [4 6 6 5 4 6 6 5] ])
   (tset ENV :colors [ [1 1 1] [1 0 0] [1 0 1] [0 0 1] [0 1 1] ])
-  (tset ENV :image (love.graphics.newImage "assets/howtolove/tile.png"))
-  (tset ENV :image2 (love.graphics.newImage "assets/howtolove/tileset.png"))
+  (tset ENV :image (love.graphics.newImage "src/howtolove/assets/tile.png"))
+  (tset ENV :image2 (love.graphics.newImage "src/howtolove/assets/tileset.png"))
   (tset ENV :tw (ENV.image:getWidth))
   (tset ENV :th (ENV.image:getHeight))
   (tset ENV :iw (ENV.image2:getWidth))
   (tset ENV :ih (ENV.image2:getHeight))
   (tset ENV :w (- (/ ENV.iw 3) 2))
   (tset ENV :h (- (/ ENV.ih 2) 2))
-  (tset ENV :pc { :image (love.graphics.newImage "assets/howtolove/player.png") 
+  (tset ENV :pc { :image (love.graphics.newImage "src/howtolove/assets/player.png") 
                   :x 2 :y 2})
   (tset ENV :pressed? false)
   (tset ENV :quads {})
@@ -395,10 +395,10 @@
       (tset ENV :pressed? (or l r u d))))
 
 (fn load19 [] (set title "Audio")
-  (tset ENV :song (love.audio.newSource "assets/howtolove/song.ogg" "stream"))
+  (tset ENV :song (love.audio.newSource "src/howtolove/assets/song.ogg" "stream"))
   (ENV.song:setLooping true)
   (ENV.song:play)
-  (tset ENV :sfx (love.audio.newSource "assets/howtolove/sfx.ogg" "static"))
+  (tset ENV :sfx (love.audio.newSource "src/howtolove/assets/sfx.ogg" "static"))
   (tset ENV :pressed? false))
 (fn update19 [dt]
   (when (and (not ENV.pressed?) (love.keyboard.isDown "space")) (ENV.sfx:play))
@@ -408,13 +408,13 @@
 
 (fn load21 [] (set title "Saving and loading (press space to save, resets on no coins")
   (tset ENV :pc { :x 100 :y 100 :s 25 })
-  (tset ENV :pcimage (love.graphics.newImage "assets/howtolove/face.png"))
+  (tset ENV :pcimage (love.graphics.newImage "src/howtolove/assets/face.png"))
   (tset ENV :coins {})
   (for [i 1 25]
     (table.insert ENV.coins 
       { :x (love.math.random 50 650) :y (love.math.random 50 450)}))
   (tset ENV :coinsize 10)
-  (tset ENV :coinimage (love.graphics.newImage "assets/howtolove/dollar.png"))
+  (tset ENV :coinimage (love.graphics.newImage "src/howtolove/assets/dollar.png"))
   (tset ENV :checkCollision (fn [p1 p2 s1 s2]
     (let [d (math.sqrt (+ (^ (- p1.x p2.x) 2) (^ (- p1.y p2.y) 2)))
           s (+ s1 s2)]
@@ -459,13 +459,13 @@
 
 (fn load22 [] (set title "Camera and Canvases")
   (tset ENV :pc { :x 300 :y 100 :s 25 })
-  (tset ENV :pcimage (love.graphics.newImage "assets/howtolove/face.png"))
+  (tset ENV :pcimage (love.graphics.newImage "src/howtolove/assets/face.png"))
   (tset ENV :coins {})
   (for [i 1 25]
     (table.insert ENV.coins 
       { :x (love.math.random 50 650) :y (love.math.random 50 450)}))
   (tset ENV :coinsize 10)
-  (tset ENV :coinimage (love.graphics.newImage "assets/howtolove/dollar.png"))
+  (tset ENV :coinimage (love.graphics.newImage "src/howtolove/assets/dollar.png"))
   (tset ENV :checkCollision (fn [p1 p2 s1 s2]
     (let [d (math.sqrt (+ (^ (- p1.x p2.x) 2) (^ (- p1.y p2.y) 2)))
           s (+ s1 s2)]

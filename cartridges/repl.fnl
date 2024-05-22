@@ -1,7 +1,7 @@
+(import-macros {: decf : incf} :mac.math)
 (local fennel (require :lib.fennel))
 (local stdio (require :lib.stdio))
 (require :love.event)
-(import-macros {: decf : incf} :macros.math)
 (local tst "1234567890123456789012345678901234567890123456789012345678901234")
 (local msg "press [left ctrl] to show/hide")
 (local input [])

@@ -1,4 +1,4 @@
-(import-macros {: flip} :macros.math)
+(import-macros {: flip} :mac.math)
 (local fennel (require :lib.fennel))
 (local transform (love.math.newTransform))
 (local windows {:console nil :game nil})
@@ -10,14 +10,14 @@
 (var dev? false)
 (var web? false)
 
-(fn enter-monad [window name ...]
-  (let [monad (require name)]
-    (tset windows window {:monad monad :name name})
-    (when monad.activate
-      (match (pcall monad.activate ...)
+(fn boot-cartridge [window name ...]
+  (let [cartridge (require name)]
+    (tset windows window {:cartridge cartridge :name name})
+    (when cartridge.activate
+      (match (pcall cartridge.activate ...)
         (false msg) (print name "activate error" msg)))))
 (fn safely [func name] 
-  (xpcall func #(enter-monad :monads.error name $ (fennel.traceback))))
+  (xpcall func #(boot-cartridge :cartridges.error name $ (fennel.traceback))))
 
 (fn love.load [args]
   (let [(w h _) (love.window.getMode)]
@@ -27,19 +27,19 @@
   (set game (love.graphics.newCanvas width height))
   (set web? (= :web (. args 1)))
   (love.graphics.setFont (love.graphics.newFont 8 "mono"))
-  (enter-monad :console :monads.repl)
-  (enter-monad :game :games.rochambullet.monad)
+  (boot-cartridge :console :cartridges.repl)
+  (boot-cartridge :game :src.rochambullet.cartridges.main)
   (console:setFilter "nearest" "nearest")
   (game:setFilter "nearest" "nearest")
-  (safely (windows.console.monad.load web?) windows.console.name)
-  (safely (windows.game.monad.load width height) windows.game.name))
+  (safely (windows.console.cartridge.load web?) windows.console.name)
+  (safely (windows.game.cartridge.load width height) windows.game.name))
 
 (fn love.draw []
   (love.graphics.setCanvas console)
-  (safely (windows.console.monad.draw (/ width 2) height) windows.console.name)
+  (safely (windows.console.cartridge.draw (/ width 2) height) windows.console.name)
   (love.graphics.setCanvas game)
   (love.graphics.clear 0 0 0 1)
-  (safely (windows.game.monad.draw width height game) windows.game.name)
+  (safely (windows.game.cartridge.draw width height game) windows.game.name)
   (love.graphics.setCanvas)
   (love.graphics.setColor 1 1 1 1)
   (love.graphics.push)
@@ -51,10 +51,10 @@
   (love.graphics.pop))
 
 (fn love.update [dt]
-  (when windows.console.monad.update 
-    (safely #(windows.console.monad.update dt) windows.console.name))
-  (when windows.game.monad.update 
-    (safely #(windows.game.monad.update dt width height) windows.game.name)))
+  (when windows.console.cartridge.update 
+    (safely #(windows.console.cartridge.update dt) windows.console.name))
+  (when windows.game.cartridge.update 
+    (safely #(windows.game.cartridge.update dt width height) windows.game.name)))
 
 (fn love.resize [] ;; TODO start menu option for web
   (let [(sw sh) (love.window.getMode)
@@ -79,30 +79,30 @@
                                           :minheight h})
             (love.event.push "resize"))
           (love.window.setFullscreen (flip fullscreen? "desktop")))
-    _ (let [consolefunc windows.console.monad.keypressed
+    _ (let [consolefunc windows.console.cartridge.keypressed
             consolename windows.console.name
-            gamefunc windows.game.monad.keypressed
+            gamefunc windows.game.cartridge.keypressed
             gamename windows.game.name]
         (when (and dev? consolefunc) (safely #(consolefunc key) consolename))
         (when gamefunc (safely #(gamefunc key scancode repeat?) gamename)))))
 
 (fn love.keyreleased [key scancode]
-  (let [gamefunc windows.game.monad.keyreleased
+  (let [gamefunc windows.game.cartridge.keyreleased
         gamename windows.game.name]
     (when gamefunc (safely #(gamefunc key scancode) gamename))))
 
 (fn love.textinput [text]
-  (when (and dev? windows.console.monad.textinput)
-    (safely #(windows.console.monad.textinput text) windows.console.name)))
+  (when (and dev? windows.console.cartridge.textinput)
+    (safely #(windows.console.cartridge.textinput text) windows.console.name)))
 
 (fn love.mousemoved [x y dx dy istouch]
-  (let [gamefunc windows.game.monad.mousemoved
+  (let [gamefunc windows.game.cartridge.mousemoved
         gamename windows.game.name
         (tx ty) (transform:inverseTransformPoint x y)]
     (when gamefunc (safely #(gamefunc tx ty dx dy istouch) gamename))))
 
 (fn love.mousepressed [x y button istouch presses]
-  (let [gamefunc windows.game.monad.mousepressed
+  (let [gamefunc windows.game.cartridge.mousepressed
         gamename windows.game.name
         (tx ty) (transform:inverseTransformPoint x y)]
     (when gamefunc (safely #(gamefunc tx ty button istouch presses) gamename))))

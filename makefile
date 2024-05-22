@@ -7,9 +7,12 @@ AUTHOR="Dot Matrix"
 DESCRIPTION="Minimal setup for trying out Phil Hagelberg's fennel/love game design process."
 GITHUB_USERNAME := $(shell grep GITHUB_USERNAME credentials.private | cut -d= -f2)
 GITHUB_PAT := $(shell grep GITHUB_PAT credentials.private | cut -d= -f2)
-LIBS := $(wildcard lib/*)
-LUA := $(wildcard *.lua)
-SRC := $(wildcard *.fnl macros/*.fnl monads/*.fnl games/$(NAME)/*.fnl)
+ALL := $(wildcard *.lua)
+AST := assets/ src/$(NAME)/assets
+CLS := $(wildcard classes/*.lua src/$(NAME)/classes/*.fnl)
+CRT := $(wildcard cartridges/*.lua src/$(NAME)/cartridges/*.fnl)
+LIB := $(wildcard lib/*)
+MAC := $(wildcard mac/*.fnl)
 
 run: ; love .
 
@@ -19,7 +22,7 @@ clean: ; rm -rf bin/*
 
 LOVEFILE=bin/$(NAME)-$(VERSION).love
 
-$(LOVEFILE): $(LUA) $(SRC) $(LIBS) assets/$(NAME)
+$(LOVEFILE): $(ALL) $(AST) $(CLS) $(CRT) $(LIB) $(MAC)
 	mkdir -p bin/
 	find $^ -type f | LC_ALL=C sort | env TZ=UTC zip -r -q -9 -X $@ -@
 

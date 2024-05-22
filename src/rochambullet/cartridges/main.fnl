@@ -1,9 +1,9 @@
-(import-macros {: decf : arctan} :macros.math)
-(local Board (require "games.rochambullet.board"))
+(import-macros {: decf : arctan} :mac.math)
+(local Board (require "src.rochambullet.classes.board"))
 (local board (Board 16 32))
-(local Player (require "games.rochambullet.player"))
+(local Player (require "src.rochambullet.classes.player"))
 (local player (Player 0 0))
-(local Enemy (require "games.rochambullet.enemy"))
+(local Enemy (require "src.rochambullet.classes.enemy"))
 (local enemies [])
 (local transform (love.math.newTransform))
 (fn updateTransform [w h]
@@ -12,7 +12,7 @@
         (mx my) (love.mouse.getPosition)]
     (transform:setTransformation tx ty 0 1 1 0 0 0 0)
     (love.mousemoved mx my 0 0 false)))
-(local shader (love.graphics.newShader "assets/rochambullet/sphere.glsl"))
+(local shader (love.graphics.newShader "src/rochambullet/assets/sphere.glsl"))
 (local fov (/ 1 16)) ;; -1 (black hole) - 0 (regular sphere) - 1 (almost flat)
 (local centercanvas (love.math.newTransform))
 (var canvas nil)
