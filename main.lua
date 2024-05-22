@@ -1,6 +1,6 @@
 local instal = {correlate=true, moduleName="lib.fennel"}
 local fennel = require("lib.fennel").install(instal)
-local make_love_searcher = function(env)
+local search = function(env) 
   return function(module_name)
     local path = module_name:gsub("%.", "/") .. ".fnl"
     if love.filesystem.getInfo(path) then
@@ -11,6 +11,7 @@ local make_love_searcher = function(env)
     end
   end
 end
+local make_love_searcher = function(env) return search(env) end
 table.insert(package.loaders, make_love_searcher(_G))
 table.insert(fennel["macro-searchers"], make_love_searcher("_COMPILER"))
-require("wrap")
+search(_G)("main")()
