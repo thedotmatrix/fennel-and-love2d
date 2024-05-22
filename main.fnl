@@ -88,7 +88,7 @@
                                           :minwidth w 
                                           :minheight h})
             (love.event.push "resize"))
-          (love.window.setFullscreen (flip fullscreen? "desktop")))
+          (love.window.setFullscreen (flip fullscreen?) "desktop"))
     _ (let [devfunc windows.dev.cartridge.keypressed
             devname windows.dev.name
             gamefunc windows.game.cartridge.keypressed
