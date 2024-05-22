@@ -26,9 +26,9 @@
   (set console (love.graphics.newCanvas (/ width 2) height))
   (set game (love.graphics.newCanvas width height))
   (set web? (= :web (. args 1)))
-  (love.graphics.setFont (love.graphics.newFont 12 "mono"))
+  (love.graphics.setFont (love.graphics.newFont 8 "mono"))
   (enter-monad :console :monads.repl)
-  (enter-monad :game :monads.rochambullet)
+  (enter-monad :game :games.rochambullet.monad)
   (console:setFilter "nearest" "nearest")
   (game:setFilter "nearest" "nearest")
   (safely (windows.console.monad.load web?) windows.console.name)
@@ -63,7 +63,6 @@
         scale (math.min (/ w width) (/ h height))
         mx (/ (- sw (* scale width)) 2)
         my (/ (- h (* scale height)) 2)]
-    (print (.. w "x" h))
     (transform:setTransformation mx my 0 scale scale 0 0 0 0)))
 
 (fn love.keypressed [key scancode repeat?]

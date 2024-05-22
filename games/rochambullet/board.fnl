@@ -15,7 +15,7 @@
     (love.graphics.rectangle "fill" (* j self.tilepx)  (* i self.tilepx)
                                     self.tilepx        self.tilepx)))
   (love.graphics.setColor 1 1 1 1)
-  (love.graphics.rectangle "line" 0 0 self.px self.px)
+  ;(love.graphics.rectangle "line" 0 0 self.px self.px)
   (love.graphics.pop)))
 (tset Board :draw* (fn [self] ;; FIXME inefficient, draw visible dupes only
   (self:draw (* self.px -1)  (* self.px -1))

@@ -1,4 +1,4 @@
-(local Character (require "rochambullet.character"))
+(local Character (require "games.rochambullet.character"))
 (local Enemy (Character:extend))
 (tset Enemy :new (fn [self range]
   (let [ex (love.math.random (/ range -2) (/ range 2))

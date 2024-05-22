@@ -9,7 +9,7 @@ GITHUB_USERNAME := $(shell grep GITHUB_USERNAME credentials.private | cut -d= -f
 GITHUB_PAT := $(shell grep GITHUB_PAT credentials.private | cut -d= -f2)
 LIBS := $(wildcard lib/*)
 LUA := $(wildcard *.lua)
-SRC := $(wildcard *.fnl macros/*.fnl monads/*.fnl $(NAME)/*.fnl)
+SRC := $(wildcard *.fnl macros/*.fnl monads/*.fnl games/$(NAME)/*.fnl)
 
 run: ; love .
 
