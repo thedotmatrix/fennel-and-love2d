@@ -1,6 +1,6 @@
 (import-macros {: decf : arctan} :macros.math)
 (local Board (require "rochambullet.board"))
-(local board (Board 32 32))
+(local board (Board 16 32))
 (local Player (require "rochambullet.player"))
 (local player (Player 0 0))
 (local Enemy (require "rochambullet.enemy"))
@@ -26,7 +26,9 @@
   (for [i 1 128] (table.insert enemies (Enemy board.px)))
   (updateTransform w h))
 
-(fn draw [w h supercanvas] (fn []
+(fn draw [_ _ supercanvas] (fn []
+  (local w 800) ;; FIXME passing in [w h] breaks web
+  (local h 600)
   (love.graphics.setCanvas canvas)
   (love.graphics.push)
   (love.graphics.applyTransform transform)

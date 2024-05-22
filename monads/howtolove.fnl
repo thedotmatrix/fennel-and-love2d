@@ -545,7 +545,9 @@
       20 (load20)
       21 (load21)
       22 (load22)))
-(fn draw [w h] (fn []
+(fn draw [] (fn []
+  (local w 800) ;; FIXME passing in [w h] breaks web
+  (local h 600)
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
     (love.graphics.setColor 0.9 0.9 0.9 1)

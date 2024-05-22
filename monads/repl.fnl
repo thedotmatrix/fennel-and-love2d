@@ -20,13 +20,13 @@
 ;; create the repl hooking into stdio if available, otherwise standalone repl
 ;; start it using the options table OR setup stdio event callbacks
 (fn load [web?]
-  (if web? 
-    (do 
-      (set repl (coroutine.create (partial fennel.repl)))
-      (coroutine.resume repl {
-        :readChunk coroutine.yield 
-        :onValues out 
-        :onError err}))
+  (if web? ;; FIXME love.js does not support threads/coroutines afaik
+    (do false)
+      ;(set repl (coroutine.create (partial fennel.repl)))
+      ;(coroutine.resume repl {
+      ;  :readChunk coroutine.yield 
+      ;  :onValues out 
+      ;  :onError err}))
     (do
       (set repl (stdio.start))
       (set love.handlers.inp inp)
@@ -35,11 +35,11 @@
 
 (fn enter []
   (let [input-text (table.concat (doto input (table.insert "\n")))
-        _ (inp input-text)
-        (_ {: stack-size}) (coroutine.resume repl input-text)]
-        ;; clear the input table afterwards
-        (while (next input) (table.remove input))
-        (set incomplete? (< 0 stack-size))))
+        _ (inp input-text)]
+    (when repl
+      (local (_ {: stack-size}) (coroutine.resume repl input-text))
+      (set incomplete? (< 0 stack-size)))
+    (while (next input) (table.remove input))))
 
 (fn keypressed [key]
   (match key
@@ -48,7 +48,9 @@
 
 (fn textinput [text] (table.insert input text))
 
-(fn draw [w h] (fn []
+(fn draw [_ _] (fn []
+  (local w 400) ;; FIXME passing in [w h] breaks web
+  (local h 600)
   (let [f (love.graphics.getFont)
         fh (: f :getHeight)
         len (length output)]

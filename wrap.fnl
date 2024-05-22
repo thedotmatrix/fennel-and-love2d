@@ -1,9 +1,10 @@
 (local fennel (require :lib.fennel))
-(local (w h) (love.window.getMode))
+(local width 800) ;; FIXME (love.window.getMode) breaks web
+(local height 600)
 (local transform (love.math.newTransform))
 (local windows {:console nil :game nil})
-(local console (love.graphics.newCanvas (/ w 2) h))
-(local game (love.graphics.newCanvas w h))
+(local console (love.graphics.newCanvas (/ width 2) height))
+(local game (love.graphics.newCanvas width height))
 (var fs? false)
 (var dev? false)
 
@@ -17,19 +18,20 @@
   (xpcall func #(enter-monad :monads.error name $ (fennel.traceback))))
 
 (fn love.load [args]
-  (love.graphics.setFont (love.graphics.newFont 12 "mono")) ;; 12pt*64=512px
+  (love.graphics.setFont (love.graphics.newFont 12 "mono"))
   (enter-monad :console :monads.repl)
   (enter-monad :game :monads.rochambullet)
   (console:setFilter "nearest" "nearest")
   (game:setFilter "nearest" "nearest")
   (safely (windows.console.monad.load (= :web (. args 1))) windows.console.name)
-  (safely (windows.game.monad.load w h) windows.game.name))
+  (safely (windows.game.monad.load width height) windows.game.name))
 
 (fn love.draw []
   (love.graphics.setCanvas console)
-  (safely (windows.console.monad.draw (/ w 2) h) windows.console.name)
+  (safely (windows.console.monad.draw (/ width 2) height) windows.console.name)
   (love.graphics.setCanvas game)
-  (safely (windows.game.monad.draw w h game) windows.game.name)
+  (love.graphics.clear 0 0 0 1)
+  (safely (windows.game.monad.draw width height game) windows.game.name)
   (love.graphics.setCanvas)
   (love.graphics.setColor 1 1 1 1)
   (love.graphics.push)
@@ -44,7 +46,7 @@
   (when windows.console.monad.update 
     (safely #(windows.console.monad.update dt) windows.console.name))
   (when windows.game.monad.update 
-    (safely #(windows.game.monad.update dt w h) windows.game.name)))
+    (safely #(windows.game.monad.update dt width height) windows.game.name)))
 
 (fn love.keypressed [key scancode repeat?]
   (match key
@@ -67,11 +69,11 @@
   (when (and dev? windows.console.monad.textinput)
     (safely #(windows.console.monad.textinput text) windows.console.name)))
 
-(fn love.resize []
+(fn love.resize [] ;; FIXME web not resizing, no event just check getMode
   (let [(sw sh) (love.window.getMode)
-        scale (math.min (/ sw w) (/ sh h))
-        mx (/ (- sw (* scale w)) 2)
-        my (/ (- sh (* scale h)) 2)]
+        scale (math.min (/ sw width) (/ sh height))
+        mx (/ (- sw (* scale width)) 2)
+        my (/ (- sh (* scale height)) 2)]
     (transform:setTransformation mx my 0 scale scale 0 0 0 0)))
 
 (fn love.mousemoved [x y dx dy istouch]
