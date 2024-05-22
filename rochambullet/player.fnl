@@ -2,7 +2,7 @@
 (local Character (require "rochambullet.character"))
 (local Player (Character:extend))
 (tset Player :new (fn [self x y]
-  (self.super.new self x y 256 0 "bin/rochambullet/player.png" 0.25)
+  (self.super.new self x y 256 0 "assets/rochambullet/player.png" 0.25)
   (set self.keys {})
   (set self.dir [])
   (set self.threat -1)

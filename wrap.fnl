@@ -5,7 +5,7 @@
 (local console (love.graphics.newCanvas (/ w 2) h))
 (local game (love.graphics.newCanvas w h))
 (var fs? false)
-(var dev? true)
+(var dev? false)
 
 (fn enter-monad [window name ...]
   (let [monad (require name)]

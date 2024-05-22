@@ -12,7 +12,7 @@
         (mx my) (love.mouse.getPosition)]
     (transform:setTransformation tx ty 0 1 1 0 0 0 0)
     (love.mousemoved mx my 0 0 false)))
-(local shader (love.graphics.newShader "bin/rochambullet/sphere.glsl"))
+(local shader (love.graphics.newShader "assets/rochambullet/sphere.glsl"))
 (local fov (/ 1 8)) ;; -1 (black hole) - 0 (regular sphere) - 1 (almost flat)
 (var canvas nil)
 (local centercanvas (love.math.newTransform))
