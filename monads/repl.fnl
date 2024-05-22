@@ -48,9 +48,7 @@
 
 (fn textinput [text] (table.insert input text))
 
-(fn draw [_ _] (fn []
-  (local w 400) ;; FIXME passing in [w h] breaks web
-  (local h 600)
+(fn draw [w h] (fn []
   (let [f (love.graphics.getFont)
         fh (: f :getHeight)
         len (length output)]

@@ -8,8 +8,7 @@
 (local (major minor revision) (love.getVersion))
 
 {  :load (fn [] false)
-   :draw (fn [] (fn []
-         (local (w h _flags) (love.window.getMode))
+   :draw (fn [w h] (fn []
          (love.graphics.printf
           (: "Love Version: %s.%s.%s"
              :format  major minor revision) 0 10 w :center)

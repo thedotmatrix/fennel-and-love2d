@@ -14,8 +14,8 @@
     (love.mousemoved mx my 0 0 false)))
 (local shader (love.graphics.newShader "assets/rochambullet/sphere.glsl"))
 (local fov (/ 1 8)) ;; -1 (black hole) - 0 (regular sphere) - 1 (almost flat)
-(var canvas nil)
 (local centercanvas (love.math.newTransform))
+(var canvas nil)
 
 (fn load [w h]
   (let [csize (* w (+ fov 1.0))]
@@ -26,9 +26,7 @@
   (for [i 1 128] (table.insert enemies (Enemy board.px)))
   (updateTransform w h))
 
-(fn draw [_ _ supercanvas] (fn []
-  (local w 800) ;; FIXME passing in [w h] breaks web
-  (local h 600)
+(fn draw [w h supercanvas] (fn []
   (love.graphics.setCanvas canvas)
   (love.graphics.push)
   (love.graphics.applyTransform transform)

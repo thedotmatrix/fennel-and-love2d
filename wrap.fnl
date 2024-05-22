@@ -1,11 +1,11 @@
 (import-macros {: flip} :macros.math)
 (local fennel (require :lib.fennel))
-(local width 800) ;; FIXME (love.window.getMode) breaks web
-(local height 600)
 (local transform (love.math.newTransform))
 (local windows {:console nil :game nil})
-(local console (love.graphics.newCanvas (/ width 2) height))
-(local game (love.graphics.newCanvas width height))
+(var console nil)
+(var game nil)
+(var width nil)
+(var height nil)
 (var fullscreen? false)
 (var dev? false)
 (var web? false)
@@ -20,6 +20,11 @@
   (xpcall func #(enter-monad :monads.error name $ (fennel.traceback))))
 
 (fn love.load [args]
+  (let [(w h _) (love.window.getMode)]
+    (set width w)
+    (set height h))
+  (set console (love.graphics.newCanvas (/ width 2) height))
+  (set game (love.graphics.newCanvas width height))
   (set web? (= :web (. args 1)))
   (love.graphics.setFont (love.graphics.newFont 12 "mono"))
   (enter-monad :console :monads.repl)
@@ -51,6 +56,16 @@
   (when windows.game.monad.update 
     (safely #(windows.game.monad.update dt width height) windows.game.name)))
 
+(fn love.resize [] ;; TODO start menu option for web
+  (let [(sw sh) (love.window.getMode)
+        w       (if (or (not web?) fullscreen?) sw width)
+        h       (if (or (not web?) fullscreen?) sh height)
+        scale (math.min (/ w width) (/ h height))
+        mx (/ (- sw (* scale width)) 2)
+        my (/ (- h (* scale height)) 2)]
+    (print (.. w "x" h))
+    (transform:setTransformation mx my 0 scale scale 0 0 0 0)))
+
 (fn love.keypressed [key scancode repeat?]
   (match key
     :escape (love.event.quit)
@@ -63,7 +78,7 @@
                                           :fullscreentype "exclusive"
                                           :minwidth w 
                                           :minheight h})
-            (love.resize))
+            (love.event.push "resize"))
           (love.window.setFullscreen (flip fullscreen? "desktop")))
     _ (let [consolefunc windows.console.monad.keypressed
             consolename windows.console.name
@@ -80,13 +95,6 @@
 (fn love.textinput [text]
   (when (and dev? windows.console.monad.textinput)
     (safely #(windows.console.monad.textinput text) windows.console.name)))
-
-(fn love.resize [] ;; TODO start menu option for web
-  (let [(sw sh) (love.window.getMode)
-        scale (math.min (/ sw width) (/ sh height))
-        mx (/ (- sw (* scale width)) 2)
-        my (/ (- sh (* scale height)) 2)]
-    (transform:setTransformation mx my 0 scale scale 0 0 0 0)))
 
 (fn love.mousemoved [x y dx dy istouch]
   (let [gamefunc windows.game.monad.mousemoved
