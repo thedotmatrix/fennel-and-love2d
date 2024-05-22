@@ -1,17 +1,18 @@
-VERSION=0.1.0
-LOVE_VERSION=11.5
 NAME=rochambullet
+LIBS=fennel classic
+VERSION=0.0.0
+LOVE_VERSION=11.5
 ITCH_ACCOUNT=thedotmatrix
 URL=https://github.com/thedotmatrix/fennel-and-love2d
 AUTHOR="Dot Matrix"
-DESCRIPTION="Minimal setup for trying out Phil Hagelberg's fennel/love game design process."
+DESCRIPTION="fennel-and-love2d game console"
 GITHUB_USERNAME := $(shell grep GITHUB_USERNAME credentials.private | cut -d= -f2)
 GITHUB_PAT := $(shell grep GITHUB_PAT credentials.private | cut -d= -f2)
-ALL := $(wildcard *.lua)
-AST := assets/ src/$(NAME)/assets
-CLS := $(wildcard classes/*.lua src/$(NAME)/classes/*.fnl)
-CRT := $(wildcard cartridges/*.lua src/$(NAME)/cartridges/*.fnl)
-LIB := $(wildcard lib/*)
+ALL := $(wildcard *.lua *.fnl)
+AST := $(wildcard assets/*.* 		src/$(NAME)/assets/*.*)
+CLS := $(wildcard classes/*.fnl 	src/$(NAME)/classes/*.fnl)
+CRT := $(wildcard cartridges/*.fnl 	src/$(NAME)/cartridges/*.fnl)
+LIB := $(foreach L,$(LIBS),$(wildcard lib/$L.*))
 MAC := $(wildcard mac/*.fnl)
 
 run: ; love .

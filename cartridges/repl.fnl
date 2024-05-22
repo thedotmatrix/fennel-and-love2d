@@ -1,12 +1,11 @@
 (import-macros {: decf : incf} :mac.math)
 (local fennel (require :lib.fennel))
-(local stdio (require :lib.stdio))
-(require :love.event)
 (local tst "1234567890123456789012345678901234567890123456789012345678901234")
 (local msg "press [left ctrl] to show/hide")
 (local input [])
 (local output [])
 (var incomplete? false)
+(var stdio nil)
 (var repl nil)
 
 (fn out [xs] (icollect [_ x (ipairs xs) :into output] x))
@@ -20,18 +19,20 @@
 ;; create the repl hooking into stdio if available, otherwise standalone repl
 ;; start it using the options table OR setup stdio event callbacks
 (fn load [web?]
-  (if web? ;; FIXME love.js does not support threads/coroutines afaik
-    (do false)
-      ;(set repl (coroutine.create (partial fennel.repl)))
-      ;(coroutine.resume repl {
-      ;  :readChunk coroutine.yield 
-      ;  :onValues out 
-      ;  :onError err}))
-    (do
+  (let [(success? _) (pcall #(set stdio (require :lib.stdio)))]
+    (when success? (do
       (set repl (stdio.start))
       (set love.handlers.inp inp)
       (set love.handlers.vals out)
       (set love.handlers.err err))))
+  (when web? (do ;; FIXME love.js does not support threads/coroutines afaik
+    false)))
+    ;(set repl (coroutine.create (partial fennel.repl)))
+    ;(coroutine.resume repl {
+    ;  :readChunk coroutine.yield 
+    ;  :onValues out  
+    ;  :onError err}))
+    
 
 (fn enter []
   (let [input-text (table.concat (doto input (table.insert "\n")))
