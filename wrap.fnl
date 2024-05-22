@@ -1,3 +1,4 @@
+(import-macros {: flip} :macros.math)
 (local fennel (require :lib.fennel))
 (local width 800) ;; FIXME (love.window.getMode) breaks web
 (local height 600)
@@ -5,8 +6,9 @@
 (local windows {:console nil :game nil})
 (local console (love.graphics.newCanvas (/ width 2) height))
 (local game (love.graphics.newCanvas width height))
-(var fs? false)
+(var fullscreen? false)
 (var dev? false)
+(var web? false)
 
 (fn enter-monad [window name ...]
   (let [monad (require name)]
@@ -18,12 +20,13 @@
   (xpcall func #(enter-monad :monads.error name $ (fennel.traceback))))
 
 (fn love.load [args]
+  (set web? (= :web (. args 1)))
   (love.graphics.setFont (love.graphics.newFont 12 "mono"))
   (enter-monad :console :monads.repl)
   (enter-monad :game :monads.rochambullet)
   (console:setFilter "nearest" "nearest")
   (game:setFilter "nearest" "nearest")
-  (safely (windows.console.monad.load (= :web (. args 1))) windows.console.name)
+  (safely (windows.console.monad.load web?) windows.console.name)
   (safely (windows.game.monad.load width height) windows.game.name))
 
 (fn love.draw []
@@ -52,7 +55,16 @@
   (match key
     :escape (love.event.quit)
     :lctrl (set dev? (not dev?))
-    "f11" (love.window.setFullscreen (do (set fs? (not fs?)) fs?) "desktop")
+    "f" (if web?
+          (let [  (sw sh) (love.window.getMode)
+                  w       (if fullscreen? width sw)
+                  h       (if fullscreen? height sh)]
+            (love.window.updateMode w h { :fullscreen (flip fullscreen?)
+                                          :fullscreentype "exclusive"
+                                          :minwidth w 
+                                          :minheight h})
+            (love.resize))
+          (love.window.setFullscreen (flip fullscreen? "desktop")))
     _ (let [consolefunc windows.console.monad.keypressed
             consolename windows.console.name
             gamefunc windows.game.monad.keypressed
@@ -69,7 +81,7 @@
   (when (and dev? windows.console.monad.textinput)
     (safely #(windows.console.monad.textinput text) windows.console.name)))
 
-(fn love.resize [] ;; FIXME web not resizing, no event just check getMode
+(fn love.resize [] ;; TODO start menu option for web
   (let [(sw sh) (love.window.getMode)
         scale (math.min (/ sw width) (/ sh height))
         mx (/ (- sw (* scale width)) 2)

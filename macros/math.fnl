@@ -1,8 +1,8 @@
-(fn incf [value ?by]
-  `(set ,value (+ ,value (or ,?by 1))))
+(fn flip [value]      `(do (set ,value (not ,value)) ,value))
 
-(fn decf [value ?by]
-  `(set ,value (- ,value (or ,?by 1))))
+(fn incf [value ?by]  `(set ,value (+ ,value (or ,?by 1))))
+
+(fn decf [value ?by]  `(set ,value (- ,value (or ,?by 1))))
 
 (fn clamp [val ?low ?hi]
   `(let [lower# (or ,?low (* -1 math.huge))
@@ -20,4 +20,4 @@
          ,?body
          ,keys)))
 
-{: incf : decf : clamp : arctan : with}
+{: flip : incf : decf : clamp : arctan : with}
