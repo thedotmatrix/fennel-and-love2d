@@ -1,4 +1,6 @@
 (import-macros {: decf : arctan} :mac.math)
+(local Cartridge (require :classes.cartridge))
+(local Game (Cartridge:extend))
 (local Board (require "src.rochambullet.classes.board"))
 (local board (Board 16 32))
 (local Player (require "src.rochambullet.classes.player"))
@@ -6,16 +8,17 @@
 (local Enemy (require "src.rochambullet.classes.enemy"))
 (local enemies [])
 (local transform (love.math.newTransform))
+(local shader (love.graphics.newShader "src/rochambullet/assets/sphere.glsl"))
+(local fov (/ 1 16)) ;; -1 (black hole) - 0 (regular sphere) - 1 (almost flat)
+(local centercanvas (love.math.newTransform))
+(var canvas nil)
+
 (fn updateTransform [w h]
   (let [tx (- (/ w 2) player.x)
         ty (- (/ h 2) player.y)
         (mx my) (love.mouse.getPosition)]
     (transform:setTransformation tx ty 0 1 1 0 0 0 0)
     (love.mousemoved mx my 0 0 false)))
-(local shader (love.graphics.newShader "src/rochambullet/assets/sphere.glsl"))
-(local fov (/ 1 16)) ;; -1 (black hole) - 0 (regular sphere) - 1 (almost flat)
-(local centercanvas (love.math.newTransform))
-(var canvas nil)
 
 (fn load [w h]
   (let [csize (* w (+ fov 1.0))]
@@ -23,10 +26,9 @@
   (let [tx    (/ (- (canvas:getWidth) w) 2)
         ty    (/ (- (canvas:getHeight) h) 2)]
     (centercanvas:setTransformation tx ty 0 1 1 0 0 0 0))
-  (for [i 1 128] (table.insert enemies (Enemy board.px)))
-  (updateTransform w h))
+  (for [i 1 128] (table.insert enemies (Enemy board.px))))
 
-(fn draw [w h supercanvas] (fn []
+(fn draw [self w h supercanvas] (fn []
   (love.graphics.setCanvas canvas)
   (love.graphics.push)
   (love.graphics.applyTransform transform)
@@ -44,12 +46,10 @@
   (love.graphics.pop)
   (love.graphics.setShader)))
 
-(fn update [dt w h]
+(fn update [self dt w h]
+  (updateTransform w h)
   ;; player
-  (when (> (length player.dir) 0)
-    (player:update dt board.px)
-    ;(print (.. player.x ", " player.y))
-    (updateTransform w h))
+  (when (> (length player.dir) 0) (player:update dt board.px))
   (when (> player.attack 0) (decf player.attack dt))
   ;; enemies
   (var collision? false)
@@ -83,7 +83,7 @@
   (for [i (length collided) 1 -1]
     (table.remove enemies (. collided i))))
 
-(fn keypressed [key scancode repeat?]
+(fn keypressed [self key scancode repeat?]
   (match key
     :left  (tset player.keys key true)
     :right (tset player.keys key true)
@@ -91,7 +91,7 @@
     :down  (tset player.keys key true))
   (player:moving))
 
-(fn keyreleased [key scancode]
+(fn keyreleased [self key scancode]
   (match key
     :left  (tset player.keys key false)
     :right (tset player.keys key false)
@@ -99,12 +99,22 @@
     :down  (tset player.keys key false))
   (player:moving))
 
-(fn mousemoved [x y dx dy istouch]
+(fn mousemoved [self x y dx dy istouch]
   (let [(tx ty) (transform:inverseTransformPoint x y)]
     (player:aiming tx ty)))
 
-(fn mousepressed [x y button istouch presses]
+(fn mousepressed [self x y button istouch presses]
   (let [(tx ty) (transform:inverseTransformPoint x y)]
     false))
 
-{: load : draw : update : keypressed : keyreleased : mousemoved : mousepressed}
+(tset Game :new (fn [self w h old]
+  (self.super.new self) ;; discard old state
+  (tset self :draw draw)
+  (tset self :update update)
+  (tset self :keypressed keypressed)
+  (tset self :keyreleased keyreleased)
+  (tset self :mousemoved mousemoved)
+  (tset self :mousepressed mousepressed)
+  (load w h)
+  self))
+Game

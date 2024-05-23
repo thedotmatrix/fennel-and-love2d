@@ -6,12 +6,12 @@
                             "b is " (tostring (?. self :b))))))
 
 (fn keypressed [self key scancode repeat] (match key
-  :space (self.super.load self :cartridges.empty2)))
+  :space (self.super.load self :cartridges.empty)))
 
 (tset Empty :new (fn [self w h old]
-  (self.super.new self old) ;; keep old state
+  (self.super.new self) ;; discard old state
   (tset self :draw draw)
   (tset self :keypressed keypressed)
-  (set self.a 42)
+  (set self.b 69) 
   self))
 Empty

@@ -1,4 +1,6 @@
 (import-macros {: decf : incf} :mac.math)
+(local Cartridge (require :classes.cartridge))
+(local REPL (Cartridge:extend))
 (local fennel (require :lib.fennel))
 (local tst "1234567890123456789012345678901234567890123456789012345678901234")
 (local msg "press [left ctrl] to show/hide")
@@ -16,24 +18,6 @@
 (fn inp [in]
   (when (~= in "\n") (print [[0.5 0.4 0.9] in])))
 
-;; create the repl hooking into stdio if available, otherwise standalone repl
-;; start it using the options table OR setup stdio event callbacks
-(fn load [web?]
-  (let [(success? _) (pcall #(set stdio (require :lib.stdio)))]
-    (when success? (do
-      (set repl (stdio.start))
-      (set love.handlers.inp inp)
-      (set love.handlers.vals out)
-      (set love.handlers.err err))))
-  (when web? (do ;; FIXME love.js does not support threads/coroutines afaik
-    false)))
-    ;(set repl (coroutine.create (partial fennel.repl)))
-    ;(coroutine.resume repl {
-    ;  :readChunk coroutine.yield 
-    ;  :onValues out  
-    ;  :onError err}))
-    
-
 (fn enter []
   (let [input-text (table.concat (doto input (table.insert "\n")))
         _ (inp input-text)]
@@ -42,14 +26,14 @@
       (set incomplete? (< 0 stack-size)))
     (while (next input) (table.remove input))))
 
-(fn keypressed [key]
+(fn keypressed [self key]
   (match key
     :return (enter)
     :backspace (table.remove input)))
 
-(fn textinput [text] (table.insert input text))
+(fn textinput [self text] (table.insert input text))
 
-(fn draw [w h] (fn []
+(fn draw [self w h] (fn []
   (let [f (love.graphics.getFont)
         fh (: f :getHeight)
         len (length output)]
@@ -75,4 +59,22 @@
       (love.graphics.print "> " 2 (- h fh 2)))
     (love.graphics.print (table.concat input) 15 (- h fh 2)))))
 
-{: load : keypressed : textinput : draw }
+(tset REPL :new (fn [self w h web?]
+  (self.super.new self) ;; discard old state
+  (tset self :draw draw)
+  (tset self :keypressed keypressed)
+  (tset self :textinput textinput)
+  (let [(success? _) (pcall #(set stdio (require :lib.stdio)))]
+    (when success? (do
+      (set repl (stdio.start))
+      (set love.handlers.inp inp)
+      (set love.handlers.vals out)
+      (set love.handlers.err err))))
+  ;; FIXME love.js does not support threads/coroutines afaik
+  ; (when web? (do
+  ;   (set repl (coroutine.create (partial fennel.repl)))
+  ;   (coroutine.resume repl {:readChunk coroutine.yield 
+  ;                           :onValues out  
+  ;                           :onError err})))
+  self))
+REPL

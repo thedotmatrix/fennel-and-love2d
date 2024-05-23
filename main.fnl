@@ -1,72 +1,23 @@
 (import-macros {: flip} :mac.math)
-(local fennel (require :lib.fennel))
 (local transform (love.math.newTransform))
-(local windows {:dev nil :game nil})
+(local Console (require :classes.console))
 (var width nil)
 (var height nil)
-(var dev nil)
-(var game nil)
-(var name nil)
+(var console nil)
 (var web? false)
 (var fullscreen? false)
-(var dev? false)
-
-(fn boot-cartridge [window name ...]
-  (let [cartridge (require name)]
-    (tset windows window {:cartridge cartridge :name name})
-    (when cartridge.activate
-      (match (pcall cartridge.activate ...)
-        (false msg) (print name "activate error" msg)))))
-(fn safely [func name] 
-  (xpcall func #(boot-cartridge :cartridges.error name $ (fennel.traceback))))
 
 (fn love.load [args]
-  (let [(w h _) (love.window.getMode)]
-    (set width w)
-    (set height h))
-  (set dev (love.graphics.newCanvas (/ width 2) height))
-  (set game (love.graphics.newCanvas width height))
-  (let [file    "conf.fnl"
-        default :empty
-        info    (love.filesystem.getInfo file)
-        title   (if info ((love.filesystem.lines file)) default)
-        def     "cartridges.%s"
-        src     "src.%s.cartridges.main"
-        format  (if (= title default) def src)]
-    (set name (format:format (title:lower)))
-    (love.window.setTitle title))
+  (love.graphics.setFont (love.graphics.newFont 8 :mono))
+  (let [(w h _) (love.window.getMode)] (set width w) (set height h))
   (set web? (= :web (. args 1)))
-  (love.graphics.setFont (love.graphics.newFont 8 "mono"))
-  (boot-cartridge :dev :cartridges.repl)
-  (boot-cartridge :game name)
-  (dev:setFilter "nearest" "nearest")
-  (game:setFilter "nearest" "nearest")
-  (safely (windows.dev.cartridge.load web?) windows.dev.name)
-  (safely (windows.game.cartridge.load width height) windows.game.name))
+  (set console (Console width height web?)))
 
-(fn love.draw []
-  (love.graphics.setCanvas dev)
-  (safely (windows.dev.cartridge.draw (/ width 2) height) windows.dev.name)
-  (love.graphics.setCanvas game)
-  (love.graphics.clear 0 0 0 1)
-  (safely (windows.game.cartridge.draw width height game) windows.game.name)
-  (love.graphics.setCanvas)
-  (love.graphics.setColor 1 1 1 1)
-  (love.graphics.push)
-  (love.graphics.applyTransform transform)
-  (love.graphics.draw game 0 0 0 1 1)
-  (love.graphics.setColor 1 1 1 0.88)
-  (if dev? (love.graphics.draw dev 0 0 0 1 1))
-  (love.graphics.setColor 1 1 1 1)
-  (love.graphics.pop))
+(fn love.draw [] (console:draw width height transform))
 
-(fn love.update [dt]
-  (when windows.dev.cartridge.update 
-    (safely #(windows.dev.cartridge.update dt) windows.dev.name))
-  (when windows.game.cartridge.update 
-    (safely #(windows.game.cartridge.update dt width height) windows.game.name)))
+(fn love.update [dt] (console:update dt width height))
 
-(fn love.resize [] ;; TODO start menu option for web
+(fn love.resize [] ;; FIXME start menu option for web
   (let [(sw sh) (love.window.getMode)
         w       (if (or (not web?) fullscreen?) sw width)
         h       (if (or (not web?) fullscreen?) sh height)
@@ -78,41 +29,26 @@
 (fn love.keypressed [key scancode repeat?]
   (match key
     :escape (love.event.quit)
-    :lctrl (set dev? (not dev?))
-    "f" (if web?
-          (let [  (sw sh) (love.window.getMode)
-                  w       (if fullscreen? width sw)
-                  h       (if fullscreen? height sh)]
+    :f (if web?
+          (let [(sw sh) (love.window.getMode)
+                w       (if fullscreen? width sw)
+                h       (if fullscreen? height sh)]
             (love.window.updateMode w h { :fullscreen (flip fullscreen?)
-                                          :fullscreentype "exclusive"
+                                          :fullscreentype :exclusive
                                           :minwidth w 
                                           :minheight h})
-            (love.event.push "resize"))
-          (love.window.setFullscreen (flip fullscreen?) "desktop"))
-    _ (let [devfunc windows.dev.cartridge.keypressed
-            devname windows.dev.name
-            gamefunc windows.game.cartridge.keypressed
-            gamename windows.game.name]
-        (when (and dev? devfunc) (safely #(devfunc key) devname))
-        (when gamefunc (safely #(gamefunc key scancode repeat?) gamename)))))
+            (love.event.push :resize))
+          (love.window.setFullscreen (flip fullscreen?) :desktop))
+    _ (console:keypressed key scancode repeat?)))
 
-(fn love.keyreleased [key scancode]
-  (let [gamefunc windows.game.cartridge.keyreleased
-        gamename windows.game.name]
-    (when gamefunc (safely #(gamefunc key scancode) gamename))))
+(fn love.keyreleased [key scancode] (console:keyreleased key scancode))
 
-(fn love.textinput [text]
-  (when (and dev? windows.dev.cartridge.textinput)
-    (safely #(windows.dev.cartridge.textinput text) windows.dev.name)))
+(fn love.textinput [text] (console:textinput text))
 
 (fn love.mousemoved [x y dx dy istouch]
-  (let [gamefunc windows.game.cartridge.mousemoved
-        gamename windows.game.name
-        (tx ty) (transform:inverseTransformPoint x y)]
-    (when gamefunc (safely #(gamefunc tx ty dx dy istouch) gamename))))
+  (let [(tx ty) (transform:inverseTransformPoint x y)]
+    (console:mousemoved tx ty dx dy istouch)))
 
 (fn love.mousepressed [x y button istouch presses]
-  (let [gamefunc windows.game.cartridge.mousepressed
-        gamename windows.game.name
-        (tx ty) (transform:inverseTransformPoint x y)]
-    (when gamefunc (safely #(gamefunc tx ty button istouch presses) gamename))))
+  (let [(tx ty) (transform:inverseTransformPoint x y)]
+    (console:mousepressed tx ty button istouch presses)))

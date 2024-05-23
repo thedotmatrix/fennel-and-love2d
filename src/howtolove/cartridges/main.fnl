@@ -1,4 +1,6 @@
 (import-macros {: incf : decf : clamp} :mac.math)
+(local Cartridge (require :classes.cartridge))
+(local Book (Cartridge:extend))
 (local header "sheepolution how to love")
 (local navi "<---left-alt--- \t \t chapter %d \t \t ---right-alt--->")
 (var chapter 1)
@@ -545,7 +547,7 @@
       20 (load20)
       21 (load21)
       22 (load22)))
-(fn draw [w h] (fn []
+(fn draw [self w h] (fn []
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
     (love.graphics.setColor 0.9 0.9 0.9 1)
@@ -567,7 +569,7 @@
       18 (draw18 w h)
       21 (draw21 w h)
       22 (draw22 w h)))))
-(fn update [dt w h]
+(fn update [self dt w h]
   (case chapter
     5 (update5 dt)
     6 (update6 dt)
@@ -582,10 +584,19 @@
     19 (update19 dt)
     21 (update21 dt)
     22 (update22 dt)))
-(fn keypressed [key]
+(fn keypressed [self key]
   (local old chapter)
   (match key
     :lalt (do (decf chapter 1) (clamp chapter 1 24))
     :ralt (do (incf chapter 1) (clamp chapter 1 24)))
   (when (~= old chapter) (load)))
-{: load : draw : update : keypressed}
+
+;; FIXME break each chapter into its own cartridge
+(tset Book :new (fn [self w h old]
+  (self.super.new self) ;; discard old state
+  (tset self :draw draw)
+  (tset self :update update)
+  (tset self :keypressed keypressed)
+  (load)
+  self))
+Book

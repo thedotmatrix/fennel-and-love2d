@@ -5,6 +5,7 @@
   (self.super.new self x y 128 0 "src/rochambullet/assets/player.png" 0.125)
   (set self.keys {})
   (set self.dir [])
+  (set self.aim 0)
   (set self.threat -1)
   (set self.attack 0)
   (set self.duration (/ 1 8))

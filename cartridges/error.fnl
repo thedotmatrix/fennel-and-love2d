@@ -1,19 +1,19 @@
-(local state {:msg "" :traceback "" :old-mode :intro})
+(local Cartridge (require :classes.cartridge))
+(local Error (Cartridge:extend))
+(local state {:msg "" :traceback "" :oldname nil})
 (local explanation "Press escape to quit.
 Press space to return to the previous mode after reloading in the repl.")
 
-(fn draw []
+(fn draw [self w h] (fn []
   (love.graphics.clear 0.34 0.61 0.86)
   (love.graphics.setColor 0.9 0.9 0.9)
-  (love.graphics.print explanation 15 10)
-  (love.graphics.print state.msg 10 60)
-  (love.graphics.print state.traceback 15 125))
+  (love.graphics.printf (.. (tostring explanation) "\n"
+                            (tostring state.msg) "\n"
+                            (tostring state.traceback)) 0 (/ h 4) w :center)))
 
-(fn keypressed [key set-mode]
-  (match key
-    :escape (love.event.quit)
-    :space (set-mode state.old-mode)))
-
+(fn keypressed [self key scancode repeat] (match key
+  :space (self.super.load self state.oldname)))
+                          
 (fn color-msg [msg]
   (case (msg:match "(.*)\027%[7m(.*)\027%[0m(.*)") ;; ansi -> love codes
     (pre selected post) 
@@ -22,12 +22,17 @@ Press space to return to the previous mode after reloading in the repl.")
       [1 1 1] post]
     _ msg))
 
-(fn activate [old-mode msg traceback]
-  (love.graphics.setNewFont 16) ; use a monospace font here if you have one
+(fn stacktrace [oldname msg traceback]
   (print msg)
   (print traceback)
-  (set state.old-mode old-mode)
+  (set state.oldname oldname)
   (set state.msg (color-msg msg))
   (set state.traceback traceback))
 
-{: draw : keypressed : activate}
+(tset Error :new (fn [self w h old]
+  (self.super.new self) ;; discard old state
+  (tset self :draw draw)
+  (tset self :keypressed keypressed)
+  (tset self :stacktrace stacktrace)
+  self))
+Error
