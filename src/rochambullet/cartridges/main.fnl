@@ -28,7 +28,7 @@
     (centercanvas:setTransformation tx ty 0 1 1 0 0 0 0))
   (for [i 1 128] (table.insert enemies (Enemy board.px))))
 
-(fn draw [self w h supercanvas] (fn []
+(fn draw [self w h supercanvas]
   (love.graphics.setCanvas canvas)
   (love.graphics.push)
   (love.graphics.applyTransform transform)
@@ -44,7 +44,7 @@
   (love.graphics.clear 0.25 0 0.25 1)
   (love.graphics.draw canvas)
   (love.graphics.pop)
-  (love.graphics.setShader)))
+  (love.graphics.setShader))
 
 (fn update [self dt w h]
   (updateTransform w h)
@@ -61,7 +61,6 @@
           angle (arctan e.x e.y player.x player.y)]
       (when (and (~= player.threat 1) outer) (do
         (set player.threat 0)
-        ;(print (.. angle "=" player.aim))
         (when (< (math.abs (- angle player.aim)) (/ math.pi 2))
           (do (player:attacking) (set e.angle player.aim)))
         (when inner (set player.threat 1))))
@@ -76,10 +75,7 @@
               b (. enemies j)
               c (a:collision? b.x b.y (/ (+ a.size b.size) 2))]
           (when c (do
-            (table.insert collided i)
-            ;(print (.. "collide: "  (math.floor a.x) "=" (math.floor b.x) " " 
-            ;                        (math.floor a.y) "=" (math.floor b.y)))
-            ))))))
+            (table.insert collided i)))))))
   (for [i (length collided) 1 -1]
     (table.remove enemies (. collided i))))
 

@@ -4,14 +4,13 @@
 (var width nil)
 (var height nil)
 (var console nil)
-(var web? false)
 (var fullscreen? false)
 
 (fn love.load [args]
   (love.graphics.setFont (love.graphics.newFont 8 :mono))
   (let [(w h _) (love.window.getMode)] (set width w) (set height h))
-  (set web? (= :web (. args 1)))
-  (set console (Console width height web?)))
+  (set _G.web? (= :web (. args 1)))
+  (set console (Console width height)))
 
 (fn love.draw [] (console:draw width height transform))
 
@@ -19,8 +18,8 @@
 
 (fn love.resize [] ;; FIXME start menu option for web
   (let [(sw sh) (love.window.getMode)
-        w       (if (or (not web?) fullscreen?) sw width)
-        h       (if (or (not web?) fullscreen?) sh height)
+        w       (if (or (not _G.web?) fullscreen?) sw width)
+        h       (if (or (not _G.web?) fullscreen?) sh height)
         scale (math.min (/ w width) (/ h height))
         mx (/ (- sw (* scale width)) 2)
         my (/ (- h (* scale height)) 2)]
@@ -29,7 +28,7 @@
 (fn love.keypressed [key scancode repeat?]
   (match key
     :escape (love.event.quit)
-    :f (if web?
+    :f (if _G.web?
           (let [(sw sh) (love.window.getMode)
                 w       (if fullscreen? width sw)
                 h       (if fullscreen? height sh)]

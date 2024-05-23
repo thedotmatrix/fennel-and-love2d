@@ -14,8 +14,8 @@
   (let [newcart (oldcart.cb name oldcart)]
     (newcart.callback newcart oldcart.cb))))
 
-(tset Cartridge :update (fn [self dt w h] ))
+(tset Cartridge :update (fn [self dt w h]))
 
-(tset Cartridge :draw (fn [self w h] (fn [])))
+(tset Cartridge :draw (fn [self w h supercanvas]))
 
 Cartridge

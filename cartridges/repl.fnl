@@ -2,7 +2,6 @@
 (local Cartridge (require :classes.cartridge))
 (local REPL (Cartridge:extend))
 (local fennel (require :lib.fennel))
-(local tst "1234567890123456789012345678901234567890123456789012345678901234")
 (local msg "press [left ctrl] to show/hide")
 (local input [])
 (local output [])
@@ -17,7 +16,6 @@
 (fn _G.print [...] (out [...]) nil)
 (fn inp [in]
   (when (~= in "\n") (print [[0.5 0.4 0.9] in])))
-
 (fn enter []
   (let [input-text (table.concat (doto input (table.insert "\n")))
         _ (inp input-text)]
@@ -26,40 +24,36 @@
       (set incomplete? (< 0 stack-size)))
     (while (next input) (table.remove input))))
 
-(fn keypressed [self key]
-  (match key
-    :return (enter)
-    :backspace (table.remove input)))
-
-(fn textinput [self text] (table.insert input text))
-
-(fn draw [self w h] (fn []
+(fn draw [self w h supercanvas]
   (let [f (love.graphics.getFont)
-        fh (: f :getHeight)
+        fh (f:getHeight)
+        limit (math.ceil (* (/ h fh) 0.666666))
         len (length output)]
     (love.graphics.clear 0 0 0 1)
     (love.graphics.setColor 1 1 1 1)
     (love.graphics.printf msg 0 0 w :center)
     (love.graphics.printf (.. "FPS: " (love.timer.getFPS)) 0 0 w :left)
-    ;; draw the last 33 lines of output
     (var i len)
-    (var lst (if (> (- len 32) 0) (- len 32) 1))
+    (var lst (if (> (- len limit) 0) (- len limit) 1))
     (while (>= i lst)
       (match (. output i) line
-        (let [getlines (fn [] (math.floor (/ (f:getWidth (tostring line)) w)))
-              lines (getlines)]
+        (let [lines (math.floor (/ (f:getWidth (tostring line)) w))]
           (love.graphics.printf line 2 (* (+ (- i lst lines) 1) (+ fh 2)) w)
           (decf i 1)
           (incf lst lines))))
-    ;; draw the input text at the bottom
     (love.graphics.line 0 (- h fh 4) w (- h fh 4))
-    ;; prompt character
     (if incomplete?
       (love.graphics.print "_ " 2 (- h fh 2))
       (love.graphics.print "> " 2 (- h fh 2)))
-    (love.graphics.print (table.concat input) 15 (- h fh 2)))))
+    (love.graphics.print (table.concat input) 15 (- h fh 2))))
 
-(tset REPL :new (fn [self w h web?]
+(fn keypressed [self key scancode repeat?] (match key
+    :return (enter)
+    :backspace (table.remove input)))
+
+(fn textinput [self text] (table.insert input text))
+
+(tset REPL :new (fn [self w h old]
   (self.super.new self) ;; discard old state
   (tset self :draw draw)
   (tset self :keypressed keypressed)
@@ -71,7 +65,7 @@
       (set love.handlers.vals out)
       (set love.handlers.err err))))
   ;; FIXME love.js does not support threads/coroutines afaik
-  ; (when web? (do
+  ; (when _G.web? (do
   ;   (set repl (coroutine.create (partial fennel.repl)))
   ;   (coroutine.resume repl {:readChunk coroutine.yield 
   ;                           :onValues out  

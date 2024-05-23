@@ -547,7 +547,7 @@
       20 (load20)
       21 (load21)
       22 (load22)))
-(fn draw [self w h] (fn []
+(fn draw [self w h supercanvas]
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
     (love.graphics.setColor 0.9 0.9 0.9 1)
@@ -568,7 +568,7 @@
       17 (draw17 w h)
       18 (draw18 w h)
       21 (draw21 w h)
-      22 (draw22 w h)))))
+      22 (draw22 w h))))
 (fn update [self dt w h]
   (case chapter
     5 (update5 dt)
