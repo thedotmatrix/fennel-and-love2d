@@ -38,16 +38,18 @@
                                           :minheight h})
             (love.event.push :resize))
           (love.window.setFullscreen (flip fullscreen?) :desktop))
-    _ (console:keypressed key scancode repeat?)))
+    _ (console:keypressed key scancode repeat? width height)))
 
-(fn love.keyreleased [key scancode] (console:keyreleased key scancode))
+(fn love.keyreleased [key scancode] 
+  (console:keyreleased key scancode width height))
 
-(fn love.textinput [text] (console:textinput text))
+(fn love.textinput [text] 
+  (console:textinput text width height))
 
 (fn love.mousemoved [x y dx dy istouch]
   (let [(tx ty) (transform:inverseTransformPoint x y)]
-    (console:mousemoved tx ty dx dy istouch)))
+    (console:mousemoved tx ty dx dy istouch width height)))
 
 (fn love.mousepressed [x y button istouch presses]
   (let [(tx ty) (transform:inverseTransformPoint x y)]
-    (console:mousepressed tx ty button istouch presses)))
+    (console:mousepressed tx ty button istouch presses width height)))

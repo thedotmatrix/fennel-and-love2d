@@ -4,12 +4,12 @@
 (local explanation "Press escape to quit.
 Press space to return to the previous mode after reloading in the repl.")
 
-(fn draw [self w h] (fn []
+(fn draw [self w h]
   (love.graphics.clear 0.34 0.61 0.86)
   (love.graphics.setColor 0.9 0.9 0.9)
   (love.graphics.printf (.. (tostring explanation) "\n"
                             (tostring state.msg) "\n"
-                            (tostring state.traceback)) 0 (/ h 4) w :center)))
+                            (tostring state.traceback)) 0 (/ h 4) w :center))
 
 (fn keypressed [self key scancode repeat] (match key
   :space (self.super.load self state.oldname)))
