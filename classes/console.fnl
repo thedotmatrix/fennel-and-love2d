@@ -14,7 +14,7 @@
   (dev:setFilter :nearest :nearest)
   (set game (love.graphics.newCanvas w h))
   (game:setFilter :nearest :nearest)
-  (let [file    :wrapfile
+  (let [file    :conf.fnl
         default :empty
         info    (love.filesystem.getInfo file)
         title   (if info ((love.filesystem.lines file)) default)
