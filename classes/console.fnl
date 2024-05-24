@@ -33,12 +33,11 @@
           cart (Cart w h oldcart)]
       (tset windows window {:cartridge cart :name name})
       cart))))
-  (local oldname (?. (. windows window) :name))
   (local callback (ld window))
   (local cartridge (callback name))
   (cartridge:callback callback)
   (when cartridge.stacktrace
-    (match (pcall cartridge.stacktrace oldname ...)
+    (match (pcall cartridge.stacktrace cartridge.caller ...)
       (false msg) (print name "stacktrace error" msg))))
 
 (fn draw [self w h transform] 

@@ -1,4 +1,4 @@
-(import-macros {: decf} :mac.math)
+(import-macros {: decf : incf} :mac.math)
 (local Cartridge (require :classes.cartridge))
 (local Pregame (Cartridge:extend))
 (local Enemy (require "src.rochambullet.classes.enemy"))
@@ -8,16 +8,21 @@
 
 (local Player (require "src.rochambullet.classes.player"))
 (var player nil)
+(local rando {:x nil :y nil})
+(local start {:x nil :y nil})
 (local followplayer (love.math.newTransform))
 (local enemies [])
 
-(fn load [w h boardpx]
-  (set player (Player (love.math.random (* w -1) w) 
-                      (love.math.random (* h -1) h)))
-  (for [i 1 10] 
-    (table.insert enemies (Rock boardpx))
-    (table.insert enemies (Paper boardpx))
-    (table.insert enemies (Scissors boardpx))))
+(fn load [w h board]
+  (set rando.x (love.math.random (* w -1) w))
+  (set rando.y (love.math.random (* h -1) h))
+  (set player (Player rando.x rando.y))
+  (set start.x (love.math.random (/ board.tilepx -2) (/ board.tilepx 2)))
+  (set start.y (love.math.random (/ board.tilepx -2) (/ board.tilepx 2)))
+  (for [i 1 9] 
+    (table.insert enemies (Rock board))
+    (table.insert enemies (Paper board))
+    (table.insert enemies (Scissors board))))
 
 (fn draw [self w h supercanvas]
   (love.graphics.setCanvas self.canvas)
@@ -40,7 +45,9 @@
 (fn update [self dt w h]
   (if (> self.sphereize! -1.2)
     (decf self.sphereize! (* (+ (- self.sphereize! -1.2) 0.1) dt))
-    (Cartridge.load self :src.rochambullet.cartridges.turn))
+    (do 
+      (set self.sphereize! -1.2)
+      (Cartridge.load self :src.rochambullet.cartridges.choose true)))
   (self.shader:send :fx self.sphereize!)
   (self.shader:send :manual_amount (* (- 1.5 (/ self.sphereize! -2.4)) 0.9125))
   (when (~= self.player.x 0) (decf self.player.x (* self.player.x dt)))
@@ -59,8 +66,10 @@
 
 (tset Pregame :new (fn [self w h old]
   (Pregame.super.new self old) ;; keep old state
-  (load w h self.board.px)
+  (load w h self.board)
+  (tset self :rando rando)
   (tset self :player player)
+  (tset self :start start)
   (tset self :followplayer followplayer)
   (tset self :enemies enemies)
   (tset self :draw draw)
