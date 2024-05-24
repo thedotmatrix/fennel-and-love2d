@@ -1,43 +1,11 @@
 (import-macros {: decf : arctan} :mac.math)
 (local Cartridge (require :classes.cartridge))
 (local Game (Cartridge:extend))
-(local Enemy (require "src.rochambullet.classes.enemy"))
-(local Rock (require "src.rochambullet.classes.rock"))
-(local Paper (require "src.rochambullet.classes.paper"))
-(local Scissors (require "src.rochambullet.classes.scissors"))
-
-(local enemies [])
-
-(fn load [boardpx]
-  (for [i 1 10] 
-    (table.insert enemies (Rock boardpx))
-    (table.insert enemies (Paper boardpx))
-    (table.insert enemies (Scissors boardpx))))
-
-(fn draw [self w h supercanvas]
-  (love.graphics.setCanvas self.canvas)
-  (love.graphics.push)
-  (love.graphics.applyTransform self.followplayer)
-  (love.graphics.applyTransform self.centercanvas)
-  (self.board:draw*)
-  (each [_ e (pairs self.enemies)] (e:draw* self.board.px))
-  (self.player:draw)
-  (love.graphics.pop)
-  (love.graphics.setCanvas supercanvas)
-  (love.graphics.setShader self.shader)
-  (love.graphics.push)
-  (love.graphics.applyTransform (self.centercanvas:inverse))
-  (love.graphics.clear 0.25 0 0.25 1)
-  (love.graphics.draw self.canvas)
-  (love.graphics.pop)
-  (love.graphics.setShader))
 
 (fn update [self dt w h]
   (let [tx (- (/ w 2) self.player.x)
         ty (- (/ h 2) self.player.y)]
     (self.followplayer:setTransformation tx ty 0 1 1 0 0 0 0))
-  (self.shader:send :fx self.sphereize!)
-  (self.shader:send :manual_amount self.manual_amount)
   ;; player
   (when (> (length self.player.dir) 0) (self.player:update dt self.board.px))
   (when (> self.player.attack 0) (decf self.player.attack dt))
@@ -75,7 +43,7 @@
     :right (tset self.player.keys key true)
     :up    (tset self.player.keys key true)
     :down  (tset self.player.keys key true)
-    :space (Cartridge.load self :src.rochambullet.cartridges.game))
+    :space (Cartridge.load self :src.rochambullet.cartridges.pregame))
   (self.player:moving))
 
 (fn keyreleased [self key scancode]
@@ -88,13 +56,8 @@
 
 (tset Game :new (fn [self w h old]
   (Game.super.new self old) ;; keep old state
-  (tset self :enemies enemies)
-  (tset self :draw draw)
   (tset self :update update)
   (tset self :keypressed keypressed)
   (tset self :keyreleased keyreleased)
-  (tset self :sphereize! -1.2)
-  (tset self :manual_amount 0.9125)
-  (load w h)
   self))
 Game
