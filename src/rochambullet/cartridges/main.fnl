@@ -6,6 +6,8 @@
 (local Player (require "src.rochambullet.classes.player"))
 (local player (Player 0 0))
 (local Enemy (require "src.rochambullet.classes.enemy"))
+(local Rock (require "src.rochambullet.classes.rock"))
+(local Paper (require "src.rochambullet.classes.paper"))
 (local Scissors (require "src.rochambullet.classes.scissors"))
 (local enemies [])
 (local transform (love.math.newTransform))
@@ -27,7 +29,10 @@
   (let [tx    (/ (- (canvas:getWidth) w) 2)
         ty    (/ (- (canvas:getHeight) h) 2)]
     (centercanvas:setTransformation tx ty 0 1 1 0 0 0 0))
-  (for [i 1 128] (table.insert enemies (Scissors board.px))))
+  (for [i 1 10] 
+    (table.insert enemies (Rock board.px))
+    (table.insert enemies (Paper board.px))
+    (table.insert enemies (Scissors board.px))))
 
 (fn draw [self w h supercanvas]
   (love.graphics.setCanvas canvas)
