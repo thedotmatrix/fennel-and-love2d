@@ -6,7 +6,7 @@
                             "b is " (tostring (?. self :b)))))
 
 (fn keypressed [self key scancode repeat] (match key
-  :space (self.super.load self :cartridges.empty2)))
+  :space (Empty.super.load self :cartridges.empty2)))
 
 (tset Empty :new (fn [self w h old]
   (Empty.super.new self old) ;; keep old state

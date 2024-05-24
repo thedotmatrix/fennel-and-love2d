@@ -12,7 +12,7 @@ Press space to return to the previous mode after reloading in the repl.")
                             (tostring state.traceback)) 0 0 w :center))
 
 (fn keypressed [self key scancode repeat] (match key
-  :space (self.super.load self state.oldname)))
+  :space (Error.super.load self state.oldname)))
                           
 (fn color-msg [msg]
   (case (msg:match "(.*)\027%[7m(.*)\027%[0m(.*)") ;; ansi -> love codes
