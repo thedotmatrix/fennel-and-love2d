@@ -7,9 +7,12 @@ Press space to return to the previous mode after reloading in the repl.")
 (fn draw [self w h]
   (love.graphics.clear 0.34 0.61 0.86)
   (love.graphics.setColor 0.9 0.9 0.9)
-  (love.graphics.printf (.. (tostring explanation) "\n"
-                            (tostring state.msg) "\n"
-                            (tostring state.traceback)) 0 0 w :center))
+  (love.graphics.printf explanation     0 
+                                        (math.floor (* h 0.08)) w :center)
+  (love.graphics.printf state.msg       0
+                                        (math.floor (* h 0.16)) w :center)
+  (love.graphics.printf state.traceback (math.floor (* h 0.08)) 
+                                        (math.floor (* h 0.32)) w :left))
 
 (fn keypressed [self key scancode repeat] (match key
   :space (Error.super.load self state.oldname)))
@@ -23,11 +26,12 @@ Press space to return to the previous mode after reloading in the repl.")
     _ msg))
 
 (fn stacktrace [oldname msg traceback]
-  (print msg)
-  (print traceback)
   (set state.oldname oldname)
   (set state.msg (color-msg msg))
-  (set state.traceback traceback))
+  (set state.traceback "")
+  (each [v (traceback:gmatch "[^\n]+")]
+    (when (not (v:find "fennel.lua"))
+      (set state.traceback (.. state.traceback v "\n")))))
 
 (tset Error :new (fn [self w h old]
   (Error.super.new self) ;; discard old state

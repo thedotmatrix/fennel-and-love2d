@@ -7,7 +7,7 @@
 (var fullscreen? false)
 
 (fn love.load [args]
-  (love.graphics.setFont (love.graphics.newFont 8 :mono))
+  (love.graphics.setFont (love.graphics.newFont 12 :mono))
   (let [(w h _) (love.window.getMode)] (set width w) (set height h))
   (set _G.web? (= :web (. args 1)))
   (set console (Console width height)))
