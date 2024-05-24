@@ -9,7 +9,7 @@
   :space (self.super.load self :cartridges.empty2)))
 
 (tset Empty :new (fn [self w h old]
-  (self.super.new self old) ;; keep old state
+  (Empty.super.new self old) ;; keep old state
   (tset self :draw draw)
   (tset self :keypressed keypressed)
   (set self.a 42)

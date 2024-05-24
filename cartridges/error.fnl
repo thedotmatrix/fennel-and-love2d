@@ -9,7 +9,7 @@ Press space to return to the previous mode after reloading in the repl.")
   (love.graphics.setColor 0.9 0.9 0.9)
   (love.graphics.printf (.. (tostring explanation) "\n"
                             (tostring state.msg) "\n"
-                            (tostring state.traceback)) 0 (/ h 4) w :center))
+                            (tostring state.traceback)) 0 0 w :center))
 
 (fn keypressed [self key scancode repeat] (match key
   :space (self.super.load self state.oldname)))
@@ -30,7 +30,7 @@ Press space to return to the previous mode after reloading in the repl.")
   (set state.traceback traceback))
 
 (tset Error :new (fn [self w h old]
-  (self.super.new self) ;; discard old state
+  (Error.super.new self) ;; discard old state
   (tset self :draw draw)
   (tset self :keypressed keypressed)
   (tset self :stacktrace stacktrace)

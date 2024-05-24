@@ -54,7 +54,7 @@
 (fn textinput [self text] (table.insert input text))
 
 (tset REPL :new (fn [self w h old]
-  (self.super.new self) ;; discard old state
+  (REPL.super.new self) ;; discard old state
   (tset self :draw draw)
   (tset self :keypressed keypressed)
   (tset self :textinput textinput)

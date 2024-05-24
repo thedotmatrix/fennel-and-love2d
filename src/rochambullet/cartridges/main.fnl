@@ -6,6 +6,7 @@
 (local Player (require "src.rochambullet.classes.player"))
 (local player (Player 0 0))
 (local Enemy (require "src.rochambullet.classes.enemy"))
+(local Scissors (require "src.rochambullet.classes.scissors"))
 (local enemies [])
 (local transform (love.math.newTransform))
 (local shader (love.graphics.newShader "src/rochambullet/assets/sphere.glsl"))
@@ -26,7 +27,7 @@
   (let [tx    (/ (- (canvas:getWidth) w) 2)
         ty    (/ (- (canvas:getHeight) h) 2)]
     (centercanvas:setTransformation tx ty 0 1 1 0 0 0 0))
-  (for [i 1 128] (table.insert enemies (Enemy board.px))))
+  (for [i 1 128] (table.insert enemies (Scissors board.px))))
 
 (fn draw [self w h supercanvas]
   (love.graphics.setCanvas canvas)
@@ -104,7 +105,7 @@
     false))
 
 (tset Game :new (fn [self w h old]
-  (self.super.new self) ;; discard old state
+  (Game.super.new self) ;; discard old state
   (tset self :draw draw)
   (tset self :update update)
   (tset self :keypressed keypressed)

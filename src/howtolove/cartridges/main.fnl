@@ -593,7 +593,7 @@
 
 ;; FIXME break each chapter into its own cartridge
 (tset Book :new (fn [self w h old]
-  (self.super.new self) ;; discard old state
+  (Book.super.new self) ;; discard old state
   (tset self :draw draw)
   (tset self :update update)
   (tset self :keypressed keypressed)
