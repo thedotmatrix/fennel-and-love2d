@@ -38,8 +38,8 @@
   (love.graphics.pop)
   (love.graphics.setShader)
   (love.graphics.printf "RoChamBULLET" 0 (/ h 8) (/ w 8) :center 0 8 8)
-  (love.graphics.printf   (.. "Press F to Enter Fullscreen\n"
-                              "Press SPACE to START") 
+  (love.graphics.printf   (.. "Press F to Enter Fullscreen\n" ;; FIXME double click to FS
+                              "Press SPACE to START") ;; FIXME click to start
                           0 (/ h 2) (/ w 4) :center 0 4 4))
 
 (fn update [self dt w h]

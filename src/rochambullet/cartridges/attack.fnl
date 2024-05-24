@@ -7,7 +7,7 @@
   (each [_ e (pairs self.enemies)] (e:anim dt self.board))
   (var collision? false)
   (each [_ e (pairs self.enemies)] 
-    ;; self.player collision
+    ;; self.player collision FIXME consider enemy type
     (let [outer (self.player:collision? e.x e.y (* (+ self.player.size e.size) 1.5))
           inner (self.player:collision? e.x e.y (* (+ self.player.size e.size) 1))
           angle (arctan e.x e.y self.player.x self.player.y)]
@@ -16,11 +16,11 @@
         (when (< (math.abs (- angle self.player.aim)) (/ math.pi 2))
               (do
                 (set e.angle self.player.aim)
-                (set e.speed 2)))
+                (set e.speed 2))) ;; FIXME lerp enemy from current pos to fixed grid bounce
         (when inner (set self.player.threat 1))))
       (set collision? (or collision? outer inner))))
   (when (not collision?) (set self.player.threat -1))
-  ;; enemy collision
+  ;; enemy collision FIXME consider enemy type
   (local collided [])
   (for [i 1 (length self.enemies)] ;; FIXME spatial hashmap avoid polynomial checks
     (for [j 1 (length self.enemies)]

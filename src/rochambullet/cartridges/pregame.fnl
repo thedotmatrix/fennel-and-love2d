@@ -50,6 +50,7 @@
       (Cartridge.load self :src.rochambullet.cartridges.choose true)))
   (self.shader:send :fx self.sphereize!)
   (self.shader:send :manual_amount (* (- 1.5 (/ self.sphereize! -2.4)) 0.9125))
+  ;; FIXME lerp self.player from self.rando to self.start
   (when (~= self.player.x 0) (decf self.player.x (* self.player.x dt)))
   (when (~= self.player.x 0) (decf self.player.y (* self.player.y dt)))
   (let [tx (- (/ w 2) self.player.x)
@@ -59,10 +60,6 @@
 (fn mousemoved [self x y dx dy istouch]
   (let [(tx ty) (self.followplayer:inverseTransformPoint x y)]
     (self.player:aiming tx ty)))
-
-(fn mousepressed [self x y button istouch presses]
-  (let [(tx ty) (self.followplayer:inverseTransformPoint x y)]
-    false))
 
 (tset Pregame :new (fn [self w h old]
   (Pregame.super.new self old) ;; keep old state
@@ -76,7 +73,6 @@
   (tset self :update update)
   (tset self :keypressed nil)
   (tset self :mousemoved mousemoved)
-  (tset self :mousepressed mousepressed)
   (tset self :sphereize! -0.4)
   self))
 Pregame

@@ -17,10 +17,15 @@
     (local command (. commands self.tick))
     (love.graphics.printf command 0 (/ h 8) (/ w 8) :center 0 8 8))))
 
+(fn mousepressed [self x y button istouch presses]
+  (let [(tx ty) (self.followplayer:inverseTransformPoint x y)]
+    false)) ;; FIXME add RPS deflection choice on click
+
 (tset Choose :new (fn [self w h old]
   (Choose.super.new self old) ;; keep old state
   (tset self :update update)
   (tset self :draw (draw old))
+  (tset self :mousepressed mousepressed)
   (when (not self.turn) (self.player:digital self.board))
   self))
 Choose
