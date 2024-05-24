@@ -27,7 +27,7 @@
 (fn draw [self w h supercanvas]
   (let [f (love.graphics.getFont)
         fh (f:getHeight)
-        limit (math.ceil (* (/ h fh) 0.666666))
+        limit (math.ceil (* (/ h fh) 0.75))
         len (length output)]
     (love.graphics.clear 0 0 0 1)
     (love.graphics.setColor 1 1 1 1)
