@@ -1,7 +1,7 @@
 (local fennel (require :lib.fennel))
 (require :love.event)
 
-;; FIXME blocking io -> delayed / out of order stdout waiting for stdin
+;; TODO blocking io -> delayed / out of order stdout waiting for stdin
 ;; repl works fine from both the console and the GUI
 ;; but the console output is terrible
 ;; not using this much, so low priority fix imho

@@ -1,10 +1,20 @@
-(import-macros {: decf : arctan} :mac.math)
+(import-macros {: arctan} :mac.math)
 (local Cartridge (require :classes.cartridge))
 (local Attack (Cartridge:extend))
+
+(fn reset [self]
+  (self.player:reset self.board)
+  (each [_ e (pairs self.enemies)] (e:reset self.board)))
 
 (fn anim [self dt w h]
   (self.player:anim dt self.board)
   (each [_ e (pairs self.enemies)] (e:anim dt self.board))
+  ;; transform
+  (let [tx (- (/ w 2) self.player.x)
+        ty (- (/ h 2) self.player.y)]
+    (self.followplayer:setTransformation tx ty 0 1 1 0 0 0 0)))
+
+(fn collide [self dt w h]
   (var collision? false)
   (each [_ e (pairs self.enemies)] 
     ;; self.player collision FIXME consider enemy type
@@ -16,13 +26,13 @@
         (when (< (math.abs (- angle self.player.aim)) (/ math.pi 2))
               (do
                 (set e.angle self.player.aim)
-                (set e.speed 2))) ;; FIXME lerp enemy from current pos to fixed grid bounce
+                (set e.speed 1))) ;; FIXME lerp enemy from current pos to fixed grid bounce
         (when inner (set self.player.threat 1))))
       (set collision? (or collision? outer inner))))
   (when (not collision?) (set self.player.threat -1))
   ;; enemy collision FIXME consider enemy type
   (local collided [])
-  (for [i 1 (length self.enemies)] ;; FIXME spatial hashmap avoid polynomial checks
+  (for [i 1 (length self.enemies)] ;; TODO spatial hashmap avoid polynomial checks
     (for [j 1 (length self.enemies)]
       (when (~= i j)
         (let [a (. self.enemies i)
@@ -31,29 +41,21 @@
           (when c (do
             (table.insert collided i)))))))
   (for [i (length collided) 1 -1]
-    (table.remove self.enemies (. collided i)))
-  ;; transform
-  (let [tx (- (/ w 2) self.player.x)
-        ty (- (/ h 2) self.player.y)]
-    (self.followplayer:setTransformation tx ty 0 1 1 0 0 0 0)))
-
-(fn tick [self dt w h]
-  (self.player:tick self.board)
-  (each [_ e (pairs self.enemies)] (e:tick self.board)))
+    (table.remove self.enemies (. collided i))))
 
 (fn update [self dt w h]
   (if self.turn?
-    (if self.tick?
-        (anim self dt w h)
-        (tick self dt w h))
+    (if self.tick? 
+        (do (anim self dt w h) (collide self dt w h)) 
+        (reset self))
     (if (~= self.caller.name :src.rochambullet.cartridges.turn)
       (Cartridge.load self :src.rochambullet.cartridges.turn true)
       (do
-        (each [_ e (pairs self.enemies)] (e:digital self.board))
         (Cartridge.load self :src.rochambullet.cartridges.choose true)))))
 
 (tset Attack :new (fn [self w h old]
   (Attack.super.new self old) ;; keep old state
   (tset self :update update)
+  (tset self :overlay nil)
   self))
 Attack

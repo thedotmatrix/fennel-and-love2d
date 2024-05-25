@@ -64,7 +64,7 @@
       (set love.handlers.inp inp)
       (set love.handlers.vals out)
       (set love.handlers.err err))))
-  ;; FIXME love.js does not support threads/coroutines afaik
+  ;; TODO love.js does not support threads/coroutines afaik
   ; (when _G.web? (do
   ;   (set repl (coroutine.create (partial fennel.repl)))
   ;   (coroutine.resume repl {:readChunk coroutine.yield 

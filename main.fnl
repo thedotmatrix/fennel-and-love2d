@@ -28,7 +28,7 @@
 
 (fn love.update [dt] (console:update dt width height))
 
-(fn love.resize [] ;; FIXME start menu option for web
+(fn love.resize [] ;; TODO start menu option for web
   (let [(sw sh) (love.window.getMode)
         w       (if (or (not _G.web?) fullscreen?) sw width)
         h       (if (or (not _G.web?) fullscreen?) sh height)

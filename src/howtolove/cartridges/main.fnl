@@ -591,7 +591,7 @@
     :ralt (do (incf chapter 1) (clamp chapter 1 24)))
   (when (~= old chapter) (load)))
 
-;; FIXME break each chapter into its own cartridge
+;; TODO break each chapter into its own cartridge
 (tset Book :new (fn [self w h old]
   (Book.super.new self) ;; discard old state
   (tset self :draw draw)
