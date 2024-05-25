@@ -6,27 +6,38 @@
 (local Paper (require "src.rochambullet.classes.paper"))
 (local Scissors (require "src.rochambullet.classes.scissors"))
 
-(var alpha            0)
+(var   alpha          0)
 (local sphereize      {:start -0.4 :end -1.2 })
 (local crop           {:start 1.5 :end 0.9125 })
 (local enemies        [])
 
 (fn load [w h board player]
+  (var targetx (love.math.random (/ board.px -2) (/ board.px 2)))
+  (var targety (love.math.random (/ board.px -2) (/ board.px 2)))
   (player:reset board)
   (set player.start {:x player.x :y player.y})
-  (set player.x     (love.math.random (/ board.px -2) (/ board.px 2)))
-  (set player.y     (love.math.random (/ board.px -2) (/ board.px 2)))
+  (set player.x     targetx)
+  (set player.y     targety)
   (player:digital board)
-  (set player.end { :x (+ player.x (/ board.tilepx 2)) 
-                    :y (+ player.y (/ board.tilepx 2))})
-  (print [player.end.x "\t" player.end.y])
+  (set targetx player.x)
+  (set targety player.y)
+  (set player.end { :x (- targetx player.start.x)
+                    :y (- targety player.start.y)})
   (set player.x   player.start.x)
   (set player.y   player.start.y)
   (set player.alpha 0)
-  (for [i 1 4]
-    (table.insert enemies (Rock board player.end.x player.end.y))
-    (table.insert enemies (Paper board player.end.x player.end.y))
-    (table.insert enemies (Scissors board player.end.x player.end.y))))
+  (for [j 0 (- board.tiles 1)] (for [i 0 (- board.tiles 1)]
+    (let [ex (+ (* j board.tilepx) (/ board.tilepx 2) (/ board.px -2))
+          ey (+ (* i board.tilepx) (/ board.tilepx 2) (/ board.px -2))]
+      (when (or (~= ex targetx) (~= ey targety))
+        (do 
+          (local enemy
+            (match (math.floor (love.math.random 1 4))
+             1 (Rock ex ey)
+             2 (Paper ex ey)
+             3 (Scissors ex ey)
+             4 nil))
+          (when enemy (table.insert enemies enemy))))))))
 
 (fn update [self dt w h]
   ; lerp alpha

@@ -39,10 +39,10 @@
 (tset Character :digital (fn [self board]
   (set self.x (df self.x board))
   (set self.y (df self.y board))))
-(tset Character :reset (fn [self board interp?]
-  (if interp?
+(tset Character :reset (fn [self board speed]
+  (if (and speed self.alpha)
     (do
-      (set self.end (end self board (* self.speed 2)))
+      (set self.end (end self board speed))
       (set self.start.x (- self.x (lerp 0 self.end.x self.alpha)))
       (set self.start.y (- self.y (lerp 0 self.end.y self.alpha)))
       (set self.start.x (df self.start.x board))
