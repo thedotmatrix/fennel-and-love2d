@@ -27,7 +27,7 @@
           (when (or (and (= self.player.type "paper")     (= e.type "rock"))
                     (and (= self.player.type "scissors")  (= e.type "paper"))
                     (and (= self.player.type "rock")      (= e.type "scissors")))
-                (do (print "here") (table.remove self.enemies i)))
+                (table.remove self.enemies i))
           (when (= self.player.type e.type) (do
             (set e.angle self.player.daim)
             (e:reset self.board 2)))))
