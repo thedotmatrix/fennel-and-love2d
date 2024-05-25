@@ -1,4 +1,4 @@
-(import-macros {: decf : incf} :mac.math)
+(import-macros {: decf : incf : lerp : clamp : coin} :mac.math)
 (local Cartridge (require :classes.cartridge))
 (local Pregame (Cartridge:extend))
 (local Enemy (require "src.rochambullet.classes.enemy"))
@@ -6,19 +6,21 @@
 (local Paper (require "src.rochambullet.classes.paper"))
 (local Scissors (require "src.rochambullet.classes.scissors"))
 
-(local Player (require "src.rochambullet.classes.player"))
+(local sphereize      {:start -0.4 :end -1.2 })
+(local crop           {:start 1.5 :end 0.9125 })
+(local Player         (require "src.rochambullet.classes.player"))
+(local start          {:x nil :y nil})
 (var player nil)
-(local rando {:x nil :y nil})
-(local start {:x nil :y nil})
-(local followplayer (love.math.newTransform))
-(local enemies [])
+(local end            {:x nil :y nil})
+(local followplayer   (love.math.newTransform))
+(local enemies        [])
 
 (fn load [w h board]
-  (set rando.x (love.math.random (* w -1) w))
-  (set rando.y (love.math.random (* h -1) h))
-  (set player (Player rando.x rando.y))
-  (set start.x (love.math.random (/ board.tilepx -2) (/ board.tilepx 2)))
-  (set start.y (love.math.random (/ board.tilepx -2) (/ board.tilepx 2)))
+  (set start.x  (love.math.random (* w -1) w))
+  (set start.y  (love.math.random (* h -1) h))
+  (set player   (Player start.x start.y))
+  (set end.x    (coin (/ board.tilepx -2) (/ board.tilepx 2)))
+  (set end.y    (coin (/ board.tilepx -2) (/ board.tilepx 2)))
   (for [i 1 9] 
     (table.insert enemies (Rock board))
     (table.insert enemies (Paper board))
@@ -43,19 +45,25 @@
   (love.graphics.setShader))
 
 (fn update [self dt w h]
-  (if (> self.sphereize! -1.2)
-    (decf self.sphereize! (* (+ (- self.sphereize! -1.2) 0.1) dt))
-    (do 
-      (set self.sphereize! -1.2)
-      (Cartridge.load self :src.rochambullet.cartridges.choose true)))
+  ; lerp alpha
+  (incf self.alpha dt)
+  (clamp self.alpha 0 1)
+  ; shader
+  (set self.sphereize! (lerp sphereize.start sphereize.end self.alpha))
+  (set self.crop! (lerp crop.start crop.end self.alpha))
   (self.shader:send :fx self.sphereize!)
-  (self.shader:send :manual_amount (* (- 1.5 (/ self.sphereize! -2.4)) 0.9125))
-  ;; FIXME lerp self.player from self.rando to self.start
-  (when (~= self.player.x 0) (decf self.player.x (* self.player.x dt)))
-  (when (~= self.player.x 0) (decf self.player.y (* self.player.y dt)))
+  (self.shader:send :manual_amount self.crop!)
+  ; player position
+  (set self.player.x (lerp self.start.x self.end.x self.alpha))
+  (set self.player.y (lerp self.start.y self.end.y self.alpha))
+  (print [self.player.x "\t" self.player.y])
+  ; camera transform
   (let [tx (- (/ w 2) self.player.x)
         ty (- (/ h 2) self.player.y)]
-    (self.followplayer:setTransformation tx ty 0 1 1 0 0 0 0)))
+    (self.followplayer:setTransformation tx ty 0 1 1 0 0 0 0))
+  ; animation done
+  (when (>= self.alpha 1.0)
+    (Cartridge.load self :src.rochambullet.cartridges.choose true)))
 
 (fn mousemoved [self x y dx dy istouch]
   (let [(tx ty) (self.followplayer:inverseTransformPoint x y)]
@@ -64,15 +72,17 @@
 (tset Pregame :new (fn [self w h old]
   (Pregame.super.new self old) ;; keep old state
   (load w h self.board)
-  (tset self :rando rando)
-  (tset self :player player)
+  (tset self :alpha 0)
+  (tset self :sphereize! -0.4)
+  (tset self :crop! 1.5)
   (tset self :start start)
+  (tset self :player player)
+  (tset self :end end)
   (tset self :followplayer followplayer)
   (tset self :enemies enemies)
   (tset self :draw draw)
   (tset self :update update)
   (tset self :keypressed nil)
   (tset self :mousemoved mousemoved)
-  (tset self :sphereize! -0.4)
   self))
 Pregame
