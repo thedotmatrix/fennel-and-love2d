@@ -37,6 +37,7 @@
   (love.graphics.draw self.canvas)
   (love.graphics.pop)
   (love.graphics.setShader)
+  ;; FIXME tutorial description of aiming, choosing, attacking with gifs!
   (love.graphics.printf "RoChamBULLET" 0 (/ h 8) (/ w 8) :center 0 8 8)
   (love.graphics.printf   (.. "F11 to Enter Fullscreen\n"
                               "Double-Click/Tap to Start")

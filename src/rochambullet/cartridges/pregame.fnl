@@ -22,10 +22,10 @@
   (set player   (Player start.x start.y))
   (set end.x    (coin (/ board.tilepx -2) (/ board.tilepx 2)))
   (set end.y    (coin (/ board.tilepx -2) (/ board.tilepx 2)))
-  (for [i 1 9] ;; FIXME enemies cant spawn on top of player
-    (table.insert enemies (Rock board))
-    (table.insert enemies (Paper board))
-    (table.insert enemies (Scissors board))))
+  (for [i 1 9]
+    (table.insert enemies (Rock board end.x end.y))
+    (table.insert enemies (Paper board end.x end.y))
+    (table.insert enemies (Scissors board end.x end.y))))
 
 (fn draw [self w h supercanvas]
   (love.graphics.setCanvas self.canvas)

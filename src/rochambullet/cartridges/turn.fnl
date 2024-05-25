@@ -6,7 +6,7 @@
 (fn update [self dt w h]
   (tset self :turn? true)
   (local take (math.floor self.turn))
-  (incf self.turn (/ 1 (+ 4 1)))
+  (incf self.turn (/ 1.0 (+ 4.0 1.0)))
   (if (~= take (math.floor self.turn))
     (do 
       (tset self :turn? false)
@@ -18,6 +18,6 @@
 (tset Turn :new (fn [self w h old]
   (Cartridge.new self old) ;; keep old state
   (tset self :update update)
-  (when (not self.turn?) (tset self :turn 1.01))
+  (when (not self.turn?) (tset self :turn 1.1))
   self))
 Turn

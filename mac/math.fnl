@@ -18,10 +18,15 @@
 (fn arctan [x1 y1 x2 y2]
   `(- (math.atan2 (- ,x1 ,x2) (- ,y2 ,y1)) (/ math.pi 2)))
 
+(fn digital [angle] 
+  `(* (math.floor (/  (+ ,angle (/ math.pi 8)) 
+                                (/ math.pi 4))) 
+                      (/ math.pi 4)))
+
 (fn with [t keys ?body]
   `(let [,keys ,t]
      (if ,?body
          ,?body
          ,keys)))
 
-{: flip : coin : incf : decf : lerp : clamp : arctan : with}
+{: flip : coin : incf : decf : lerp : clamp : arctan : digital : with}

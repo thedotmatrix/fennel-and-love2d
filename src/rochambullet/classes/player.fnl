@@ -1,4 +1,4 @@
-(import-macros {: arctan} :mac.math)
+(import-macros {: arctan : digital} :mac.math)
 (local Character (require "src.rochambullet.classes.character"))
 (local Player (Character:extend))
 (tset Player :new (fn [self x y]
@@ -9,10 +9,7 @@
   self))
 (tset Player :aiming (fn [self mx my]
   (set self.aim (arctan mx my self.x self.y))
-  (local digital (* (math.floor (/  (+ self.aim (/ math.pi 8)) 
-                                    (/ math.pi 4))) 
-                    (/ math.pi 4)))
-  (set self.daim digital)))
+  (set self.daim (digital self.aim))))
 (tset Player :draw (fn [pc]
   (match pc.threat 
     -1 (love.graphics.setColor 0.25 0.25 1 1)
