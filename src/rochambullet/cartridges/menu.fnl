@@ -24,6 +24,7 @@
 
 (fn overlay [self w h]
   ;; FIXME tutorial description of aiming, choosing, attacking with gifs!
+  ;; have a fullscreen header at top to click instead of F11
   (love.graphics.printf "RoChamBULLET" 0 (/ h 8) (/ w 8) :center 0 8 8)
   (love.graphics.printf   (.. "F11 to Enter Fullscreen\n"
                               "Double-Click/Tap to Start")
@@ -49,7 +50,8 @@
   (when self.overlay (self:overlay w h)))
 
 (fn update [self dt w h]
-  (self.player:anim dt self.board)
+  (when (>= (self.player:anim dt self.board) 1.0) 
+            (self.player:reset self.board))
   ;; TODO class since duped across every update
   (let [tx (- (/ w 2) self.player.x)
         ty (- (/ h 2) self.player.y)]
