@@ -2,6 +2,11 @@
 (local Cartridge (require :classes.cartridge))
 (local Attack (Cartridge:extend))
 
+(fn overlay [self w h]
+  (love.graphics.setColor 0 0 0 1)
+  (love.graphics.printf (length self.enemies) 0 0 w :left 0 3 3)
+  (love.graphics.setColor 1 1 1 1))
+
 (fn anim [self dt w h]
   (self.player:anim dt self.board)
   (each [_ e (pairs self.enemies)] (e:anim dt self.board))
@@ -10,20 +15,23 @@
     (self.followplayer:setTransformation tx ty 0 1 1 0 0 0 0)))
 
 (fn PvE [self dt w h]
-  ;; FIXME consider enemy type
   (var collision? false)
-  (each [_ e (pairs self.enemies)] 
-    (let [outer (self.player:check e.x e.y (* (+ self.player.size e.size) 1.5))
-          inner (self.player:check e.x e.y (* (+ self.player.size e.size) 0.75))
+  (for [i (length self.enemies) 1 -1] 
+    (let [e     (. self.enemies i)
+          outer (self.player:check e.x e.y (* (+ self.player.size e.size) 2))
+          inner (self.player:check e.x e.y (* (+ self.player.size e.size) 1))
           angle (arctan e.x e.y self.player.x self.player.y)]
       (when (and (~= self.player.threat 1) outer) (do
         (set self.player.threat 0)
-        (when (<= (math.abs (- angle self.player.aim)) (/ math.pi 2))
-              (do
-                (set e.angle self.player.daim)
-                (e:reset self.board 2)))
-        (when inner (do (set self.player.threat 1)
-                        (print [(math.abs (- self.player.x e.x)) "\t" (math.abs (- self.player.y e.y))])))))
+        (when (<= (math.abs (- angle self.player.aim)) (* math.pi 0.5)) (do
+          (when (or (and (= self.player.type "paper")     (= e.type "rock"))
+                    (and (= self.player.type "scissors")  (= e.type "paper"))
+                    (and (= self.player.type "rock")      (= e.type "scissors")))
+                (do (print "here") (table.remove self.enemies i)))
+          (when (= self.player.type e.type) (do
+            (set e.angle self.player.daim)
+            (e:reset self.board 2)))))
+        (when inner (set self.player.threat 1))))
       (set collision? (or collision? outer inner))))
   (when (not collision?) (set self.player.threat -1)))
 
@@ -90,6 +98,7 @@
 (tset Attack :new (fn [self w h old]
   (Attack.super.new self old) ;; keep old state
   (tset self :update update)
-  (tset self :overlay nil)
+  (tset self :mousepressed nil)
+  (tset self :overlay overlay)
   self))
 Attack

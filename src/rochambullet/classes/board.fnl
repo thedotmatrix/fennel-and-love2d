@@ -23,8 +23,8 @@
   (love.graphics.translate (- x (/ self.px 2)) (- y (/ self.px 2)))
   (for [j 0 (- self.tiles 1)] (for [i 0 (- self.tiles 1)]
     (if (= (% (+ i j) 2) 0) 
-        (love.graphics.setColor 0.5 0.25 0.125 1)
-        (love.graphics.setColor 0.25 0.125 0 1))
+        (love.graphics.setColor (/ 1 math.pi) (/ 1 math.pi) (/ 1 math.pi) 1)
+        (love.graphics.setColor (/ 2 math.pi) (/ 2 math.pi) (/ 2 math.pi) 1))
     (love.graphics.rectangle "fill" (* j self.tilepx)  (* i self.tilepx)
                                     self.tilepx        self.tilepx)))
   (love.graphics.setColor 1 1 1 1)

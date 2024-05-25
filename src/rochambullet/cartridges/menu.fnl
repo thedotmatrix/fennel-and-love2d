@@ -43,10 +43,15 @@
   (love.graphics.setShader self.shader)
   (love.graphics.push)
   (love.graphics.applyTransform (self.centercanvas:inverse))
-  (love.graphics.clear 0.25 0 0.25 1)
+  (love.graphics.clear 1 1 1 1)
   (love.graphics.draw self.canvas)
   (love.graphics.pop)
   (love.graphics.setShader)
+  (love.graphics.setColor 0 0 0 1)
+  (when self.crop! (for [i 0 8 1]
+    (love.graphics.circle "line" (/ w 2) (/ h 2) 
+                          (- (* w 0.5325 self.crop!) (/ i 2)))))
+  (love.graphics.setColor 1 1 1 1)
   (when self.overlay (self:overlay w h)))
 
 (fn update [self dt w h]

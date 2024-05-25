@@ -12,6 +12,7 @@
 (local enemies        [])
 
 (fn load [w h board player]
+  (set player.type (coin "rock" (coin "paper" "scissors")))
   (var targetx (love.math.random (/ board.px -2) (/ board.px 2)))
   (var targety (love.math.random (/ board.px -2) (/ board.px 2)))
   (player:reset board)

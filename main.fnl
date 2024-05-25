@@ -19,7 +19,9 @@
       (love.event.push :resize))))
 
 (fn love.load [args]
-  (love.graphics.setFont (love.graphics.newFont 12 :mono))
+  (local font (love.graphics.newFont 12 :mono))
+  (font:setFilter "linear" "nearest")
+  (love.graphics.setFont font)
   (let [(w h _) (love.window.getMode)] (set width w) (set height h))
   (set _G.web? (= :web (. args 1)))
   (set console (Console width height)))

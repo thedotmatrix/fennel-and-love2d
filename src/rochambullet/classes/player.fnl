@@ -1,5 +1,6 @@
-(import-macros {: arctan : digital} :mac.math)
+(import-macros {: coin : arctan : digital} :mac.math)
 (local Character (require "src.rochambullet.classes.character"))
+(local Enemy (require "src.rochambullet.classes.enemy"))
 (local Player (Character:extend))
 (tset Player :new (fn [self x y]
   (Player.super.new self x y 1 (/ math.pi -2) 
@@ -12,15 +13,15 @@
   (set self.daim (digital self.aim))
   (set self.angle self.daim)))
 (tset Player :draw (fn [pc]
-  (match pc.threat 
-    -1 (love.graphics.setColor 0.25 0.25 1 1)
-    0 (love.graphics.setColor 1 1 0 1)
-    1 (love.graphics.setColor 1 0 0 1))
-  (love.graphics.draw pc.i pc.x pc.y pc.daim pc.scale pc.scale pc.ox pc.oy)
-  (love.graphics.setColor 1 1 1 1)
   (let [stdarc  (* pc.size 2)
         arca    (- pc.aim (/ math.pi 4))
         arcb    (+ pc.aim (/ math.pi 4))]
-    (love.graphics.arc "line" "open" pc.x pc.y stdarc arca arcb))
-  (love.graphics.setColor 1 1 1 1)))
+    (love.graphics.setColor 0 0 0 0.5)
+    (love.graphics.arc "fill" "open" pc.x pc.y (- stdarc 1) 0 (* math.pi 2))
+    (Enemy.weakColor pc.type)
+    (love.graphics.draw pc.i pc.x pc.y pc.daim pc.scale pc.scale pc.ox pc.oy)
+    (Enemy.typeColor pc.type)
+    (for [i 0 4 1]
+      (love.graphics.arc "line" "open" pc.x pc.y (+ stdarc i) arca arcb))
+  (love.graphics.setColor 1 1 1 1))))
 Player
