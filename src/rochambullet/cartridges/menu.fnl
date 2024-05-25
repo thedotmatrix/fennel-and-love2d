@@ -38,8 +38,8 @@
   (love.graphics.pop)
   (love.graphics.setShader)
   (love.graphics.printf "RoChamBULLET" 0 (/ h 8) (/ w 8) :center 0 8 8)
-  (love.graphics.printf   (.. "Press F to Enter Fullscreen\n" ;; FIXME double click to FS
-                              "Press SPACE to START") ;; FIXME click to start
+  (love.graphics.printf   (.. "F11 to Enter Fullscreen\n"
+                              "Double-Click/Tap to Start")
                           0 (/ h 2) (/ w 4) :center 0 4 4))
 
 (fn update [self dt w h]
@@ -48,8 +48,9 @@
   (self.shader:send :manual_amount 2)
   (self.shader:send :fx -0.4))
 
-(fn keypressed [self key scancode repeat?] (match key
-  :space (Cartridge.load self :src.rochambullet.cartridges.pregame)))
+(fn mousepressed [self x y button istouch presses]
+  (when (and (or (= button 1) istouch) (> presses 1))
+    (Cartridge.load self :src.rochambullet.cartridges.pregame)))
 
 (tset Menu :new (fn [self w h old]
   (Menu.super.new self) ;; discard old state
@@ -60,6 +61,6 @@
   (tset self :centercanvas centercanvas)
   (tset self :draw draw)
   (tset self :update update)
-  (tset self :keypressed keypressed)
+  (tset self :mousepressed mousepressed)
   self))
 Menu

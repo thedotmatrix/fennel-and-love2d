@@ -6,6 +6,18 @@
 (var console nil)
 (var fullscreen? false)
 
+(fn fullscreen []
+  (if (not _G.web?)
+    (love.window.setFullscreen (flip fullscreen?) :desktop)
+    (let [(sw sh) (love.window.getMode)
+          w       (if fullscreen? width sw)
+          h       (if fullscreen? height sh)]
+      (love.window.updateMode w h { :fullscreen (flip fullscreen?)
+                                    :fullscreentype :exclusive
+                                    :minwidth w 
+                                    :minheight h})
+      (love.event.push :resize))))
+
 (fn love.load [args]
   (love.graphics.setFont (love.graphics.newFont 12 :mono))
   (let [(w h _) (love.window.getMode)] (set width w) (set height h))
@@ -28,16 +40,7 @@
 (fn love.keypressed [key scancode repeat?]
   (match key
     :escape (love.event.quit)
-    :f (if _G.web?
-          (let [(sw sh) (love.window.getMode)
-                w       (if fullscreen? width sw)
-                h       (if fullscreen? height sh)]
-            (love.window.updateMode w h { :fullscreen (flip fullscreen?)
-                                          :fullscreentype :exclusive
-                                          :minwidth w 
-                                          :minheight h})
-            (love.event.push :resize))
-          (love.window.setFullscreen (flip fullscreen?) :desktop))
+    :f11 (fullscreen)
     _ (console:keypressed key scancode repeat? width height)))
 
 (fn love.keyreleased [key scancode] 
