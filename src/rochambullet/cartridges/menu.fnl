@@ -10,6 +10,7 @@
 (local centercanvas (love.math.newTransform))
 (local followplayer (love.math.newTransform))
 (local shader (love.graphics.newShader "src/rochambullet/assets/sphere.glsl"))
+(local music (love.audio.newSource "src/rochambullet/assets/brothers_and_sisters_SLOWED+REVERB.mp3" "stream"))
 
 (var time 0)
 (var left 1)
@@ -22,6 +23,8 @@
 (var framer nil)
 
 (fn load [w h]
+  (music:setVolume 0)
+  (music:setLooping true)
   (set player   (Player (coin (/ board.tilepx -2) (/ board.tilepx 2))
                         (coin (/ board.tilepx -2) (/ board.tilepx 2))))
   (let [csize (* w (+ (/ 1 16) 1.0))]
@@ -118,6 +121,8 @@
   (when self.overlay (self:overlay w h)))
 
 (fn update [self dt w h]
+  (when (not (self.music:isPlaying)) (self.music:play))
+  (when (< (self.music:getVolume) 0.5) (self.music:setVolume (+ (self.music:getVolume) (* dt 0.1))))
   (when (>= (self.player:anim dt self.board) 1.0) 
             (self.player:reset self.board))
   ;; TODO class since duped across every update
@@ -135,14 +140,16 @@
     (set time 0)))
 
 (fn mousepressed [self x y button istouch presses]
-  (when (and (or (= button 1) istouch) (> presses 1))
-    (Cartridge.load self :src.rochambullet.cartridges.pregame)))
+  (when (and (or (= button 1) istouch) (> presses 1)) (do
+    (music:setVolume 0.5)
+    (Cartridge.load self :src.rochambullet.cartridges.pregame))))
 
 (tset Menu :new (fn [self w h old]
   (Menu.super.new self) ;; discard old state
   (when (not self.caller) (load w h))
   (tset self :wins 0)
   (tset self :losses 0)
+  (when (not self.music) (tset self :music music))
   (when (not self.board) (tset self :board board))
   (when (not self.player) (tset self :player player))
   (when (not self.canvas) (tset self :canvas canvas))

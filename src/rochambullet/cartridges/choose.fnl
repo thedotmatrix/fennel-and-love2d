@@ -4,8 +4,10 @@
 (local Choose (Cartridge:extend))
 
 (local commands ["rock" "paper" "scissors" "SHOOT"])
+(local metronome (love.audio.newSource "src/rochambullet/assets/metronome.mp3" "static"))
 
 (fn update [self dt w h]
+  (when (not (metronome:isPlaying)) (metronome:play))
   (when (not self.turn?)
     (if (~= self.caller.name :src.rochambullet.cartridges.turn)
       (Cartridge.load self :src.rochambullet.cartridges.turn true)
@@ -36,5 +38,13 @@
   (tset self :overlay (overlay old))
   (tset self :update update)
   (tset self :mousepressed mousepressed)
+  (love.audio.setEffect "fg" {:type "flanger" :rate 0.125 :depth 1})
+  (self.music:setEffect "fg")
+  (love.audio.setEffect "eq" {:type "equalizer"
+                              :lowgain 1
+                              :lowmidgain 0.5 
+                              :highmidgain 0.25
+                              :highgain 0.125})
+  (self.music:setEffect "eq")
   self))
 Choose

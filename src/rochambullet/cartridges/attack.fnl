@@ -3,6 +3,8 @@
 (local Attack (Cartridge:extend))
 (local HitMarker (require "src.rochambullet.classes.hitmarker"))
 
+(local sources [])
+
 (local hits [])
 (fn hit [self x1 y1 x2 y2]
   (table.insert self.enemies (HitMarker (/ (+ x1 x2) 2) (/ (+ y1 y2) 2))))
@@ -26,9 +28,9 @@
     (let [e     (. self.enemies i)
           outer (self.player:check e.x e.y (* (+ self.player.size e.size) 1.5))
           inner (self.player:check e.x e.y (* (+ self.player.size e.size) 1))
-          angle (arctan e.x e.y self.player.x self.player.y)
-          diffs (math.abs (- angle self.player.aim))
-          oppos (math.abs (- (% (+ diffs math.pi) (* 2 math.pi)) math.pi))]
+          angle (math.abs (- (% (+ e.angle math.pi) (* 2 math.pi)) math.pi));(arctan e.x e.y self.player.x self.player.y)
+          diffs (math.abs (- (% (+ self.player.aim math.pi) (* 2 math.pi)) math.pi));(math.abs (+ angle self.player.aim))
+          oppos (math.abs (- math.pi (+ angle diffs)))];(math.abs (- (% (+ diffs math.pi) (* 2 math.pi)) math.pi))]
       (when (and (~= self.player.threat 1) outer) (do
         (set self.player.threat 0)
         (when (<= oppos (* math.pi 0.66)) (do
@@ -36,16 +38,29 @@
                     (and (= self.player.type "scissors")  (= e.type "paper"))
                     (and (= self.player.type "rock")      (= e.type "scissors")))
                 (do (incf self.wins 1) 
+                    (local source (love.audio.newSource "src/rochambullet/assets/hithigh.mp3" :static))
+                    (source:setRelative true)
+                    (source:setPosition (/ (- e.x self.player.x) w) (/ (- e.y self.player.y) h) 0)
+                    (source:play)
+                    (table.insert sources source)
                     (self:hit e.x e.y self.player.x self.player.y)
                     (table.remove self.enemies i)))
           (when (= self.player.type e.type) (do
             (set e.played true)
             (set e.angle self.player.daim)
+            (local source (love.audio.newSource "src/rochambullet/assets/bouncehigh.mp3" :static))
+            (source:play)
+            (table.insert sources source)
             (e:reset self.board 2)))))
         (when inner 
           (when (or (and (= e.type "paper")     (= self.player.type "rock"))
                     (and (= e.type "scissors")  (= self.player.type "paper"))
                     (and (= e.type "rock")      (= self.player.type "scissors")))
+                (local source (love.audio.newSource "src/rochambullet/assets/loss.mp3" :static))
+                (source:setRelative true)
+                (source:setPosition (/ (- e.x self.player.x) w) (/ (- e.y self.player.y) h) 0)
+                (source:play)
+                (table.insert sources source)
                 (set self.player.threat 1)))))
       (set collision? (or collision? outer inner))))
   (when (not collision?) (set self.player.threat -1)))
@@ -59,8 +74,8 @@
       (when (~= i j)
         (let [a (. self.enemies i)
               b (. self.enemies j)
-              c (a:check b.x b.y (/ (+ a.size b.size) 2))]
-          (when c (do 
+              c (a:check b.x b.y (/ (+ a.size b.size) (/ self.board.tilepx 2)))]
+          (when c (do
             (table.insert twos {:i i :a a :b b :aa a.angle :ba b.angle})
             (when (< i j)
               (table.insert ones {:i i :a a :b b :aa a.angle :ba b.angle}))))))))
@@ -75,12 +90,22 @@
         (do
           (when (or ent.played oth.played) (incf self.wins 1))
           (self:hit ent.x ent.y oth.x oth.y)
+          (local source (love.audio.newSource "src/rochambullet/assets/hitlow.mp3" :static))
+          (source:setRelative true)
+          (source:setPosition (/ (- ent.x self.player.x) w) (/ (- ent.y self.player.y) h) 0)
+          (source:play)
+          (table.insert sources source)
           (table.remove self.enemies collision.i)))))
   (for [c (length ones) 1 -1]
     (let [collision (. ones c)
           oth       collision.b
           ent       collision.a]
-      (when (and (= ent.type oth.type) (= ent.type "hitmarker")) (do         
+      (when (and (= ent.type oth.type) (~= ent.type "hitmarker")) (do
+        (local source (love.audio.newSource "src/rochambullet/assets/bouncelow.mp3" :static))
+        (source:setRelative true)
+        (source:setPosition (/ (- ent.x self.player.x) w) (/ (- ent.y self.player.y) h) 0)
+        (source:play)
+        (table.insert sources source)       
         (set ent.angle (math.abs (- (% (+ ent.angle math.pi) (* 2 math.pi)) 0)))
         (set ent.angle (math.atan2  (+  (math.cos ent.angle)
                                         (math.cos collision.ba))
@@ -104,6 +129,11 @@
   (EvE self dt w h))
 
 (fn reset [self dt w h]
+  (for [s (length sources) 1 -1]
+    (local source (. sources s))
+    (source:stop)
+    (source:release)
+    (table.remove sources s))
   (for [e (length self.enemies) 1 -1] 
     (when (= (. (. self.enemies e) :type) "hitmarker") (table.remove self.enemies e)))
   (when (= self.player.threat 1) (incf self.losses 1))
@@ -127,5 +157,13 @@
   (tset self :update update)
   (tset self :mousepressed nil)
   (tset self :overlay overlay)
+  (love.audio.setEffect "fg" {:type "flanger" :rate 1 :depth 0})
+  (self.music:setEffect "fg")
+  (love.audio.setEffect "eq" {:type "equalizer"
+                              :lowgain 0.125
+                              :lowmidgain 0.25
+                              :highmidgain 0.5
+                              :highgain 1})
+  (self.music:setEffect "eq")
   self))
 Attack

@@ -53,7 +53,9 @@
       (set self.alpha nil)
       (set self.start nil)
       (set self.end nil)))))
+(tset Character :dist (fn [self x y]
+  (math.sqrt (+ (^ (- self.x x) 2) (^ (- self.y y) 2)))))
 (tset Character :check (fn [self x y size]
-  (let [d (math.sqrt (+ (^ (- self.x x) 2) (^ (- self.y y) 2)))]
+  (let [d (self:dist x y)]
     (< d size))))
 Character

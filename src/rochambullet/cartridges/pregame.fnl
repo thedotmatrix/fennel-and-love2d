@@ -41,8 +41,17 @@
 
 (fn update [self dt w h]
   ; lerp alpha
-  (set alpha (self.player:anim dt self.board))
+  (set alpha (self.player:anim (/ dt 4) self.board))
   (when (>= alpha 1.0) (set alpha 1.0))
+  ; audio
+  (love.audio.setEffect "fg" {:type "flanger" :rate 0.125 :depth alpha})
+  (self.music:setEffect "fg")
+  (love.audio.setEffect "eq" {:type "equalizer"
+                              :lowgain (+ 0.125 (* 0.825 alpha))
+                              :lowmidgain (+ 0.25 (* 0.25 alpha)) 
+                              :highmidgain (- 0.5 (* 0.25 alpha))
+                              :highgain (- 1 (* 0.825 alpha))})
+  (self.music:setEffect "eq")
   ; shader
   (set self.sphereize! (lerp sphereize.start sphereize.end alpha))
   (set self.crop! (lerp crop.start crop.end alpha))
