@@ -18,12 +18,13 @@
   (var collision? false)
   (for [i (length self.enemies) 1 -1] 
     (let [e     (. self.enemies i)
-          outer (self.player:check e.x e.y (* (+ self.player.size e.size) 2))
+          outer (self.player:check e.x e.y (* (+ self.player.size e.size) 1.5))
           inner (self.player:check e.x e.y (* (+ self.player.size e.size) 1))
-          angle (arctan e.x e.y self.player.x self.player.y)]
+          angle (arctan e.x e.y self.player.x self.player.y)
+          oppos (% (math.abs (- angle self.player.aim)) (* math.pi 2))]
       (when (and (~= self.player.threat 1) outer) (do
         (set self.player.threat 0)
-        (when (<= (math.abs (- angle self.player.aim)) (* math.pi 0.5)) (do
+        (when (<= oppos (* math.pi 0.5)) (do
           (when (or (and (= self.player.type "paper")     (= e.type "rock"))
                     (and (= self.player.type "scissors")  (= e.type "paper"))
                     (and (= self.player.type "rock")      (= e.type "scissors")))

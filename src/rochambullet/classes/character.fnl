@@ -32,8 +32,9 @@
   (when (not self.end) (set self.end (end self board self.speed)))
   (incf self.alpha dt)
   (clamp self.alpha 0 1)
-  (set self.x (+ self.start.x (lerp 0 self.end.x self.alpha)))
-  (set self.y (+ self.start.y (lerp 0 self.end.y self.alpha)))
+  (local alphasquared (* self.alpha self.alpha))
+  (set self.x (+ self.start.x (lerp 0 self.end.x alphasquared)))
+  (set self.y (+ self.start.y (lerp 0 self.end.y alphasquared)))
   (board:fit self)
   self.alpha))
 (tset Character :digital (fn [self board]

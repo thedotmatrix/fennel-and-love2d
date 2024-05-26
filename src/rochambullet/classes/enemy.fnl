@@ -16,7 +16,7 @@
     "rock"      (Enemy.typeColor "paper")
     "paper"     (Enemy.typeColor "scissors")
     "scissors"  (Enemy.typeColor "rock")
-    _           (love.graphics.setColor 0 0 0 1))))
+    _           (love.graphics.setColor 1 1 1 1))))
 (tset Enemy :draw (fn [self ox oy]
   (Enemy.typeColor self.type)
   (love.graphics.draw self.i self.x self.y 0 self.scale self.scale

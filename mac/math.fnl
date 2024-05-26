@@ -19,9 +19,10 @@
   `(- (math.atan2 (- ,x1 ,x2) (- ,y2 ,y1)) (/ math.pi 2)))
 
 (fn digital [angle] 
-  `(* (math.floor (/  (+ ,angle (/ math.pi 8)) 
+  `(% (* (math.floor (/  (+ ,angle (/ math.pi 8)) 
                                 (/ math.pi 4))) 
-                      (/ math.pi 4)))
+                      (/ math.pi 4))
+      (* 2 math.pi)))
 
 (fn with [t keys ?body]
   `(let [,keys ,t]
