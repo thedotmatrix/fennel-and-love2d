@@ -6,7 +6,6 @@ on:
     branches: [ master ]
 jobs:
   build:
-    runs-on: ubuntu-latest
     steps:
     - name: build application
       run: make linux
