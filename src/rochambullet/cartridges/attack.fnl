@@ -1,10 +1,15 @@
 (import-macros {: incf : decf : clamp : digital : arctan} :mac.math)
 (local Cartridge (require :classes.cartridge))
 (local Attack (Cartridge:extend))
+(local HitMarker (require "src.rochambullet.classes.HitMarker"))
+
+(local hits [])
+(fn hit [self x1 y1 x2 y2]
+  (table.insert self.enemies (HitMarker (/ (+ x1 x2) 2) (/ (+ y1 y2) 2))))
 
 (fn overlay [self w h]
-  (local help "kills\tI\tdeaths\tI\tremaining")
-  (local stats [self.kills "\tI\t" self.deaths "\tI\t" (length self.enemies)])
+  (local help "wins\tI\tlosses\tI\tremaining")
+  (local stats [self.wins "\tI\t" self.losses "\tI\t" (length self.enemies)])
   (love.graphics.printf stats 0 0 (/ w 2) :center 0 2 2)
   (love.graphics.printf help 0 (- h (/ h 18)) (/ w 2) :center 0 2 2))
 
@@ -30,7 +35,9 @@
           (when (or (and (= self.player.type "paper")     (= e.type "rock"))
                     (and (= self.player.type "scissors")  (= e.type "paper"))
                     (and (= self.player.type "rock")      (= e.type "scissors")))
-                (do (incf self.kills 1) (table.remove self.enemies i)))
+                (do (incf self.wins 1) 
+                    (self:hit e.x e.y self.player.x self.player.y)
+                    (table.remove self.enemies i)))
           (when (= self.player.type e.type) (do
             (set e.played true)
             (set e.angle self.player.daim)
@@ -66,13 +73,14 @@
                   (and  (= ent.type "paper")    (= oth.type "scissors"))
                   (and  (= ent.type "scissors") (= oth.type "rock")))
         (do
-          (when (or ent.played oth.played) (incf self.kills 1))
+          (when (or ent.played oth.played) (incf self.wins 1))
+          (self:hit ent.x ent.y oth.x oth.y)
           (table.remove self.enemies collision.i)))))
   (for [c (length ones) 1 -1]
     (let [collision (. ones c)
           oth       collision.b
           ent       collision.a]
-      (when (= ent.type oth.type) (do         
+      (when (and (= ent.type oth.type) (= ent.type "hitmarker")) (do         
         (set ent.angle (math.abs (- (% (+ ent.angle math.pi) (* 2 math.pi)) 0)))
         (set ent.angle (math.atan2  (+  (math.cos ent.angle)
                                         (math.cos collision.ba))
@@ -96,7 +104,9 @@
   (EvE self dt w h))
 
 (fn reset [self dt w h]
-  (when (= self.player.threat 1) (incf self.deaths 1))
+  (for [e (length self.enemies) 1 -1] 
+    (when (= (. (. self.enemies e) :type) "hitmarker") (table.remove self.enemies e)))
+  (when (= self.player.threat 1) (incf self.losses 1))
   (self.player:reset self.board)
   (each [_ e (pairs self.enemies)] (e:reset self.board)))
 
@@ -112,6 +122,8 @@
 
 (tset Attack :new (fn [self w h old]
   (Attack.super.new self old) ;; keep old state
+  (tset self :hits hits)
+  (tset self :hit hit)
   (tset self :update update)
   (tset self :mousepressed nil)
   (tset self :overlay overlay)

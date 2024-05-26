@@ -83,8 +83,8 @@
 (tset Menu :new (fn [self w h old]
   (Menu.super.new self) ;; discard old state
   (when (not self.caller) (load w h))
-  (tset self :kills 0)
-  (tset self :deaths 0)
+  (tset self :wins 0)
+  (tset self :losses 0)
   (when (not self.board) (tset self :board board))
   (when (not self.player) (tset self :player player))
   (when (not self.canvas) (tset self :canvas canvas))
