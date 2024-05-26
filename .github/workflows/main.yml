@@ -1,0 +1,11 @@
+name: fennel-and-love2d
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  build:
+    steps:
+    - name: build application
+      run: make linux
