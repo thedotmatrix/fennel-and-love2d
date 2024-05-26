@@ -10,7 +10,7 @@ DESCRIPTION="fennel-and-love2d game console"
 GITHUB_USERNAME := $(shell grep GITHUB_USERNAME credentials.private | cut -d= -f2)
 GITHUB_PAT := $(shell grep GITHUB_PAT credentials.private | cut -d= -f2)
 ALL := $(wildcard *.lua *.fnl)
-AST := $(wildcard assets/*.* 		src/$(NAME)/assets/*.*)
+AST := $(wildcard assets/*.* 		src/$(NAME)/assets/*.*		src/$(NAME)/assets/*/*.*)
 CLS := $(wildcard classes/*.fnl 	src/$(NAME)/classes/*.fnl)
 CRT := $(wildcard cartridges/*.fnl 	src/$(NAME)/cartridges/*.fnl)
 LIB := $(foreach L,$(LIBS),$(wildcard lib/$L.*))

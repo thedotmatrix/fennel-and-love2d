@@ -1,7 +1,7 @@
 (import-macros {: incf : decf : clamp : digital : arctan} :mac.math)
 (local Cartridge (require :classes.cartridge))
 (local Attack (Cartridge:extend))
-(local HitMarker (require "src.rochambullet.classes.HitMarker"))
+(local HitMarker (require "src.rochambullet.classes.hitmarker"))
 
 (local hits [])
 (fn hit [self x1 y1 x2 y2]
