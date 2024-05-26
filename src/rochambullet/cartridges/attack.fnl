@@ -1,11 +1,12 @@
-(import-macros {: decf : clamp : digital : arctan} :mac.math)
+(import-macros {: incf : decf : clamp : digital : arctan} :mac.math)
 (local Cartridge (require :classes.cartridge))
 (local Attack (Cartridge:extend))
 
 (fn overlay [self w h]
-  (love.graphics.setColor 0 0 0 1)
-  (love.graphics.printf (length self.enemies) 0 0 w :left 0 3 3)
-  (love.graphics.setColor 1 1 1 1))
+  (local help "kills\tI\tdeaths\tI\tremaining")
+  (local stats [self.kills "\tI\t" self.deaths "\tI\t" (length self.enemies)])
+  (love.graphics.printf stats 0 0 (/ w 2) :center 0 2 2)
+  (love.graphics.printf help 0 (- h (/ h 18)) (/ w 2) :center 0 2 2))
 
 (fn anim [self dt w h]
   (self.player:anim dt self.board)
@@ -24,15 +25,21 @@
           oppos (% (math.abs (- angle self.player.aim)) (* math.pi 2))]
       (when (and (~= self.player.threat 1) outer) (do
         (set self.player.threat 0)
+        (when (> oppos (/ math.pi 2)) (print oppos))
         (when (<= oppos (* math.pi 0.5)) (do
           (when (or (and (= self.player.type "paper")     (= e.type "rock"))
                     (and (= self.player.type "scissors")  (= e.type "paper"))
                     (and (= self.player.type "rock")      (= e.type "scissors")))
-                (table.remove self.enemies i))
+                (do (incf self.kills 1) (table.remove self.enemies i)))
           (when (= self.player.type e.type) (do
+            (set e.played true)
             (set e.angle self.player.daim)
             (e:reset self.board 2)))))
-        (when inner (set self.player.threat 1))))
+        (when inner 
+          (when (or (and (= e.type "paper")     (= self.player.type "rock"))
+                    (and (= e.type "scissors")  (= self.player.type "paper"))
+                    (and (= e.type "rock")      (= self.player.type "scissors")))
+                (set self.player.threat 1)))))
       (set collision? (or collision? outer inner))))
   (when (not collision?) (set self.player.threat -1)))
 
@@ -58,7 +65,9 @@
       (when (or   (and  (= ent.type "rock")     (= oth.type "paper"))
                   (and  (= ent.type "paper")    (= oth.type "scissors"))
                   (and  (= ent.type "scissors") (= oth.type "rock")))
-        (table.remove self.enemies collision.i))))
+        (do
+          (when (or ent.played oth.played) (incf self.kills 1))
+          (table.remove self.enemies collision.i)))))
   (for [c (length ones) 1 -1]
     (let [collision (. ones c)
           oth       collision.b
@@ -77,7 +86,9 @@
                                         (math.sin collision.aa))))
         (set oth.angle (digital oth.angle))
         (ent:reset self.board 1)
-        (oth:reset self.board 1))))))
+        (oth:reset self.board 1)
+        (when (or ent.played oth.played)
+              (do (set ent.played true) (set oth.played true))))))))
 
 (fn tick [self dt w h]
   (anim self dt w h)
@@ -85,16 +96,19 @@
   (EvE self dt w h))
 
 (fn reset [self dt w h]
+  (when (= self.player.threat 1) (incf self.deaths 1))
   (self.player:reset self.board)
   (each [_ e (pairs self.enemies)] (e:reset self.board)))
 
 (fn update [self dt w h]
   (if self.turn?
     (if self.tick? (tick self dt w h) (reset self dt w h))
-    (if (~= self.caller.name :src.rochambullet.cartridges.turn)
-      (Cartridge.load self :src.rochambullet.cartridges.turn true)
-      (do
-        (Cartridge.load self :src.rochambullet.cartridges.choose true)))))
+    (if (= (length self.enemies ) 0)
+      (Cartridge.load self :src.rochambullet.cartridges.menu true)
+      (if (~= self.caller.name :src.rochambullet.cartridges.turn)
+        (Cartridge.load self :src.rochambullet.cartridges.turn true)
+        (do
+          (Cartridge.load self :src.rochambullet.cartridges.choose true))))))
 
 (tset Attack :new (fn [self w h old]
   (Attack.super.new self old) ;; keep old state

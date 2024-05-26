@@ -20,7 +20,8 @@
 
 (fn love.load [args]
   (local font (love.graphics.newFont 12 :mono))
-  (font:setFilter "linear" "nearest")
+  (font:setFilter "nearest" "nearest")
+  (set _G.font font)
   (love.graphics.setFont font)
   (let [(w h _) (love.window.getMode)] (set width w) (set height h))
   (set _G.web? (= :web (. args 1)))
@@ -42,7 +43,6 @@
 (fn love.keypressed [key scancode repeat?]
   (match key
     :escape (love.event.quit)
-    :f11 (fullscreen)
     _ (console:keypressed key scancode repeat? width height)))
 
 (fn love.keyreleased [key scancode] 
@@ -57,4 +57,5 @@
 
 (fn love.mousepressed [x y button istouch presses]
   (let [(tx ty) (transform:inverseTransformPoint x y)]
+    (when (or (< ty (/ height 18)) (> ty (* 17 (/ height 18)))) (fullscreen))
     (console:mousepressed tx ty button istouch presses width height)))

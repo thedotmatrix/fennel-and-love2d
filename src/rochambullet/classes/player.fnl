@@ -20,7 +20,11 @@
     (love.graphics.arc "fill" "open" pc.x pc.y (- stdarc 1) 0 (* math.pi 2))
     (Enemy.weakColor pc.type)
     (love.graphics.draw pc.i pc.x pc.y pc.daim pc.scale pc.scale pc.ox pc.oy)
-    (Enemy.typeColor pc.type)
+    (when (= pc.threat 1) (do
+      (local blink (math.sin (* 2 math.pi 24 (love.timer.getTime))))
+      (love.graphics.setColor 0 0 0 blink)
+      (love.graphics.arc "fill" "open" pc.x pc.y (- stdarc 1) 0 (* math.pi 2))))
+    (Enemy.typeColor pc.type) 
     (for [i 0 4 1]
       (love.graphics.arc "line" "open" pc.x pc.y (+ stdarc i) arca arcb))
   (love.graphics.setColor 1 1 1 1))))

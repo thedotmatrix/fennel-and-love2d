@@ -24,11 +24,24 @@
 
 (fn overlay [self w h]
   ;; FIXME tutorial description of aiming, choosing, attacking with gifs!
-  ;; have a fullscreen header at top to click instead of F11
-  (love.graphics.printf "RoChamBULLET" 0 (/ h 8) (/ w 8) :center 0 8 8)
-  (love.graphics.printf   (.. "F11 to Enter Fullscreen\n"
-                              "Double-Click/Tap to Start")
-                          0 (/ h 2) (/ w 4) :center 0 4 4))
+  (love.graphics.printf  "Click/Tap Here to Enter/Exit Fullscreen"
+                          0 0 (/ w 2) :center 0 2 2)
+  (_G.font:setFilter "linear" "linear")
+  (love.graphics.setColor 0 0 0 1)
+  (love.graphics.printf ["Ro" "Cham" "BULLET"] 
+                          0 (+ 0 (/ h 36)) (/ w 8) :center 0 8 8)
+  (love.graphics.printf "Double-Click/Tap to Start" 
+                          0 (+ 0 (/ h 4.5)) (/ w 4) :center 0 4 4)
+  (love.graphics.setColor 1 1 1 1)
+  (_G.font:setFilter "nearest" "nearest")
+  (love.graphics.printf [[1 0 1 1] "Ro" [0 1 0 1] "Cham" [0 1 1 1] "BULLET"] 
+                          0 (+ 0 (/ h 36)) (/ w 8) :center 0 8 8)
+  (love.graphics.printf "Double-Click/Tap to Start" 
+                          0 (+ 0 (/ h 4.5)) (/ w 4) :center 0 4 4)
+  (love.graphics.printf  "Click/Tap Here to Enter/Exit Fullscreen"
+                          0 (- h (/ h 18)) (/ w 2) :center 0 2 2)
+
+  )
 
 (fn draw [self w h supercanvas]
   (love.graphics.setCanvas self.canvas)
@@ -51,6 +64,9 @@
   (when self.crop! (for [i 0 8 1]
     (love.graphics.circle "line" (/ w 2) (/ h 2) 
                           (- (* w 0.5325 self.crop!) (/ i 2)))))
+  (love.graphics.setColor 0 0 0 1)
+  (love.graphics.rectangle "fill" 0 0 w (/ h 18))
+  (love.graphics.rectangle "fill" 0 (- h (/ h 18)) w (/ h 18))
   (love.graphics.setColor 1 1 1 1)
   (when self.overlay (self:overlay w h)))
 
@@ -69,6 +85,8 @@
 (tset Menu :new (fn [self w h old]
   (Menu.super.new self) ;; discard old state
   (load w h)
+  (tset self :kills 0)
+  (tset self :deaths 0)
   (tset self :board board)
   (tset self :player player)
   (tset self :canvas canvas)
