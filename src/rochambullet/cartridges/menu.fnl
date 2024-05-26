@@ -39,9 +39,7 @@
   (love.graphics.printf "Double-Click/Tap to Start" 
                           0 (+ 0 (/ h 4.5)) (/ w 4) :center 0 4 4)
   (love.graphics.printf  "Click/Tap Here to Enter/Exit Fullscreen"
-                          0 (- h (/ h 18)) (/ w 2) :center 0 2 2)
-
-  )
+                          0 (- h (/ h 18)) (/ w 2) :center 0 2 2))
 
 (fn draw [self w h supercanvas]
   (love.graphics.setCanvas self.canvas)
@@ -84,15 +82,15 @@
 
 (tset Menu :new (fn [self w h old]
   (Menu.super.new self) ;; discard old state
-  (load w h)
+  (when (not self.caller) (load w h))
   (tset self :kills 0)
   (tset self :deaths 0)
-  (tset self :board board)
-  (tset self :player player)
-  (tset self :canvas canvas)
-  (tset self :centercanvas centercanvas)
-  (tset self :followplayer followplayer)
-  (tset self :shader shader)
+  (when (not self.board) (tset self :board board))
+  (when (not self.player) (tset self :player player))
+  (when (not self.canvas) (tset self :canvas canvas))
+  (when (not self.centercanvas) (tset self :centercanvas centercanvas))
+  (when (not self.followplayer) (tset self :followplayer followplayer))
+  (when (not self.shader) (tset self :shader shader))
   (tset self :overlay overlay)
   (tset self :draw draw)
   (tset self :update update)

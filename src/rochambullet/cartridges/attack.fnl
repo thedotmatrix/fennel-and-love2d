@@ -22,11 +22,11 @@
           outer (self.player:check e.x e.y (* (+ self.player.size e.size) 1.5))
           inner (self.player:check e.x e.y (* (+ self.player.size e.size) 1))
           angle (arctan e.x e.y self.player.x self.player.y)
-          oppos (% (math.abs (- angle self.player.aim)) (* math.pi 2))]
+          diffs (math.abs (- angle self.player.aim))
+          oppos (math.abs (- (% (+ diffs math.pi) (* 2 math.pi)) math.pi))]
       (when (and (~= self.player.threat 1) outer) (do
         (set self.player.threat 0)
-        (when (> oppos (/ math.pi 2)) (print oppos))
-        (when (<= oppos (* math.pi 0.5)) (do
+        (when (<= oppos (* math.pi 0.66)) (do
           (when (or (and (= self.player.type "paper")     (= e.type "rock"))
                     (and (= self.player.type "scissors")  (= e.type "paper"))
                     (and (= self.player.type "rock")      (= e.type "scissors")))
@@ -73,13 +73,13 @@
           oth       collision.b
           ent       collision.a]
       (when (= ent.type oth.type) (do         
-        (set ent.angle (% (+ ent.angle math.pi) (* 2 math.pi)))
+        (set ent.angle (math.abs (- (% (+ ent.angle math.pi) (* 2 math.pi)) 0)))
         (set ent.angle (math.atan2  (+  (math.cos ent.angle)
                                         (math.cos collision.ba))
                                     (+  (math.sin ent.angle) 
                                         (math.sin collision.ba))))
         (set ent.angle (digital ent.angle))
-        (set oth.angle (% (+ oth.angle math.pi) (* 2 math.pi)))
+        (set oth.angle (math.abs (- (% (+ oth.angle math.pi) (* 2 math.pi)) 0)))
         (set oth.angle (math.atan2  (+  (math.cos oth.angle)
                                         (math.cos collision.aa))
                                     (+  (math.sin oth.angle) 
@@ -104,7 +104,7 @@
   (if self.turn?
     (if self.tick? (tick self dt w h) (reset self dt w h))
     (if (= (length self.enemies ) 0)
-      (Cartridge.load self :src.rochambullet.cartridges.menu true)
+      (Cartridge.load self :src.rochambullet.cartridges.postgame true)
       (if (~= self.caller.name :src.rochambullet.cartridges.turn)
         (Cartridge.load self :src.rochambullet.cartridges.turn true)
         (do

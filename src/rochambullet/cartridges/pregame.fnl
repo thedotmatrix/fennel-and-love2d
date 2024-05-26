@@ -12,7 +12,6 @@
 (local enemies        [])
 
 (fn load [w h board player]
-  (set player.type (coin "rock" (coin "paper" "scissors")))
   (var targetx (love.math.random (/ board.px -2) (/ board.px 2)))
   (var targety (love.math.random (/ board.px -2) (/ board.px 2)))
   (player:reset board)
@@ -42,7 +41,7 @@
 
 (fn update [self dt w h]
   ; lerp alpha
-  (var alpha (self.player:anim dt self.board))
+  (set alpha (self.player:anim dt self.board))
   (when (>= alpha 1.0) (set alpha 1.0))
   ; shader
   (set self.sphereize! (lerp sphereize.start sphereize.end alpha))

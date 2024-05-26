@@ -15,12 +15,12 @@
 (local df (fn [v board] 
   (+  (* (math.floor (/ v board.tilepx)) board.tilepx) 
       (/ board.tilepx 2))))
-(tset Character :new (fn [self x y speed angle image scale]
+(tset Character :new (fn [self x y speed angle scale image]
   (set self.x x)
   (set self.y y)
   (set self.speed speed)
   (set self.angle angle)
-  (set self.i (love.graphics.newImage image))
+  (when image (set self.i (love.graphics.newImage image)))
   (set self.ox (/ (self.i:getWidth) 2))
   (set self.oy (/ (self.i:getHeight) 2))
   (set self.scale scale)

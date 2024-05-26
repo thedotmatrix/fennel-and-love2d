@@ -3,8 +3,9 @@
 (local Enemy (Character:extend))
 (tset Enemy :new (fn [self ex ey]
   (let [ea  (love.math.random 0 (* 2 math.pi))
-        ead (digital ea)]
-    (Enemy.super.new self ex ey 1 ead "src/rochambullet/assets/bomb.png" 0.5))))
+        ead (digital ea)
+        img (.. "src/rochambullet/assets/" self.type ".png")]
+    (Enemy.super.new self ex ey 1 ead 0.3 img))))
 (tset Enemy :typeColor (fn [typ]
   (match typ 
     "rock"      (love.graphics.setColor 1 0 1 1)
@@ -13,9 +14,9 @@
     _           (love.graphics.setColor 1 1 1 1))))
 (tset Enemy :weakColor (fn [typ]
   (match typ 
-    "rock"      (Enemy.typeColor "paper")
-    "paper"     (Enemy.typeColor "scissors")
-    "scissors"  (Enemy.typeColor "rock")
+    "rock"      (Enemy.typeColor "scissors")
+    "paper"     (Enemy.typeColor "rock")
+    "scissors"  (Enemy.typeColor "paper")
     _           (love.graphics.setColor 1 1 1 1))))
 (tset Enemy :draw (fn [self ox oy]
   (Enemy.typeColor self.type)

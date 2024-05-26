@@ -2,9 +2,13 @@
 (local Character (require "src.rochambullet.classes.character"))
 (local Enemy (require "src.rochambullet.classes.enemy"))
 (local Player (Character:extend))
+(tset Player :choose (fn [self t]
+  (set self.type t)
+  (set self.file (.. "src/rochambullet/assets/hand_" self.type ".png"))
+  (set self.i (love.graphics.newImage self.file))))
 (tset Player :new (fn [self x y]
-  (Player.super.new self x y 1 (/ math.pi -2) 
-                    "src/rochambullet/assets/player.png" (/ 1 3))
+  (self:choose (coin "rock" (coin "paper" "scissors")))
+  (Player.super.new self x y 1 (/ math.pi -2) 0.4 self.file)
   (self:aiming x (- y 1))
   (set self.threat -1)
   self))
