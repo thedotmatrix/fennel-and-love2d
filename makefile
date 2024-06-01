@@ -33,7 +33,7 @@ love: $(LOVEFILE)
 # platform-specific distributables
 
 REL=$(PWD)/bld/love-release.sh # https://p.hagelb.org/love-release.sh
-FLAGS=-a "$(AUTHOR)" --description $(DESCRIPTION) \
+FLAGS=-t "$(TITLE)" -a "$(AUTHOR)" --description $(DESCRIPTION) \
 	--love $(LOVE_VERSION) --url $(URL) --version $(VERSION) --lovefile $(LOVEFILE)
 
 bin/$(TITLE)-$(VERSION)-x86_64.AppImage: $(LOVEFILE)

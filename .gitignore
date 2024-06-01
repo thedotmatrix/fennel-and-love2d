@@ -4,3 +4,4 @@
 /bld/appimage/*.AppImage
 /bld/appimage/squashfs-root
 *.private
+releases/
