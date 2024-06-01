@@ -75,8 +75,8 @@ function draw(w, h, supercanvas)
 	drawlabel()
 	logo.colora = {0.2,0.1,0.4,1}
 	logo.colorb = {0.2,0.1,0.4,1}
-	logo.ink = 1
-	logo.margin = 4
+	logo.ink = 0.5
+	logo.margin = 2
 	logostencil()
 	love.graphics.stencil(logostencil,"increment")
 	love.graphics.setStencilTest("less",1)
@@ -101,8 +101,8 @@ function draw(w, h, supercanvas)
 	love.graphics.shear(math.cos(math.rad(270-logo.a+0.1*jitter)),math.sin(math.rad(0.01*jitter)))
 	logo.colora = {1.00,0.75,0.50,1}
 	logo.colorb = {0.88,0.44,0.22,1}
-	logo.ink = 4
-	logo.margin = 16
+	logo.ink = 1
+	logo.margin = 8
 	logostencil()
 	love.graphics.stencil(logostencil,"increment")
 	love.graphics.setStencilTest("less",1)
