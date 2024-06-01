@@ -6,8 +6,9 @@
 (var game nil)
 (var dev? false)
 
-(fn safely [self window f w h] ;; TODO stacktraces awful from callback loop + reload broken
-  (xpcall f #(self:load window :cartridges.error w h $ (fennel.traceback))))
+(fn safely [self window f w h] ;; TODO reload broken
+  (let [cart (. (. windows window) :cartridge)]
+    (xpcall f #(cart:load :cartridges.error true $ (fennel.traceback)))))
 
 (fn new [self w h]
   (set dev (love.graphics.newCanvas (/ w 2) h))
@@ -21,24 +22,27 @@
         def     "cartridges.%s"
         src     "src.%s.cartridges.main"
         format  (if (= title default) def src)
-        name (format:format (title:lower))]
+        name (format:format (title:lower))
+        d (self:load :dev :cartridges.empty w h)
+        g (self:load :game :cartridges.empty w h)]
     (love.window.setTitle title)
-    (safely self :dev #(self:load :dev :cartridges.repl w h) w h)
-    (safely self :game #(self:load :game name w h) w h))
+    (safely self :dev #(d:load :cartridges.repl true) w h)
+    (safely self :game #(g:load name true) w h))
   self)
 
 (fn load [self window name w h ...]
-  (local ld (fn [window] (fn [name oldcart]
+  (local ld (fn [window] (fn [name oldcart ...]
     (let [Cart (require name)
           cart (Cart w h oldcart)]
       (tset windows window {:cartridge cart :name name})
+      (when cart.stacktrace
+        (match (pcall cart.stacktrace oldcart.name ...)
+          (false msg) (print name "stacktrace error" msg)))
       cart))))
   (local callback (ld window))
   (local cartridge (callback name))
   (cartridge:callback callback)
-  (when cartridge.stacktrace
-    (match (pcall cartridge.stacktrace cartridge.caller ...)
-      (false msg) (print name "stacktrace error" msg))))
+  cartridge)
 
 (fn draw [self w h transform] 
   (love.graphics.setCanvas dev)
