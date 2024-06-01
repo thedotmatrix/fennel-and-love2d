@@ -38,6 +38,7 @@ end
 
 function update(dt) 
 	if (drawn and data~=nil and graphed) then
+		if not track:isPlaying() then track:play() end
 		t = t + dt
 		plate.a=360*(t/60*45)
 	else 
