@@ -6,7 +6,7 @@
 (var game nil)
 (var dev? false)
 
-(fn safely [self window f w h]
+(fn safely [self window f w h] ;; TODO stacktraces awful from callback loop + reload broken
   (xpcall f #(self:load window :cartridges.error w h $ (fennel.traceback))))
 
 (fn new [self w h]

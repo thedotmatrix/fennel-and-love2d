@@ -56,6 +56,6 @@
     (console:mousemoved tx ty dx dy istouch width height)))
 
 (fn love.mousepressed [x y button istouch presses]
-  (let [(tx ty) (transform:inverseTransformPoint x y)]
+  (let [(tx ty) (transform:inverseTransformPoint x y)] ;; TODO general fullscreen option
     (when (or (< ty (/ height 18)) (> ty (* 17 (/ height 18)))) (fullscreen))
     (console:mousepressed tx ty button istouch presses width height)))
