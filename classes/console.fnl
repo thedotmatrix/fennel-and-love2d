@@ -8,36 +8,42 @@
 (fn Console.unsafe [self msg trace]
   (set self.ram.msg msg)
   (set self.ram.trace trace)
-  ((self:load) [:default :error]))
+  ((self:load :default) :error))
 
 (fn Console.safely [self f]
   (when (xpcall f #(self:unsafe $ (fennel.traceback)))
     (when (or (~= self.game :default) (~= self.module :error))
-      (set self.ram.safe [self.game :main])))) ; TODO cant reload last module?
+      (set self.safe [self.game self.module self.rom self.rst]))))
 
-(fn Console.load [self] (fn [gamemodule]
-  (let [game    (. gamemodule 1)
-        module  (. gamemodule 2)
-        rompath (.. "src%s" game "%sroms%s" module "%s")
-        rominfo (love.filesystem.getInfo (rompath:format :/ :/ :/ :.fnl))
-        loadrom (fn []
-          (set self.rom (ROM:extend))
-          (self.rom:implement (require (rompath:format :. :. :. "")))
-          (self.rom.load self.ram))
-        rstpath (.. "src%s" game "%srsts%s" module "%s")
-        rstinfo (love.filesystem.getInfo (rstpath:format :/ :/ :/ :.fnl))
-        loadrst (fn []
-          (set self.rst (RST:extend))
-          (self.rst:implement (require (rstpath:format :. :. :. ""))))]
-    (when rominfo (loadrom))
-    (when rstinfo (loadrst))
-    (set self.game game)
-    (set self.module module))))
+(fn Console.load [self game] (when game (set self.game game)) (fn [module]
+  (let [loadrom (fn [rom]
+                  (set self.rom (ROM:extend))
+                  (self.rom:implement rom)
+                  (self.rom.load self.ram))
+        loadrst (fn [rst]
+                  (set self.rst (RST:extend))
+                  (self.rst:implement rst))]
+    (if module
+      (let [rompath (.. "src%s" self.game "%sroms%s" module "%s")
+            rominfo (love.filesystem.getInfo (rompath:format :/ :/ :/ :.fnl))
+            rstpath (.. "src%s" self.game "%srsts%s" module "%s")
+            rstinfo (love.filesystem.getInfo (rstpath:format :/ :/ :/ :.fnl))]
+        (when rominfo (loadrom (require (rompath:format :. :. :. ""))))
+        (when rstinfo (loadrst (require (rstpath:format :. :. :. ""))))
+        (set self.module module))
+      (let [game    (. self.safe 1)
+            module  (. self.safe 2)
+            rom     (. self.safe 3)
+            rst     (. self.safe 4)]
+        (loadrom rom)
+        (loadrst rst)
+        (set self.game game)
+        (set self.module module))))))
 
 (fn Console.new [self game module canvas]
   (set self.canvas canvas)
   (set self.ram (RAM:extend))
-  (self:safely #((self:load) [game module])))
+  (self:safely #((self:load game) module)))
 
 (fn Console.draw [self]
   (when self.rst.draw 

@@ -5,6 +5,6 @@
   (set !.b nil))
 
 (fn Empty.keypressed [!! ! key scancode repeat?] (match key
-  :space (!! [:default :empty2])))
+  :space (!! :empty2)))
 
 Empty

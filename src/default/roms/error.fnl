@@ -18,6 +18,6 @@
 
 (fn Error.keypressed [!! ! key scancode repeat] 
   (match key
-  :space (!! !.safe)))
+  :space (!!)))
 
 Error
