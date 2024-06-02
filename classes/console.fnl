@@ -1,106 +1,75 @@
 (local fennel (require :lib.fennel))
 (local Object (require :lib.classic))
 (local Console (Object:extend))
-(local windows {:dev nil :game nil})
-(var dev nil)
-(var game nil)
-(var dev? false)
+(local RAM (require :classes.RAM))
+(local ROM (require :classes.ROM))
+(local RST (require :classes.RST))
 
-(fn safely [self window f w h] ;; TODO reload broken
-  (let [cart (. (. windows window) :cartridge)]
-    (xpcall f #(cart:load :cartridges.error true $ (fennel.traceback)))))
+(fn Console.unsafe [self msg trace]
+  (set self.ram.msg msg)
+  (set self.ram.trace trace)
+  ((self:load) [:default :error]))
 
-(fn new [self w h]
-  (set dev (love.graphics.newCanvas (/ w 2) h))
-  (dev:setFilter :nearest :nearest)
-  (set game (love.graphics.newCanvas w h))
-  (game:setFilter :nearest :nearest)
-  (let [file    :conf.fnl
-        default :empty
-        info    (love.filesystem.getInfo file)
-        title   (if info ((love.filesystem.lines file)) default)
-        def     "cartridges.%s"
-        src     "src.%s.cartridges.main"
-        format  (if (= title default) def src)
-        name (format:format (title:lower))
-        d (self:load :dev :cartridges.empty w h)
-        g (self:load :game :cartridges.empty w h)]
-    (love.window.setTitle title)
-    (safely self :dev #(d:load :cartridges.repl true) w h)
-    (safely self :game #(g:load name true) w h))
-  self)
+(fn Console.safely [self f]
+  (when (xpcall f #(self:unsafe $ (fennel.traceback)))
+    (when (or (~= self.game :default) (~= self.module :error))
+      (set self.ram.safe [self.game :main])))) ; TODO cant reload last module?
 
-(fn load [self window name w h ...]
-  (local ld (fn [window] (fn [name oldcart ...]
-    (let [Cart (require name)
-          cart (Cart w h oldcart)]
-      (tset windows window {:cartridge cart :name name})
-      (when cart.stacktrace
-        (match (pcall cart.stacktrace oldcart.name ...)
-          (false msg) (print name "stacktrace error" msg)))
-      cart))))
-  (local callback (ld window))
-  (local cartridge (callback name))
-  (cartridge:callback callback)
-  cartridge)
+(fn Console.load [self] (fn [gamemodule]
+  (let [game    (. gamemodule 1)
+        module  (. gamemodule 2)
+        rompath (.. "src%s" game "%sroms%s" module "%s")
+        rominfo (love.filesystem.getInfo (rompath:format :/ :/ :/ :.fnl))
+        loadrom (fn []
+          (set self.rom (ROM:extend))
+          (self.rom:implement (require (rompath:format :. :. :. "")))
+          (self.rom.load self.ram))
+        rstpath (.. "src%s" game "%srsts%s" module "%s")
+        rstinfo (love.filesystem.getInfo (rstpath:format :/ :/ :/ :.fnl))
+        loadrst (fn []
+          (set self.rst (RST:extend))
+          (self.rst:implement (require (rstpath:format :. :. :. ""))))]
+    (when rominfo (loadrom))
+    (when rstinfo (loadrst))
+    (set self.game game)
+    (set self.module module))))
 
-(fn draw [self w h transform] 
-  (love.graphics.setCanvas dev)
-  (love.graphics.clear 0 0 0 1)
-  (safely self :dev #(windows.dev.cartridge:draw (/ w 2) h dev) w h)
-  (love.graphics.setCanvas game)
-  (love.graphics.clear 0 0 0 1)
-  (safely self :game #(windows.game.cartridge:draw w h game) w h)
-  (love.graphics.setCanvas)
-  (love.graphics.setColor 1 1 1 1)
-  (love.graphics.push)
-  (love.graphics.applyTransform transform)
-  (love.graphics.draw game 0 0 0 1 1)
-  (love.graphics.setColor 1 1 1 0.88)
-  (if dev? (love.graphics.draw dev 0 0 0 1 1))
-  (love.graphics.pop)
-  (love.graphics.setColor 1 1 1 1))
+(fn Console.new [self game module canvas]
+  (set self.canvas canvas)
+  (set self.ram (RAM:extend))
+  (self:safely #((self:load) [game module])))
 
-(fn update [self dt w h]
-  (safely self :dev #(windows.dev.cartridge:update dt (/ w 2) h) w h)
-  (safely self :game #(windows.game.cartridge:update dt w h) w h))
+(fn Console.draw [self]
+  (when self.rst.draw 
+    (self:safely #(self.rst.draw self.ram self.canvas))))
 
-(fn keypressed [self key scancode repeat? w h] (match key
-  :lctrl (set dev? (not dev?))
-  _ (let [g windows.game.cartridge
-          d windows.dev.cartridge]
-      (if (and dev? d.keypressed)
-        (safely self :dev #(d:keypressed key scancode repeat?) w h)
-        (when g.keypressed
-          (safely self :game #(g:keypressed key scancode repeat?) w h))))))
+(fn Console.update [self dt]
+  (when self.rom.update 
+    (self:safely #(self.rom.update (self:load) self.ram dt))))
 
-(fn keyreleased [self key scancode repeat? w h] 
-  (let [g windows.game.cartridge]
-    (when g.keyreleased 
-      (safely self :game #(g:keyreleased key scancode repeat?) w h))))
+(fn Console.keypressed [self key scancode repeat?]
+  (when self.rom.keypressed 
+    (self:safely 
+      #(self.rom.keypressed (self:load) self.ram key scancode repeat?))))
 
-(fn textinput [self text w h] 
-  (let [d windows.dev.cartridge]
-    (when (and d.textinput dev?) 
-      (safely self :dev #(d:textinput text) w h))))
+(fn Console.keyreleased [self key scancode]
+  (when self.rom.keyreleased 
+    (self:safely 
+      #(self.rom.keyreleased (self:load) self.ram key scancode))))
 
-(fn mousemoved [self x y dx dy istouch w h] 
-  (let [g windows.game.cartridge]
-    (when g.mousemoved
-      (safely self :game #(g:mousemoved x y dx dy istouch) w h))))
+(fn Console.textinput [self text]
+  (when self.rom.textinput 
+    (self:safely 
+      #(self.rom.textinput (self:load) self.ram text))))
 
-(fn mousepressed [self x y button istouch presses w h] 
-  (let [g windows.game.cartridge]
-    (when g.mousepressed 
-      (safely self :game #(g:mousepressed x y button istouch presses) w h))))
+(fn Console.mousemoved [self x y dx dy istouch]
+  (when self.rom.mousemoved 
+    (self:safely 
+      #(self.rom.mousemoved (self:load) self.ram x y dx dy istouch))))
 
-(tset Console :new          new)
-(tset Console :load         load)
-(tset Console :draw         draw)
-(tset Console :update       update)
-(tset Console :keypressed   keypressed)
-(tset Console :keyreleased  keyreleased)
-(tset Console :textinput    textinput)
-(tset Console :mousemoved   mousemoved)
-(tset Console :mousepressed mousepressed)
+(fn Console.mousepressed [self x y button istouch presses]
+  (when self.rom.mousepressed 
+    (self:safely 
+      #(self.rom.mousepressed (self:load) self.ram x y button istouch presses))))
+
 Console

@@ -3,8 +3,10 @@
 (local Console (require :classes.console))
 (var width nil)
 (var height nil)
-(var console nil)
 (var fullscreen? false)
+(var dev? false)
+(local game {:console nil :canvas nil}) ;; TODO console aggregate seperate module
+(local dev {:console nil :canvas nil})
 
 (fn fullscreen []
   (if (not _G.web?)
@@ -16,20 +18,46 @@
                                     :fullscreentype :exclusive
                                     :minwidth w 
                                     :minheight h})
-      (love.event.push :resize))))
+      (love.resize))))
 
-(fn love.load [args]
-  (local font (love.graphics.newFont 12 :mono))
-  (font:setFilter "nearest" "nearest")
+(fn love.load [args] ;; FIXME globals?
+  (local font (love.graphics.newFont 12 :mono)) ;; TODO depends on res
+  (font:setFilter :nearest :nearest)
   (set _G.font font)
   (love.graphics.setFont font)
   (let [(w h _) (love.window.getMode)] (set width w) (set height h))
   (set _G.web? (= :web (. args 1)))
-  (set console (Console width height)))
+  (let [file    :conf.fnl
+        default :default
+        info    (love.filesystem.getInfo file)
+        title   (if info ((love.filesystem.lines file)) default)
+        format  "%s"
+        name    (format:format (title:lower))]
+    (love.window.setTitle title)
+    (set game.canvas (love.graphics.newCanvas width height))
+    (set game.console (Console name :main game.canvas))
+    (game.canvas:setFilter :nearest :nearest)
+    (set dev.canvas (love.graphics.newCanvas (/ width 2) height))
+    (set dev.console (Console :default :repl dev.canvas))
+    (dev.canvas:setFilter :nearest :nearest)))
 
-(fn love.draw [] (console:draw width height transform))
+(fn love.draw [] 
+  (love.graphics.setCanvas game.canvas)
+  (game.console:draw)
+  (love.graphics.setCanvas dev.canvas)
+  (dev.console:draw)
+  (love.graphics.setCanvas)
+  (love.graphics.push)
+  (love.graphics.applyTransform transform)
+  (love.graphics.draw game.canvas)
+  (love.graphics.setColor 1 1 1 0.9)
+  (when dev? (love.graphics.draw dev.canvas))
+  (love.graphics.setColor 1 1 1 1)
+  (love.graphics.pop))
 
-(fn love.update [dt] (console:update dt width height))
+(fn love.update [dt] 
+  (game.console:update dt)
+  (dev.console:update dt))
 
 (fn love.resize [] ;; TODO start menu option for web
   (let [(sw sh) (love.window.getMode)
@@ -41,21 +69,25 @@
     (transform:setTransformation mx my 0 scale scale 0 0 0 0)))
 
 (fn love.keypressed [key scancode repeat?]
-  (match key
-    :escape (love.event.quit)
-    _ (console:keypressed key scancode repeat? width height)))
+  (let [focus (if dev? dev game)]
+    (match key
+      :escape (love.event.quit)
+      :lctrl (flip dev?)
+      _ (focus.console:keypressed key scancode repeat?))))
 
-(fn love.keyreleased [key scancode] 
-  (console:keyreleased key scancode width height))
+(fn love.keyreleased [key scancode]
+  (let [focus (if dev? dev game)]
+    (focus.console:keyreleased key scancode)))
 
-(fn love.textinput [text] 
-  (console:textinput text width height))
+(fn love.textinput [text]
+  (let [focus (if dev? dev game)]
+    (focus.console:textinput text)))
 
 (fn love.mousemoved [x y dx dy istouch]
   (let [(tx ty) (transform:inverseTransformPoint x y)]
-    (console:mousemoved tx ty dx dy istouch width height)))
+    (game.console:mousemoved tx ty dx dy istouch)))
 
 (fn love.mousepressed [x y button istouch presses]
   (let [(tx ty) (transform:inverseTransformPoint x y)] ;; TODO general fullscreen option
     (when (or (< ty (/ height 18)) (> ty (* 17 (/ height 18)))) (fullscreen))
-    (console:mousepressed tx ty button istouch presses width height)))
+    (game.console:mousepressed tx ty button istouch presses)))
