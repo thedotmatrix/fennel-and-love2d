@@ -11,7 +11,7 @@ local search = function(env)
     end
   end
 end
-local make_love_searcher = function(env) return search(env) end
-table.insert(package.loaders, make_love_searcher(_G))
-table.insert(fennel["macro-searchers"], make_love_searcher("_COMPILER"))
+local searcher = function(env) return search(env) end
+table.insert(package.loaders, searcher(_G))
+table.insert(fennel["macro-searchers"], searcher("_COMPILER"))
 search(_G)("main")()

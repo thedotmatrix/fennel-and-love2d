@@ -1,7 +1,3 @@
-(fn flip [value]      `(do (set ,value (not ,value)) ,value))
-
-(fn coin [a b]        `(if (> (love.math.random -1 1) 0) ,a ,b))
-
 (fn incf [value ?by]  `(set ,value (+ ,value (or ,?by 1))))
 
 (fn decf [value ?by]  `(set ,value (- ,value (or ,?by 1))))
@@ -30,4 +26,4 @@
          ,?body
          ,keys)))
 
-{: flip : coin : incf : decf : lerp : clamp : arctan : digital : with}
+{: incf : decf : lerp : clamp : arctan : digital : with}

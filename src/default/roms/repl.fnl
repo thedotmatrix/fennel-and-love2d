@@ -13,15 +13,17 @@
     (table.insert !.output [[0.9 0.4 0.5] line]))))
 
 (fn enter [!]
-  (let [input-text (table.concat (doto !.input (table.insert "\n")))
-        _ ((inp !) input-text)]
+  (let [texts (doto !.input (table.insert "\n"))
+        text (table.concat texts)
+        _ ((inp !) text)]
     (when !.repl
-      (local (_ {: stack-size}) (coroutine.resume !.repl input-text))
-      (set !.incomplete? (< 0 stack-size)))
+      (let [(_ {: stack-size}) (coroutine.resume !.repl text)]
+        (set !.incomplete? (< 0 stack-size))))
     (while (next !.input) (table.remove !.input))))
 
 (fn REPL.load [!]
-  (let [(success? _) (pcall #(set !.stdio (require :lib.stdio)))]
+  (let [call         #(set !.stdio (require :lib.stdio))
+        (success? _) (pcall call)]
     (when success? (do
       (set !.input [])
       (set !.output [])

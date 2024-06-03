@@ -7,9 +7,8 @@ ITCH_ACCOUNT=thedotmatrix
 URL=https://github.com/thedotmatrix/fennel-and-love2d
 AUTHOR="Dot Matrix"
 DESCRIPTION="fennel-and-love2d game console"
-GITHUB_USERNAME := $(shell grep GITHUB_USERNAME credentials.private | cut -d= -f2)
-GITHUB_PAT := $(shell grep GITHUB_PAT credentials.private | cut -d= -f2)
 ALL := $(wildcard *.lua *.fnl)
+# FIXME redux file structure
 AST := $(wildcard assets/*.* 		src/$(NAME)/assets/*.*		src/$(NAME)/assets/*/*.*)
 CLS := $(wildcard classes/*.fnl 	src/$(NAME)/classes/*.fnl)
 CRT := $(wildcard cartridges/*.fnl 	src/$(NAME)/cartridges/*.fnl)

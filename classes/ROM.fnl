@@ -1,12 +1,17 @@
 (local Object (require :lib.classic))
 (local ROM (Object:extend))
 
-(fn load [!])
+(fn ROM.mix [self other !]
+  (self:implement other)
+  (when ! (self.load !))
+  self)
+
+(fn ROM.load [!])
 (set ROM.load nil)
 
-(fn update [!! ! dt])
+(fn ROM.update [!! ! dt])
 (set ROM.update nil)
 
-;; TODO add all love events to main/console + here w/ [!! ! ...]
+;; TODO all love events to main/console + here w/ [!! ! ...]
 
 ROM

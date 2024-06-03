@@ -1,51 +1,56 @@
-(import-macros {: flip} :mac.math)
+(import-macros {: flip} :mac.bool)
 (local transform (love.math.newTransform))
 (local Console (require :classes.console))
-(var width nil)
-(var height nil)
-(var fullscreen? false)
+(var w nil)
+(var h nil)
+(var full? false)
 (var dev? false)
-(local game {:console nil :canvas nil}) ;; TODO console aggregate seperate module
+;; TODO console aggregate seperate module
+(local game {:console nil :canvas nil})
 (local dev {:console nil :canvas nil})
 
 (fn fullscreen []
   (if (not _G.web?)
-    (love.window.setFullscreen (flip fullscreen?) :desktop)
+    (love.window.setFullscreen (flip full?) :desktop)
     (let [(sw sh) (love.window.getMode)
-          w       (if fullscreen? width sw)
-          h       (if fullscreen? height sh)]
-      (love.window.updateMode w h { :fullscreen (flip fullscreen?)
-                                    :fullscreentype :exclusive
-                                    :minwidth w 
-                                    :minheight h})
+          width        (if full? w sw)
+          height       (if full? h sh)]
+      (love.window.updateMode width height 
+                              { :fullscreen (flip full?)
+                                :fullscreentype :exclusive
+                                :minwidth width 
+                                :minheight height})
       (love.resize))))
 
 (fn love.load [args] ;; TODO globals?
-  (local font (love.graphics.newFont 12 :mono)) ;; TODO depends on res
+  ;; TODO depends on res
+  (local font (love.graphics.newFont 12 :mono))
   (font:setFilter :nearest :nearest)
   (set _G.font font)
   (love.graphics.setFont font)
-  (let [(w h _) (love.window.getMode)] (set width w) (set height h))
+  (let [(width height _) (love.window.getMode)]
+    (set w width) 
+    (set h height))
   (set _G.web? (= :web (. args 1)))
   (let [file    :conf.fnl
-        default :default
+        def :default
         info    (love.filesystem.getInfo file)
-        title   (if info ((love.filesystem.lines file)) default)
+        title   (if info ((love.filesystem.lines file)) def)
         format  "%s"
         name    (format:format (title:lower))]
     (love.window.setTitle title)
-    (set game.canvas (love.graphics.newCanvas width height))
-    (set game.console (Console name :main game.canvas))
+    (set game.canvas (love.graphics.newCanvas w h))
+    (set game.console (Console name :main))
     (game.canvas:setFilter :nearest :nearest)
-    (set dev.canvas (love.graphics.newCanvas (/ width 2) height))
-    (set dev.console (Console :default :repl dev.canvas))
+    (set dev.canvas (love.graphics.newCanvas (/ w 2) h))
+    (set dev.console (Console :default :repl))
     (dev.canvas:setFilter :nearest :nearest)))
 
 (fn love.draw [] 
   (love.graphics.setCanvas game.canvas)
-  (game.console:draw)
+  (game.console:draw game.canvas)
   (love.graphics.setCanvas dev.canvas)
-  (dev.console:draw)
+  (dev.console:draw dev.canvas)
   (love.graphics.setCanvas)
   (love.graphics.push)
   (love.graphics.applyTransform transform)
@@ -61,12 +66,12 @@
 
 (fn love.resize [] ;; TODO start menu option for web
   (let [(sw sh) (love.window.getMode)
-        w       (if (or (not _G.web?) fullscreen?) sw width)
-        h       (if (or (not _G.web?) fullscreen?) sh height)
-        scale (math.min (/ w width) (/ h height))
-        mx (/ (- sw (* scale width)) 2)
-        my (/ (- h (* scale height)) 2)]
-    (transform:setTransformation mx my 0 scale scale 0 0 0 0)))
+        w       (if (or (not _G.web?) full?) sw w)
+        h       (if (or (not _G.web?) full?) sh h)
+        s (math.min (/ w w) (/ h h))
+        mx (/ (- sw (* s w)) 2)
+        my (/ (- h (* s h)) 2)]
+    (transform:setTransformation mx my 0 s s 0 0 0 0)))
 
 (fn love.keypressed [key scancode repeat?]
   (let [focus (if dev? dev game)]
@@ -87,7 +92,9 @@
   (let [(tx ty) (transform:inverseTransformPoint x y)]
     (game.console:mousemoved tx ty dx dy istouch)))
 
-(fn love.mousepressed [x y button istouch presses]
-  (let [(tx ty) (transform:inverseTransformPoint x y)] ;; TODO general fullscreen option
-    (when (or (< ty (/ height 18)) (> ty (* 17 (/ height 18)))) (fullscreen))
-    (game.console:mousepressed tx ty button istouch presses)))
+(fn love.mousepressed [x y ...]
+  (let [(tx ty) (transform:inverseTransformPoint x y)
+        outer (or (< ty (/ h 18)) (> ty (* 17 (/ h 18))))]
+    ;; TODO general fullscreen option
+    (when outer (fullscreen))
+    (game.console:mousepressed tx ty ...)))

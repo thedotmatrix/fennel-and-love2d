@@ -2,7 +2,7 @@
 (local Empty (ROM:extend))
 
 (fn Empty.load [!]
-  (set !.b nil)
+  (set !.b 42)
   (set !.next :empty2))
 
 Empty

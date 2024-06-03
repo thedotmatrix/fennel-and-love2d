@@ -2,7 +2,7 @@
 (local Error (ROM:extend))
                           
 (fn color-msg [msg]
-  (case (msg:match "(.*)\027%[7m(.*)\027%[0m(.*)") ;; ansi -> love codes
+  (case (msg:match "(.*)\027%[7m(.*)\027%[0m(.*)")
     (pre selected post) 
     [ [1 1 1] pre
       [1 0.2 0.2] selected
@@ -17,7 +17,6 @@
       (set !.prettytrace (.. !.prettytrace v "\n")))))
 
 (fn Error.keypressed [!! ! key scancode repeat] 
-  (match key
-  :space (!!)))
+  (match key :space (!!)))
 
 Error
