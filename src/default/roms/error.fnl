@@ -10,9 +10,9 @@
     _ msg))
 
 (fn Error.load [!]
-  (set !.prettymsg (color-msg !.msg))
+  (set !.prettymsg (color-msg !.errormessage))
   (set !.prettytrace "")
-  (each [v (!.trace:gmatch "[^\n]+")]
+  (each [v (!.errortrace:gmatch "[^\n]+")]
     (when (not (v:find "fennel.lua"))
       (set !.prettytrace (.. !.prettytrace v "\n")))))
 
