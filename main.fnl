@@ -20,7 +20,7 @@
                                     :minheight h})
       (love.resize))))
 
-(fn love.load [args] ;; FIXME globals?
+(fn love.load [args] ;; TODO globals?
   (local font (love.graphics.newFont 12 :mono)) ;; TODO depends on res
   (font:setFilter :nearest :nearest)
   (set _G.font font)

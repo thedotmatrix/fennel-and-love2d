@@ -17,12 +17,12 @@
 
 (fn Console.load [self game] (when game (set self.game game)) (fn [module]
   (let [loadrom (fn [rom]
-                  (set self.rom (ROM:extend))
-                  (self.rom:implement rom)
+                  (rom:implement self.rom)
+                  (set self.rom rom)
                   (self.rom.load self.ram))
         loadrst (fn [rst]
-                  (set self.rst (RST:extend))
-                  (self.rst:implement rst))]
+                  (rst:implement self.rst)
+                  (set self.rst rst))]
     (if module
       (let [rompath (.. "src%s" self.game "%sroms%s" module "%s")
             rominfo (love.filesystem.getInfo (rompath:format :/ :/ :/ :.fnl))
@@ -43,6 +43,8 @@
 (fn Console.new [self game module canvas]
   (set self.canvas canvas)
   (set self.ram (RAM:extend))
+  (set self.rom (ROM:extend))
+  (set self.rst (RST:extend))
   (self:safely #((self:load game) module)))
 
 (fn Console.draw [self]

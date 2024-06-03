@@ -2,9 +2,7 @@
 (local Empty (ROM:extend))
 
 (fn Empty.load [!]
-  (set !.b nil))
-
-(fn Empty.keypressed [!! ! key scancode repeat?] (match key
-  :space (!! :empty2)))
+  (set !.b nil)
+  (set !.next :empty2))
 
 Empty

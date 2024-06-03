@@ -42,7 +42,6 @@
     (table.insert filesr (.. dirr file))))
 
 (fn overlay [self w h]
-  ;; FIXME tutorial description of aiming, choosing, attacking with gifs!
   (love.graphics.printf  "Click/Tap Here to Enter/Exit Fullscreen"
                           0 0 (/ w 2) :center 0 2 2)
   (_G.font:setFilter "linear" "linear")
