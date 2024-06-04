@@ -12,6 +12,7 @@
 (fn ROM.update [!! ! dt])
 (set ROM.update nil)
 
-;; TODO all love events to main/console + here w/ [!! ! ...]
+(fn ROM.any_love_event [!! ! ...])
+(set ROM.any_love_event nil)
 
 ROM

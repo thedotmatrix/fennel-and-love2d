@@ -22,22 +22,23 @@
     (while (next !.input) (table.remove !.input))))
 
 (fn REPL.load [!]
-  (let [call         #(set !.stdio (require :lib.stdio))
-        (success? _) (pcall call)]
-    (when success? (do
-      (set !.input [])
-      (set !.output [])
-      (set !.repl (!.stdio.start))
-      (set love.handlers.inp (inp !))
-      (set love.handlers.vals (out !))
-      (set love.handlers.err (err !))
-      (set _G.print (fn [...] ((out !) [...])))))))
-;; TODO love.js does not support threads/coroutines afaik
-; (when _G.web? (do
-;   (set repl (coroutine.create (partial fennel.repl)))
-;   (coroutine.resume repl {:readChunk coroutine.yield 
-;                           :onValues out  
-;                           :onError err})))
+  (set !.input [])
+  (set !.output [])
+  (set _G.print (fn [...] ((out !) [...])))
+  ;; TODO love.js does not support threads/coroutines afaik
+  (when (not _G.web?) (do
+    (set !.repl (coroutine.create (partial fennel.repl)))
+    (coroutine.resume !.repl {:readChunk  coroutine.yield 
+                              :onValues   (out !)
+                              :onError    (err !)}))))
+  ;; TODO avoid love events with stdio, scrap lib.stdio???
+  ; (let [call         #(set !.stdio (require :lib.stdio))
+  ;       (success? _) (pcall call)]
+  ;   (when success? (do
+  ;     (set !.repl (!.stdio.start))
+  ;     (set love.handlers.inp (inp !))
+  ;     (set love.handlers.vals (out !))
+  ;     (set love.handlers.err (err !)))))
 
 (fn REPL.keypressed [!! ! key scancode repeat?] (match key
     :return (enter !)

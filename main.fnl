@@ -73,28 +73,47 @@
         my (/ (- h (* s h)) 2)]
     (transform:setTransformation mx my 0 s s 0 0 0 0)))
 
-(fn love.keypressed [key scancode repeat?]
+;(each [k _ (pairs love.handlers)] TODO pattern match
+(fn love.keyreleased [...]
+  (let [focus (if dev? dev game)]
+    (focus.console:keyreleased ...)))
+(fn love.textinput [...]
+  (let [focus (if dev? dev game)]
+    (focus.console:textinput ...)))
+
+;; TODO pattern match without match-keys
+(fn love.keypressed [key ...]
   (let [focus (if dev? dev game)]
     (match key
       :escape (love.event.quit)
       :lctrl (flip dev?)
-      _ (focus.console:keypressed key scancode repeat?))))
+      _ (focus.console:keypressed key ...))))
 
-(fn love.keyreleased [key scancode]
-  (let [focus (if dev? dev game)]
-    (focus.console:keyreleased key scancode)))
-
-(fn love.textinput [text]
-  (let [focus (if dev? dev game)]
-    (focus.console:textinput text)))
-
-(fn love.mousemoved [x y dx dy istouch]
-  (let [(tx ty) (transform:inverseTransformPoint x y)]
-    (game.console:mousemoved tx ty dx dy istouch)))
-
+;; TODO pattern match without fullscreen option
 (fn love.mousepressed [x y ...]
   (let [(tx ty) (transform:inverseTransformPoint x y)
         outer (or (< ty (/ h 18)) (> ty (* 17 (/ h 18))))]
-    ;; TODO general fullscreen option
     (when outer (fullscreen))
     (game.console:mousepressed tx ty ...)))
+(fn love.mousereleased [x y ...]
+  (let [(tx ty) (transform:inverseTransformPoint x y)]
+    (game.console:mousereleased tx ty ...)))
+
+(fn love.mousemoved [x y dx dy ...]
+  (let [(tx ty)   (transform:inverseTransformPoint x y)
+        (tdx tdy) (transform:inverseTransformPoint dx dy)]
+    (game.console:mousemoved tx ty tdx tdy ...)))
+
+;; TODO pattern match
+(fn love.touchpressed [id x y dx dy ...]
+  (let [(tx ty)   (transform:inverseTransformPoint x y)
+        (tdx tdy) (transform:inverseTransformPoint dx dy)]
+    (game.console:touchpressed id tx ty tdx tdy ...)))
+(fn love.touchreleased [id x y dx dy ...]
+  (let [(tx ty)   (transform:inverseTransformPoint x y)
+        (tdx tdy) (transform:inverseTransformPoint dx dy)]
+    (game.console:touchreleased id tx ty tdx tdy ...)))
+(fn love.touchmoved [id x y dx dy ...]
+  (let [(tx ty)   (transform:inverseTransformPoint x y)
+        (tdx tdy) (transform:inverseTransformPoint dx dy)]
+    (game.console:touchmoved id tx ty tdx tdy ...)))
