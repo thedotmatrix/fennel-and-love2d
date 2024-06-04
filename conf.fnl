@@ -1,2 +1,2 @@
-default
+_
 fennel classic

@@ -2,17 +2,17 @@
 (local traceback fennel.traceback)
 (local Object (require :lib.classic))
 (local Console (Object:extend))
-(local ST8 (require :classes.ST8))
+(local ST8 (require :src._.cls.ST8))
 
 (fn Console.unsafe [self errormessage errortrace]
   (set self.live.ram.errormessage errormessage)
   (set self.live.ram.errortrace errortrace)
   (set self.callback (self.live:reload self.safe))
-  ((self.live:load :default) :error))
+  ((self.live:load :_) :error))
 
 (fn Console.safely [self f ...]
   (when (and f (xpcall f #(self:unsafe $ (traceback)) ...))
-        (when (or (~= self.live.game :default) 
+        (when (or (~= self.live.game :_) 
                   (~= self.live.mode :error))
               (do ((self.safe:reload self.live))
                   (set self.callback (self.live:load))))))

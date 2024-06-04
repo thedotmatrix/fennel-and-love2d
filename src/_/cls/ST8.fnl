@@ -1,8 +1,8 @@
 (local Object (require :lib.classic))
 (local ST8 (Object:extend))
-(local RAM (require :classes.RAM))
-(local ROM (require :classes.ROM))
-(local RST (require :classes.RST))
+(local RAM (require :src._.cls.RAM))
+(local ROM (require :src._.cls.ROM))
+(local RST (require :src._.cls.RST))
 
 (fn ST8.new [self]
   (set self.ram (RAM))
@@ -11,12 +11,12 @@
 
 (fn ST8.load [self game] (when game (set self.game game))
   (fn [mode]
-    (let [f1 (.. "src%s" self.game "%sroms%s" mode "%s")
+    (let [f1 (.. "src%s" self.game "%srom%s" mode "%s")
           rompath (f1:format :/ :/ :/ :.fnl)
           rominfo (love.filesystem.getInfo rompath)
           romreq  #(require (f1:format :. :. :. ""))
           newrom  #(ROM.mix (romreq) self.rom self.ram)
-          f2 (.. "src%s" self.game "%srsts%s" mode "%s")
+          f2 (.. "src%s" self.game "%srst%s" mode "%s")
           rstpath (f2:format :/ :/ :/ :.fnl)
           rstinfo (love.filesystem.getInfo rstpath)
           rstreq  #(require (f2:format :. :. :. ""))

@@ -1,4 +1,4 @@
-(local ROM (require :classes.ROM))
+(local ROM (require :src._.cls.ROM))
 (local REPL (ROM:extend))
 (local fennel (require :lib.fennel))
 

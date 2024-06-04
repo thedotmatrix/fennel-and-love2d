@@ -1,4 +1,4 @@
-(local ROM (require :classes.ROM))
+(local ROM (require :src._.cls.ROM))
 (local Error (ROM:extend))
                           
 (fn color-msg [msg]

@@ -1,5 +1,5 @@
 (import-macros {: decf : incf} :mac.math)
-(local RST (require :classes.RST))
+(local RST (require :src._.cls.RST))
 (local REPL (RST:extend))
 
 (fn REPL.draw [! canvas]

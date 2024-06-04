@@ -1,7 +1,7 @@
 (import-macros {: flip} :mac.bool)
 ;; TODO transform  -> translate (x y) + scale (x y dx dy)
 (local transform (love.math.newTransform))
-(local Console (require :classes.console))
+(local Console (require :src._.cls.console))
 (var w nil)
 (var h nil)
 (var full? false)
@@ -38,14 +38,13 @@
 
 (fn loadconsoles []
   (let [file    :conf.fnl
-        def     :default
         info    (love.filesystem.getInfo file)
-        title   (if info ((love.filesystem.lines file)) def)
+        title   (if info ((love.filesystem.lines file)) :_)
         format  "%s"
         name    (format:format (title:lower))]
     (love.window.setTitle title)
     (set dev.canvas (love.graphics.newCanvas (/ w 2) h))
-    (set dev.console (Console :default :repl))
+    (set dev.console (Console :_ :repl))
     (dev.canvas:setFilter :nearest :nearest)
     (set game.canvas (love.graphics.newCanvas w h))
     (set game.console (Console name :main))

@@ -1,4 +1,4 @@
-(local RST (require :classes.RST))
+(local RST (require :src._.cls.RST))
 (local Empty (RST:extend))
 
 (fn Empty.draw [! canvas]

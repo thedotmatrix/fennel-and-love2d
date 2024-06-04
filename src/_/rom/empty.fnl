@@ -1,4 +1,4 @@
-(local ROM (require :classes.ROM))
+(local ROM (require :src._.cls.ROM))
 (local Empty (ROM:extend))
 
 (fn Empty.load [!]

@@ -1,4 +1,4 @@
-(local RST (require :classes.RST))
+(local RST (require :src._.cls.RST))
 (local Error (RST:extend))
 
 (fn Error.draw [! canvas]
