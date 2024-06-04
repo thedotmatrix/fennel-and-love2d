@@ -10,9 +10,7 @@
   (set self.mat     (MAT ww wh w h))
   (self.mat:resize  (* w 2) (* h 2)))
 
-(fn WIN.draw [self transform]
-  ;; draw window
-  (love.graphics.applyTransform transform)
+(fn WIN.draw [self]
   (love.graphics.applyTransform self.mat.trans)
   (love.graphics.setColor self.color)
   (love.graphics.rectangle :fill 0 0 self.mat.w self.mat.h)
@@ -25,13 +23,7 @@
   (love.graphics.rectangle :fill 0 0 self.mat.w self.mat.h)
   (love.graphics.setColor 1 1 1 1)
   (love.graphics.origin)
-  ;; draw container inside window
-  (self.mat.transform:apply transform)
-  (self.mat.transform:apply self.mat.trans)
-  (self.mat.transform:apply self.mat.scale)
-  (self.mat.transform:apply self.mat.centr)
   (self.cab:draw self.mat.transform)
-  (self.mat.transform:reset)
   (love.graphics.setStencilTest))
 
 (fn WIN.update [self dt] (self.cab:update dt))

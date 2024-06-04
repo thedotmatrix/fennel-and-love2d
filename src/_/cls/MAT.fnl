@@ -3,9 +3,16 @@
 
 (local fit (fn [w h ww wh] (math.min (/ ww w) (/ wh w))))
 
+(fn MAT.refresh [self]
+  (self.transform:reset)
+  (self.transform:apply self.trans)
+  (self.transform:apply self.scale)
+  (self.transform:apply self.centr))
+
 (fn MAT.rearrange [self x y] 
   (set self.x x) (set self.y y) 
-  (self.trans:setTransformation x y 0 1 1 0 0 0 0))
+  (self.trans:setTransformation x y 0 1 1 0 0 0 0)
+  (self:refresh))
 
 (fn MAT.resize [self w h] 
   (set self.w w)  (set self.h h)
@@ -14,14 +21,16 @@
   (set self.cx  (/ (- self.w (* self.s self.ow)) 2 self.os))
   (set self.cy  (/ (- self.h (* self.s self.oh)) 2 self.os))
   (self.centr:setTransformation self.cx self.cy 
-    0 1 1 0 0 0 0))
+    0 1 1 0 0 0 0)
+  (self:refresh))
 
 (fn MAT.restore [self]
   (if (and (= self.w self.ww) (= self.h self.wh))
       (do (self:resize self.ow self.oh)
           (self:rearrange (- self.mx (/ self.ow 2)) self.my))
       (do (self:resize self.ww self.wh)
-          (self:rearrange 0 0))))
+          (self:rearrange 0 0)))
+  (self:refresh))
 
 (fn MAT.new [self ww wh w h]
   (set self.ww ww)    (set self.wh wh)
