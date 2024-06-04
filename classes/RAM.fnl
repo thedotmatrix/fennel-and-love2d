@@ -4,7 +4,6 @@
 (fn RAM.new [self old]
   (when old
     (each [k v (pairs old)]
-      (tset self k v)))
-  self)
+      (tset self k v))))
 
 RAM
