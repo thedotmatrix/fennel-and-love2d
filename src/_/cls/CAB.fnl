@@ -38,7 +38,7 @@
   _               (self.game.cartridge:event e ...)))
 
 (fn CAB.keypressed [self key ...] (match key
-  :escape (love.event.quit)
+  :escape (love.event.quit) ;; TODO this shouldnt be this deep
   :lctrl (flip self.dev?)
   _ (let [focus (if self.dev? self.dev self.game)]
       (focus.cartridge:event :keypressed ...))))

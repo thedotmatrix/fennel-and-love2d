@@ -66,9 +66,11 @@
         info    (love.filesystem.getInfo file)
         title   (if info ((love.filesystem.lines file)) :_)
         format  "%s"
-        name    (format:format (title:lower))]
+        name    (format:format (title:lower))
+        (ww wh) (love.window.getMode)
+        s       (/ (math.min ww wh) 2)]
     (love.window.setTitle title)
-    (set win (WIN name (love.window.getMode))))
+    (set win (WIN name ww wh s s)))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(event e $...))))
 (fn love.draw [] (win:draw transform))
