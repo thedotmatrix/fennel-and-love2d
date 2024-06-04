@@ -23,30 +23,8 @@
                                 :minheight height})
       (love.resize))))
 
-(fn love.load [args] ;; TODO globals?
-  ;; TODO depends on res
-  (local font (love.graphics.newFont 12 :mono))
-  (font:setFilter :nearest :nearest)
-  (set _G.font font)
-  (love.graphics.setFont font)
-  (let [(width height _) (love.window.getMode)]
-    (set w width) 
-    (set h height))
-  (set _G.web? (= :web (. args 1)))
-  (let [file    :conf.fnl
-        def :default
-        info    (love.filesystem.getInfo file)
-        title   (if info ((love.filesystem.lines file)) def)
-        format  "%s"
-        name    (format:format (title:lower))]
-    (love.window.setTitle title)
-    (set dev.canvas (love.graphics.newCanvas (/ w 2) h))
-    (set dev.console (Console :default :repl))
-    (dev.canvas:setFilter :nearest :nearest)
-    (set game.canvas (love.graphics.newCanvas w h))
-    (set game.console (Console name :main))
-    (game.canvas:setFilter :nearest :nearest))
-    (local overrides 
+(fn eventhook []
+  (local overrides 
       [ :resize :keypressed   :keyreleased    :textinput
                 :mousepressed :mousereleased  :mousemoved
                 :touchpressed :touchreleased  :touchmoved])
@@ -57,6 +35,33 @@
       (when (not (. override? event))
             (tset love.handlers event (fn [...]
               (game.console:event event ...))))))
+
+(fn loadconsoles []
+  (let [file    :conf.fnl
+        def     :default
+        info    (love.filesystem.getInfo file)
+        title   (if info ((love.filesystem.lines file)) def)
+        format  "%s"
+        name    (format:format (title:lower))]
+    (love.window.setTitle title)
+    (set dev.canvas (love.graphics.newCanvas (/ w 2) h))
+    (set dev.console (Console :default :repl))
+    (dev.canvas:setFilter :nearest :nearest)
+    (set game.canvas (love.graphics.newCanvas w h))
+    (set game.console (Console name :main))
+    (game.canvas:setFilter :nearest :nearest)))
+
+(fn love.load [args]
+  (let [(ww wh) (love.window.getMode)] (set w ww) (set h wh))
+  ;; TODO depends on res
+  (local font (love.graphics.newFont 12 :mono))
+  (font:setFilter :nearest :nearest)
+  (love.graphics.setFont font)
+  ;; TODO globals?
+  (set _G.font font)
+  (set _G.web? (= :web (. args 1)))
+  (loadconsoles)
+  (eventhook))
 
 (fn love.draw [] 
   (love.graphics.setCanvas game.canvas)
