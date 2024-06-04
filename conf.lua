@@ -4,11 +4,11 @@ love.conf = function(t)
   t.gammacorrect            = true
   t.modules.joystick        = false
   t.modules.physics         = false
-  t.window.width            = 800
-  t.window.height           = 450
+  t.window.width            = 1024
+  t.window.height           = 576
   t.window.resizable        = true
-  t.window.minwidth         = 800
-  t.window.minheight        = 450
+  t.window.minwidth         = 1024
+  t.window.minheight        = 576
   t.window.fullscreen       = false
   t.window.vsync            = true
 end

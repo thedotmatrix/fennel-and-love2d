@@ -8,4 +8,8 @@
 (fn Empty.keypressed [!! ! key scancode repeat?]
   (match key :space (!! !.next)))
 
+(fn Empty.mousemoved [!! ! x y ...]
+  (set !.mx x)
+  (set !.my y))
+
 Empty
