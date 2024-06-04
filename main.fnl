@@ -26,9 +26,9 @@
                                 :minheight height})))
   (resize))
 
-;; TODO main is just a special case of CAB (especially events)
-(local CAB (require :src._.cls.CAB))
-(var cab nil)
+;; TODO main is just a special case of WIN (especially events)
+(local WIN (require :src._.cls.WIN))
+(var win nil)
 (fn mouse [e x y ...]
   (let [(tx ty)   (transform:inverseTransformPoint x y)
         moved     (= e :mousemoved)
@@ -36,12 +36,12 @@
         (tdx tdy) (transform:inverseTransformPoint dx dy)
         outer     (or (< ty (/ h 18)) (> ty (* 17 (/ h 18))))]
     ;(when (and (= e :mousepressed) outer) (fullscreen))
-    (if moved (cab:event e tx ty tdx tdx ...)
-              (cab:event e tx ty ...))))
+    (if moved (win:event e tx ty tdx tdx ...)
+              (win:event e tx ty ...))))
 (fn touch [e id x y dx dy ...]
   (let [(tx ty)   (transform:inverseTransformPoint x y)
         (tdx tdy) (transform:inverseTransformPoint dx dy)]
-    (cab:event e id tx ty tdx tdy ...)))
+    (win:event e id tx ty tdx tdy ...)))
 (fn event [e ...] (match e ;; TODO substring case matching?
   :mousepressed   (mouse e ...)
   :mousereleased  (mouse e ...)
@@ -50,7 +50,7 @@
   :touchreleased  (touch e ...)
   :touchmoved     (touch e ...)
   :resize         (resize ...)
-  _               (cab:event e ...)))
+  _               (win:event e ...)))
 
 ;; TODO breakdown
 (fn love.load [args]
@@ -68,8 +68,8 @@
         format  "%s"
         name    (format:format (title:lower))]
     (love.window.setTitle title)
-    (set cab (CAB name (love.window.getMode))))
+    (set win (WIN name (love.window.getMode))))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(event e $...))))
-(fn love.draw [] (cab:draw transform))
-(fn love.update [dt] (cab:update dt))
+(fn love.draw [] (win:draw transform))
+(fn love.update [dt] (win:update dt))

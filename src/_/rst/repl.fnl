@@ -11,7 +11,6 @@
         len   (length !.output)
         fps   (.. "FPS: " (love.timer.getFPS))]
     (love.graphics.clear 0 0 0 1)
-    (love.graphics.setColor 1 1 1 1)
     (love.graphics.printf fps 0 0 w :left)
     (var i len)
     (var lst (if (> (- len limit) 0) (- len limit) 1))
