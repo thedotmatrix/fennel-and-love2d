@@ -4,7 +4,7 @@
 (fn Error.draw [! canvas]
   (let [w (canvas:getWidth)
         h (canvas:getHeight)
-        m "Press SPACE to reload the erroneous ROM"]
+        m "Press SPACE to reload last known safe state"]
     (love.graphics.clear 0.34 0.61 0.86)
     (love.graphics.setColor 0.9 0.9 0.9)
     (love.graphics.printf   m             

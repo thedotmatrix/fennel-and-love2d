@@ -1,14 +1,14 @@
 (import-macros {: flip} :mac.bool)
 ;; TODO transform  -> translate (x y) + scale (x y dx dy)
 (local transform (love.math.newTransform))
-(local Console (require :src._.cls.console))
+(local CRT (require :src._.cls.CRT))
 (var w nil)
 (var h nil)
 (var full? false)
 (var dev? false)
-;; TODO console aggregate seperate module
-(local dev {:console nil :canvas nil})
-(local game {:console nil :canvas nil})
+;; TODO crt aggregate seperate module
+(local dev {:crt nil :canvas nil})
+(local game {:crt nil :canvas nil})
 
 (fn fullscreen []
   (if (not _G.web?)
@@ -34,9 +34,9 @@
     (each [event _ (pairs love.handlers)]
       (when (not (. override? event))
             (tset love.handlers event (fn [...]
-              (game.console:event event ...))))))
+              (game.crt:event event ...))))))
 
-(fn loadconsoles []
+(fn loadcrts []
   (let [file    :conf.fnl
         info    (love.filesystem.getInfo file)
         title   (if info ((love.filesystem.lines file)) :_)
@@ -44,10 +44,10 @@
         name    (format:format (title:lower))]
     (love.window.setTitle title)
     (set dev.canvas (love.graphics.newCanvas (/ w 2) h))
-    (set dev.console (Console :_ :repl))
+    (set dev.crt (CRT :_ :repl))
     (dev.canvas:setFilter :nearest :nearest)
     (set game.canvas (love.graphics.newCanvas w h))
-    (set game.console (Console name :main))
+    (set game.crt (CRT name :main))
     (game.canvas:setFilter :nearest :nearest)))
 
 (fn love.load [args]
@@ -59,14 +59,14 @@
   ;; TODO globals?
   (set _G.font font)
   (set _G.web? (= :web (. args 1)))
-  (loadconsoles)
+  (loadcrts)
   (eventhook))
 
 (fn love.draw [] 
   (love.graphics.setCanvas game.canvas)
-  (game.console:draw game.canvas)
+  (game.crt:draw game.canvas)
   (love.graphics.setCanvas dev.canvas)
-  (dev.console:draw dev.canvas)
+  (dev.crt:draw dev.canvas)
   (love.graphics.setCanvas)
   (love.graphics.push)
   (love.graphics.applyTransform transform)
@@ -77,8 +77,8 @@
   (love.graphics.pop))
 
 (fn love.update [dt] 
-  (game.console:update dt)
-  (dev.console:update dt))
+  (game.crt:update dt)
+  (dev.crt:update dt))
 
 (fn love.resize [] ;; TODO start menu option for web
   (let [(sw sh) (love.window.getMode)
@@ -92,10 +92,10 @@
 ;; TODO overrides live here?
 (fn love.keyreleased [...]
   (let [focus (if dev? dev game)]
-    (focus.console:event :keyreleased ...)))
+    (focus.crt:event :keyreleased ...)))
 (fn love.textinput [...]
   (let [focus (if dev? dev game)]
-    (focus.console:event :textinput ...)))
+    (focus.crt:event :textinput ...)))
 
 ;; TODO pattern match without match-keys
 (fn love.keypressed [key ...]
@@ -103,33 +103,33 @@
     (match key
       :escape (love.event.quit)
       :lctrl (flip dev?)
-      _ (focus.console:event :keypressed key ...))))
+      _ (focus.crt:event :keypressed key ...))))
 
 ;; TODO pattern match without fullscreen option
 (fn love.mousepressed [x y ...]
   (let [(tx ty) (transform:inverseTransformPoint x y)
         outer (or (< ty (/ h 18)) (> ty (* 17 (/ h 18))))]
     (when outer (fullscreen))
-    (game.console:event :mousepressed tx ty ...)))
+    (game.crt:event :mousepressed tx ty ...)))
 (fn love.mousereleased [x y ...]
   (let [(tx ty) (transform:inverseTransformPoint x y)]
-    (game.console:event :mousereleased tx ty ...)))
+    (game.crt:event :mousereleased tx ty ...)))
 
 (fn love.mousemoved [x y dx dy ...]
   (let [(tx ty)   (transform:inverseTransformPoint x y)
         (tdx tdy) (transform:inverseTransformPoint dx dy)]
-    (game.console:event :mousemoved tx ty tdx tdy ...)))
+    (game.crt:event :mousemoved tx ty tdx tdy ...)))
 
 ;; TODO pattern match
 (fn love.touchpressed [id x y dx dy ...]
   (let [(tx ty)   (transform:inverseTransformPoint x y)
         (tdx tdy) (transform:inverseTransformPoint dx dy)]
-    (game.console:event :touchpressed id tx ty tdx tdy ...)))
+    (game.crt:event :touchpressed id tx ty tdx tdy ...)))
 (fn love.touchreleased [id x y dx dy ...]
   (let [(tx ty)   (transform:inverseTransformPoint x y)
         (tdx tdy) (transform:inverseTransformPoint dx dy)]
-    (game.console:touchreleased id tx ty tdx tdy ...)))
+    (game.crt:touchreleased id tx ty tdx tdy ...)))
 (fn love.touchmoved [id x y dx dy ...]
   (let [(tx ty)   (transform:inverseTransformPoint x y)
         (tdx tdy) (transform:inverseTransformPoint dx dy)]
-    (game.console:event :touchmoved id tx ty tdx tdy ...)))
+    (game.crt:event :touchmoved id tx ty tdx tdy ...)))
