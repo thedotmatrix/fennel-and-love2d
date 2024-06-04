@@ -25,22 +25,10 @@
 (fn Console.draw [self canvas]
   (self:safely self.live.rst.draw self.live.ram canvas))
 
-(fn Console.update [self ...] (self:safely 
-  self.live.rom.update self.callback self.live.ram ...))
+(fn Console.update [self dt] (self:safely 
+  self.live.rom.update self.callback self.live.ram dt))
 
-(fn Console.keypressed [self ...] (self:safely 
-  self.live.rom.keypressed self.callback self.live.ram ...))
-
-(fn Console.keyreleased [self ...] (self:safely 
-  self.live.rom.keyreleased self.callback self.live.ram ...))
-
-(fn Console.textinput [self ...] (self:safely 
-  self.live.rom.textinput self.callback self.live.ram ...))
-
-(fn Console.mousemoved [self ...] (self:safely 
-  self.live.rom.mousemoved self.callback self.live.ram ...))
-
-(fn Console.mousepressed [self ...] (self:safely 
-  self.live.rom.mousepressed self.callback self.live.ram ...))
+(fn Console.event [self e ...] (self:safely 
+  (. self.live.rom e) self.callback self.live.ram ...))
 
 Console
