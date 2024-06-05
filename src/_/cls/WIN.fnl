@@ -1,13 +1,14 @@
 (local Object (require :lib.classic))
 (local WIN (Object:extend))
-(local CAB (require :src._.cls.CAB))
+;; TODO cab or window, inteface?
+(local CAB (require :src._.cls.CAB)) 
 (local MAT (require :src._.cls.MAT))
 
 (fn WIN.new [! name ww wh w h]
   (set !.t       (/ (math.min ww wh) 64))
   (set !.color   [0.4 0.4 0.4])
   (set !.cab     (CAB name w h))
-  (set !.mat     (MAT ww wh w h)))
+  (set !.mat     (MAT ww wh 1 !.t w h)))
 
 (fn WIN.draw [!]
   (love.graphics.applyTransform !.mat.trans)
@@ -30,25 +31,16 @@
 
 (fn WIN.decor8 [! e x y ...]
   (if (or (= e :mousepressed) (= e :mousemoved))
-    (let [lmin          !.mat.x ;; TODO minimize
-          lmax          (+ !.mat.x !.t)
-          rmin          (- (+ !.mat.x !.mat.w) !.t)
-          rmax          (+ !.mat.x !.mat.w)
-          umin          !.mat.y
-          umax          (+ !.mat.y !.t)
-          dmin          (- (+ !.mat.y !.mat.h) !.t)
-          dmax          (+ !.mat.y !.mat.h)
-          lborder       (and  (> x lmin) (< x lmax) 
-                              (> y umin) (< y dmax))
-          rborder       (and  (> x rmin) (< x rmax) 
-                              (> y umin) (< y dmax))
-          uborder       (and  (> y umin) (< y umax) 
-                              (> x lmin) (< x rmax))
-          dborder       (and  (> y dmin) (< y dmax) 
-                              (> x lmin) (< x rmax))
-          borders       (or lborder rborder uborder dborder)]
-      ;; TODO fast mouse moves -> border=false
-      (values uborder dborder x y ...))
+    (let [(wmin wmax) (values !.mat.x (+ !.mat.x !.mat.w))
+          topmin      (- !.mat.y !.t) 
+          topmax      !.mat.y
+          botmin      (+ !.mat.y !.mat.h)
+          botmax      (+ (+ !.mat.y !.mat.h) !.t)
+          top?        (and  (> y topmin) (< y topmax) 
+                            (> x wmin) (< x wmax))
+          bot?        (and  (> y botmin) (< y botmax) 
+                            (> x wmin) (< x wmax))]
+      (values top? bot? x y ...))
       (values x y ...)))
 
 (fn WIN.event [! e ...]

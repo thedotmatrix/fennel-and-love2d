@@ -37,7 +37,8 @@
   _               (!.game.cartridge:event e ...)))
 
 (fn CAB.keypressed [! key ...] (match key
-  :escape (love.event.quit) ;; TODO this shouldnt be this deep
+  ;; TODO if window open, window resize; otherwise quit
+  :escape (love.event.quit)
   :lctrl (flip !.dev?)
   _ (let [focus (if !.dev? !.dev !.game)]
       (focus.cartridge:event :keypressed key ...))))
