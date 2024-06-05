@@ -25,7 +25,7 @@
 
 (fn MAT.restore [self]
   (if (and (= self.w self.ww) (= self.h self.wh))
-      (do (self:resize self.ow self.oh)
+      (do (self:resize self.ow self.oh) ;; TODO no double do
           (self:rearrange (- self.mx (/ self.ow 2)) self.my))
       (do (self:resize self.ww self.wh)
           (self:rearrange 0 0)))
@@ -43,37 +43,19 @@
   (set self.centr     (love.math.newTransform))
   (set self.transform (love.math.newTransform)))
 
-(fn MAT.mousepressed [self t x y button touch? presses]
+(fn MAT.mousepressed [self top? x y button touch? presses]
   (let [(tx ty) (self.transform:inverseTransformPoint x y)
-        double  (= presses 2)
-        lmin          self.x
-        lmax          (+ self.x t)
-        rmin          (- (+ self.x self.w) t)
-        rmax          (+ self.x self.w)
-        umin          self.y
-        umax          (+ self.y t)
-        dmin          (- (+ self.y self.h) t)
-        dmax          (+ self.y self.h)
-        lborder       (and  (> x lmin) (< x lmax) 
-                            (> y umin) (< y dmax))
-        rborder       (and  (> x rmin) (< x rmax) 
-                            (> y umin) (< y dmax))
-        uborder       (and  (> y umin) (< y umax) 
-                            (> x lmin) (< x rmax))
-        dborder       (and  (> y dmin) (< y dmax) 
-                            (> x lmin) (< x rmax))
-        borders       (or lborder rborder uborder dborder)]
-    (when uborder (do 
-      (set self.drag? true)
-      (when double (self:restore))))
+        double  (= presses 2)]
+    (when top? (set self.drag? true))
+    (when (and top? double) (self:restore))
     (values tx ty button touch? presses)))
 
-(fn MAT.mousereleased [self t x y ...]
+(fn MAT.mousereleased [self x y ...]
   (let [(tx ty) (self.transform:inverseTransformPoint x y)]
     (set self.drag? false)
     (values tx ty ...)))
 
-(fn MAT.mousemoved [self t x y dx dy ...]
+(fn MAT.mousemoved [self x y dx dy ...]
   (let [(tx ty)   (self.transform:inverseTransformPoint x y)
         (tdx tdy) (self.scale:inverseTransformPoint dx dy)
         dmx       (+ self.x (- x self.mx)) ;;TODO dx?

@@ -40,7 +40,8 @@
   ;     (set love.handlers.vals (out !))
   ;     (set love.handlers.err (err !)))))
 
-(fn REPL.keypressed [!! ! key scancode repeat?] (match key
+(fn REPL.keypressed [!! ! key scancode repeat?] 
+  (match key
     :return (enter !)
     :backspace (table.remove !.input)))
 

@@ -41,7 +41,7 @@
   :escape (love.event.quit) ;; TODO this shouldnt be this deep
   :lctrl (flip self.dev?)
   _ (let [focus (if self.dev? self.dev self.game)]
-      (focus.cartridge:event :keypressed ...))))
+      (focus.cartridge:event :keypressed key ...))))
 
 (fn CAB.textinput [self ...]
   (let [focus (if self.dev? self.dev self.game)]
