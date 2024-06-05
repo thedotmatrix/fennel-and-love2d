@@ -1,61 +1,61 @@
 (import-macros {: incf : lerp : clamp} :mac.math)
 (local Object (require "lib.classic"))
 (local Character (Object:extend))
-(local end (fn [self board speed] {
-  :x (if  (> (math.cos self.angle) 0.1)
+(local end (fn [! board speed] {
+  :x (if  (> (math.cos !.angle) 0.1)
           (+ 0 (* speed board.tilepx))
-          (if (< (math.cos self.angle) -0.1)
+          (if (< (math.cos !.angle) -0.1)
             (- 0 (* speed board.tilepx))
             0))
-  :y (if  (> (math.sin self.angle) 0.1)
+  :y (if  (> (math.sin !.angle) 0.1)
           (+ 0 (* speed board.tilepx))
-          (if (< (math.sin self.angle) -0.1)
+          (if (< (math.sin !.angle) -0.1)
             (- 0 (* speed board.tilepx))
             0))}))
 (local df (fn [v board] 
   (+  (* (math.floor (/ v board.tilepx)) board.tilepx) 
       (/ board.tilepx 2))))
-(tset Character :new (fn [self x y speed angle scale image]
-  (set self.x x)
-  (set self.y y)
-  (set self.speed speed)
-  (set self.angle angle)
-  (when image (set self.i (love.graphics.newImage image)))
-  (set self.ox (/ (self.i:getWidth) 2))
-  (set self.oy (/ (self.i:getHeight) 2))
-  (set self.scale scale)
-  (set self.size (* (math.max self.ox self.oy) self.scale))
-  self))
-(tset Character :anim (fn [self dt board]
-  (when (not self.alpha) (set self.alpha 0))
-  (when (not self.start) (set self.start {:x self.x :y self.y}))
-  (when (not self.end) (set self.end (end self board self.speed)))
-  (incf self.alpha dt)
-  (clamp self.alpha 0 1)
-  (local alphasquared (* self.alpha self.alpha))
-  (set self.x (+ self.start.x (lerp 0 self.end.x alphasquared)))
-  (set self.y (+ self.start.y (lerp 0 self.end.y alphasquared)))
-  (board:fit self)
-  self.alpha))
-(tset Character :digital (fn [self board]
-  (set self.x (df self.x board))
-  (set self.y (df self.y board))))
-(tset Character :reset (fn [self board speed]
-  (if (and speed self.alpha)
+(tset Character :new (fn [! x y speed angle scale image]
+  (set !.x x)
+  (set !.y y)
+  (set !.speed speed)
+  (set !.angle angle)
+  (when image (set !.i (love.graphics.newImage image)))
+  (set !.ox (/ (!.i:getWidth) 2))
+  (set !.oy (/ (!.i:getHeight) 2))
+  (set !.scale scale)
+  (set !.size (* (math.max !.ox !.oy) !.scale))
+  !))
+(tset Character :anim (fn [! dt board]
+  (when (not !.alpha) (set !.alpha 0))
+  (when (not !.start) (set !.start {:x !.x :y !.y}))
+  (when (not !.end) (set !.end (end ! board !.speed)))
+  (incf !.alpha dt)
+  (clamp !.alpha 0 1)
+  (local alphasquared (* !.alpha !.alpha))
+  (set !.x (+ !.start.x (lerp 0 !.end.x alphasquared)))
+  (set !.y (+ !.start.y (lerp 0 !.end.y alphasquared)))
+  (board:fit !)
+  !.alpha))
+(tset Character :digital (fn [! board]
+  (set !.x (df !.x board))
+  (set !.y (df !.y board))))
+(tset Character :reset (fn [! board speed]
+  (if (and speed !.alpha)
     (do
-      (set self.end (end self board speed))
-      (set self.start.x (- self.x (lerp 0 self.end.x self.alpha)))
-      (set self.start.y (- self.y (lerp 0 self.end.y self.alpha)))
-      (set self.start.x (df self.start.x board))
-      (set self.start.y (df self.start.y board)))
+      (set !.end (end ! board speed))
+      (set !.start.x (- !.x (lerp 0 !.end.x !.alpha)))
+      (set !.start.y (- !.y (lerp 0 !.end.y !.alpha)))
+      (set !.start.x (df !.start.x board))
+      (set !.start.y (df !.start.y board)))
     (do 
-      (self:digital board)
-      (set self.alpha nil)
-      (set self.start nil)
-      (set self.end nil)))))
-(tset Character :dist (fn [self x y]
-  (math.sqrt (+ (^ (- self.x x) 2) (^ (- self.y y) 2)))))
-(tset Character :check (fn [self x y size]
-  (let [d (self:dist x y)]
+      (!:digital board)
+      (set !.alpha nil)
+      (set !.start nil)
+      (set !.end nil)))))
+(tset Character :dist (fn [! x y]
+  (math.sqrt (+ (^ (- !.x x) 2) (^ (- !.y y) 2)))))
+(tset Character :check (fn [! x y size]
+  (let [d (!:dist x y)]
     (< d size))))
 Character

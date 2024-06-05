@@ -4,31 +4,29 @@
 (local CRT (Object:extend))
 (local ST8 (require :src._.cls.ST8))
 
-(fn CRT.unsafe [self errormessage errortrace]
-  (set self.live.ram.errormessage errormessage)
-  (set self.live.ram.errortrace errortrace)
-  (set self.callback (self.live:reload self.safe))
-  ((self.live:load :_) :error))
+(fn CRT.unsafe [! errormessage errortrace]
+  (set !.live.ram.errormessage errormessage)
+  (set !.live.ram.errortrace errortrace)
+  (set !.callback (!.live:reload !.safe))
+  ((!.live:load :_) :error))
 
-(fn CRT.safely [self f ...]
-  (when (and f (xpcall f #(self:unsafe $ (traceback)) ...))
-        (when (or (~= self.live.game :_) 
-                  (~= self.live.mode :error))
-              (do ((self.safe:reload self.live))
-                  (set self.callback (self.live:load))))))
+(fn CRT.safely [! f ...]
+  (when (and f (xpcall f #(!:unsafe $ (traceback)) ...))
+        (when (or (~= !.live.game :_) (~= !.live.mode :error))
+              (do ((!.safe:reload !.live))
+                  (set !.callback (!.live:load))))))
 
-(fn CRT.new [self game mode]
-  (set self.live (ST8))
-  (set self.safe (ST8))
-  (self:safely (self.live:load game) mode))
+(fn CRT.new [! game mode]
+  (set !.live (ST8)) (set !.safe (ST8))
+  (!:safely (!.live:load game) mode))
 
-(fn CRT.draw [self canvas]
-  (self:safely self.live.rst.draw self.live.ram canvas))
+(fn CRT.draw [! canvas] (!:safely 
+  !.live.rst.draw !.live.ram canvas))
 
-(fn CRT.update [self dt] (self:safely 
-  self.live.rom.update self.callback self.live.ram dt))
+(fn CRT.update [! dt] (!:safely 
+  !.live.rom.update !.callback !.live.ram dt))
 
-(fn CRT.event [self e ...] (self:safely 
-  (. self.live.rom e) self.callback self.live.ram ...))
+(fn CRT.event [! e ...] (!:safely 
+  (. !.live.rom e) !.callback !.live.ram ...))
 
 CRT

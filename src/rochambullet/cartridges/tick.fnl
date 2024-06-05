@@ -2,21 +2,21 @@
 (local Cartridge (require :classes.cartridge))
 (local Tick (Cartridge:extend))
 
-(fn update [self dt w h] 
-  (self.caller.update self dt w h)
-  (tset self :tick? true)
-  (incf self.time dt)
-  (local tock self.tick)
-  (set self.tick (+ (% (- (math.floor self.time) 1.0) 4.0) 1.0))
-  (when (~= self.tick tock)
-    (tset self :tick? false)
-    (Cartridge.load self :src.rochambullet.cartridges.turn)))
+(fn update [! dt w h] 
+  (!.caller.update ! dt w h)
+  (tset ! :tick? true)
+  (incf !.time dt)
+  (local tock !.tick)
+  (set !.tick (+ (% (- (math.floor !.time) 1.0) 4.0) 1.0))
+  (when (~= !.tick tock)
+    (tset ! :tick? false)
+    (Cartridge.load ! :src.rochambullet.cartridges.turn)))
 
-(tset Tick :new (fn [self w h old]
-  (Tick.super.new self old) ;; keep old state
-  (tset self :update update)
-  (when (not self.time) (tset self :time 1.0))
-  (when (not self.tick) (tset self :tick 1.0))
-  (when (not self.tick?) (tset self :tick? true))
-  self))
+(tset Tick :new (fn [! w h old]
+  (Tick.super.new ! old) ;; keep old state
+  (tset ! :update update)
+  (when (not !.time) (tset ! :time 1.0))
+  (when (not !.tick) (tset ! :tick 1.0))
+  (when (not !.tick?) (tset ! :tick? true))
+  !))
 Tick

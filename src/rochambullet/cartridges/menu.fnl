@@ -41,7 +41,7 @@
   (each [_ file (ipairs (love.filesystem.getDirectoryItems dirr))]
     (table.insert filesr (.. dirr file))))
 
-(fn overlay [self w h]
+(fn overlay [! w h]
   (love.graphics.printf  "Click/Tap Here to Enter/Exit Fullscreen"
                           0 0 (/ w 2) :center 0 2 2)
   (_G.font:setFilter "linear" "linear")
@@ -92,42 +92,42 @@
       \nwins destroy, losses hurt, draws bounce enemies"   
     (* 0.535 w) (* 0.70 h) (/ w 1.11 2) :center 0 1.11 1.11))
 
-(fn draw [self w h supercanvas]
-  (love.graphics.setCanvas self.canvas)
+(fn draw [! w h supercanvas]
+  (love.graphics.setCanvas !.canvas)
   (love.graphics.push)
-  (love.graphics.applyTransform self.followplayer)
-  (love.graphics.applyTransform self.centercanvas)
-  (self.board:draw*)
-  (when self.enemies (each [_ e (pairs self.enemies)] (e:draw* self.board.px)))
-  (self.player:draw)
+  (love.graphics.applyTransform !.followplayer)
+  (love.graphics.applyTransform !.centercanvas)
+  (!.board:draw*)
+  (when !.enemies (each [_ e (pairs !.enemies)] (e:draw* !.board.px)))
+  (!.player:draw)
   (love.graphics.pop)
   (love.graphics.setCanvas supercanvas)
-  (love.graphics.setShader self.shader)
+  (love.graphics.setShader !.shader)
   (love.graphics.push)
-  (love.graphics.applyTransform (self.centercanvas:inverse))
+  (love.graphics.applyTransform (!.centercanvas:inverse))
   (love.graphics.clear 1 1 1 1)
-  (love.graphics.draw self.canvas)
+  (love.graphics.draw !.canvas)
   (love.graphics.pop)
   (love.graphics.setShader)
   (love.graphics.setColor 0 0 0 1)
-  (when self.crop! (for [i 0 8 1]
+  (when !.crop! (for [i 0 8 1]
     (love.graphics.circle "line" (/ w 2) (/ h 2) 
-                          (- (* w 0.5325 self.crop!) (/ i 2)))))
+                          (- (* w 0.5325 !.crop!) (/ i 2)))))
   (love.graphics.setColor 0 0 0 1)
   (love.graphics.rectangle "fill" 0 0 w (/ h 18))
   (love.graphics.rectangle "fill" 0 (- h (/ h 18)) w (/ h 18))
   (love.graphics.setColor 1 1 1 1)
-  (when self.overlay (self:overlay w h)))
+  (when !.overlay (!:overlay w h)))
 
-(fn update [self dt w h]
-  (when (not (self.music:isPlaying)) (self.music:play))
-  (when (< (self.music:getVolume) 0.5) (self.music:setVolume (+ (self.music:getVolume) (* dt 0.1))))
-  (when (>= (self.player:anim dt self.board) 1.0) 
-            (self.player:reset self.board))
+(fn update [! dt w h]
+  (when (not (!.music:isPlaying)) (!.music:play))
+  (when (< (!.music:getVolume) 0.5) (!.music:setVolume (+ (!.music:getVolume) (* dt 0.1))))
+  (when (>= (!.player:anim dt !.board) 1.0) 
+            (!.player:reset !.board))
   ;; TODO class since duped across every update
-  (let [tx (- (/ w 2) self.player.x)
-        ty (- (/ h 2) self.player.y)]
-    (self.followplayer:setTransformation tx ty 0 1 1 0 0 0 0))
+  (let [tx (- (/ w 2) !.player.x)
+        ty (- (/ h 2) !.player.y)]
+    (!.followplayer:setTransformation tx ty 0 1 1 0 0 0 0))
   (incf time dt)
   (when (> time (/ 1 6))
     (incf fl (math.floor (/ time 0.04)))
@@ -138,26 +138,26 @@
     (set framer (love.graphics.newImage (. filesr fr)))
     (set time 0)))
 
-(fn mousepressed [self x y button istouch presses]
+(fn mousepressed [! x y button istouch presses]
   (when (and (or (= button 1) istouch) (> presses 1)) (do
     (music:setVolume 0.5)
-    (Cartridge.load self :src.rochambullet.cartridges.pregame))))
+    (Cartridge.load ! :src.rochambullet.cartridges.pregame))))
 
-(tset Menu :new (fn [self w h old]
-  (Menu.super.new self) ;; discard old state
-  (when (not self.caller) (load w h))
-  (tset self :wins 0)
-  (tset self :losses 0)
-  (when (not self.music) (tset self :music music))
-  (when (not self.board) (tset self :board board))
-  (when (not self.player) (tset self :player player))
-  (when (not self.canvas) (tset self :canvas canvas))
-  (when (not self.centercanvas) (tset self :centercanvas centercanvas))
-  (when (not self.followplayer) (tset self :followplayer followplayer))
-  (when (not self.shader) (tset self :shader shader))
-  (tset self :overlay overlay)
-  (tset self :draw draw)
-  (tset self :update update)
-  (tset self :mousepressed mousepressed)
-  self))
+(tset Menu :new (fn [! w h old]
+  (Menu.super.new !) ;; discard old state
+  (when (not !.caller) (load w h))
+  (tset ! :wins 0)
+  (tset ! :losses 0)
+  (when (not !.music) (tset ! :music music))
+  (when (not !.board) (tset ! :board board))
+  (when (not !.player) (tset ! :player player))
+  (when (not !.canvas) (tset ! :canvas canvas))
+  (when (not !.centercanvas) (tset ! :centercanvas centercanvas))
+  (when (not !.followplayer) (tset ! :followplayer followplayer))
+  (when (not !.shader) (tset ! :shader shader))
+  (tset ! :overlay overlay)
+  (tset ! :draw draw)
+  (tset ! :update update)
+  (tset ! :mousepressed mousepressed)
+  !))
 Menu

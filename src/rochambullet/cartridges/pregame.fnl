@@ -39,45 +39,45 @@
              4 nil))
           (when enemy (table.insert enemies enemy))))))))
 
-(fn update [self dt w h]
+(fn update [! dt w h]
   ; lerp alpha
-  (set alpha (self.player:anim (/ dt 4) self.board))
+  (set alpha (!.player:anim (/ dt 4) !.board))
   (when (>= alpha 1.0) (set alpha 1.0))
   ; audio
   (love.audio.setEffect "fg" {:type "flanger" :rate 0.125 :depth alpha})
-  (self.music:setEffect "fg")
+  (!.music:setEffect "fg")
   (love.audio.setEffect "eq" {:type "equalizer"
                               :lowgain (+ 0.125 (* 0.825 alpha))
                               :lowmidgain (+ 0.25 (* 0.25 alpha)) 
                               :highmidgain (- 0.5 (* 0.25 alpha))
                               :highgain (- 1 (* 0.825 alpha))})
-  (self.music:setEffect "eq")
+  (!.music:setEffect "eq")
   ; shader
-  (set self.sphereize! (lerp sphereize.start sphereize.end alpha))
-  (set self.crop! (lerp crop.start crop.end alpha))
-  (self.shader:send :fx self.sphereize!)
-  (self.shader:send :manual_amount self.crop!)
+  (set !.sphereize! (lerp sphereize.start sphereize.end alpha))
+  (set !.crop! (lerp crop.start crop.end alpha))
+  (!.shader:send :fx !.sphereize!)
+  (!.shader:send :manual_amount !.crop!)
   ; dynamic transform
-  (let [tx (- (/ w 2) self.player.x)
-        ty (- (/ h 2) self.player.y)]
-    (self.followplayer:setTransformation tx ty 0 1 1 0 0 0 0))
+  (let [tx (- (/ w 2) !.player.x)
+        ty (- (/ h 2) !.player.y)]
+    (!.followplayer:setTransformation tx ty 0 1 1 0 0 0 0))
   ; animations done
   (when (= alpha 1.0)
-    (Cartridge.load self :src.rochambullet.cartridges.choose true)))
+    (Cartridge.load ! :src.rochambullet.cartridges.choose true)))
 
-(fn mousemoved [self x y dx dy istouch]
-  (let [(tx ty) (self.followplayer:inverseTransformPoint x y)]
-    (self.player:aiming tx ty)))
+(fn mousemoved [! x y dx dy istouch]
+  (let [(tx ty) (!.followplayer:inverseTransformPoint x y)]
+    (!.player:aiming tx ty)))
 
-(tset Pregame :new (fn [self w h old]
-  (Pregame.super.new self old) ;; keep old state
-  (load w h self.board self.player)
-  (tset self :sphereize! -0.4)
-  (tset self :crop! 1.5)
-  (tset self :enemies enemies)
-  (tset self :update update)
-  (tset self :overlay nil)
-  (tset self :mousepressed nil)
-  (tset self :mousemoved mousemoved)
-  self))
+(tset Pregame :new (fn [! w h old]
+  (Pregame.super.new ! old) ;; keep old state
+  (load w h !.board !.player)
+  (tset ! :sphereize! -0.4)
+  (tset ! :crop! 1.5)
+  (tset ! :enemies enemies)
+  (tset ! :update update)
+  (tset ! :overlay nil)
+  (tset ! :mousepressed nil)
+  (tset ! :mousemoved mousemoved)
+  !))
 Pregame

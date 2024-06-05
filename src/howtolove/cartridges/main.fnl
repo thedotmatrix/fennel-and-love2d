@@ -118,24 +118,24 @@
 (fn load11 [] (set title "Classes")
   (tset ENV :Object (require "lib.classic"))
   (tset ENV :Shape (ENV.Object:extend))
-  (tset ENV.Shape :new (fn [self x y]
-    (tset self :x x)
-    (tset self :y y)
-    (tset self :s 100)))
-  (tset ENV.Shape :update (fn [self dt] (incf self.x (* self.s dt))))
+  (tset ENV.Shape :new (fn [! x y]
+    (tset ! :x x)
+    (tset ! :y y)
+    (tset ! :s 100)))
+  (tset ENV.Shape :update (fn [! dt] (incf !.x (* !.s dt))))
   (tset ENV :Rectangle (ENV.Shape:extend))
-  (tset ENV.Rectangle :new (fn [self x y w h] 
-    (ENV.Rectangle.super.new self x y)
-    (tset self :w w)
-    (tset self :h h)))
-  (tset ENV.Rectangle :draw (fn [self]
-    (love.graphics.rectangle "line" self.x self.y self.w self.h)))
+  (tset ENV.Rectangle :new (fn [! x y w h] 
+    (ENV.Rectangle.super.new ! x y)
+    (tset ! :w w)
+    (tset ! :h h)))
+  (tset ENV.Rectangle :draw (fn [!]
+    (love.graphics.rectangle "line" !.x !.y !.w !.h)))
   (tset ENV :Circle (ENV.Shape:extend))
-  (tset ENV.Circle :new (fn [self x y r]
-    (ENV.Circle.super.new self x y)
-    (tset self :r r)))
-  (tset ENV.Circle :draw (fn [self]
-    (love.graphics.circle "line" self.x self.y self.r)))
+  (tset ENV.Circle :new (fn [! x y r]
+    (ENV.Circle.super.new ! x y)
+    (tset ! :r r)))
+  (tset ENV.Circle :draw (fn [!]
+    (love.graphics.circle "line" !.x !.y !.r)))
   (tset ENV :s1 (ENV.Rectangle 100 100 200 50))
   (tset ENV :s2 (ENV.Circle 350 80 40)))
 (fn draw11 [w h] (ENV.s1:draw) (ENV.s2:draw))
@@ -171,44 +171,44 @@
   (tset ENV :pressed? false)
   (tset ENV :Object (require "lib.classic"))
   (tset ENV :Player (ENV.Object:extend))
-  (tset ENV.Player :new (fn [self]
-    (tset self :image (love.graphics.newImage "src/howtolove/assets/panda.png"))
-    (tset self :x 300)
-    (tset self :y 20)
-    (tset self :s 500)
-    (tset self :w (self.image:getWidth))
-    (tset self :h (self.image:getHeight))))
-  (tset ENV.Player :draw (fn [self] 
-    (love.graphics.draw self.image self.x self.y)))
-  (tset ENV.Player :update (fn [self dt w h]
-    (when (love.keyboard.isDown "left") (decf self.x (* self.s dt)))
-    (when (love.keyboard.isDown "right") (incf self.x (* self.s dt)))
-    (clamp self.x 0 (- w self.w))))
+  (tset ENV.Player :new (fn [!]
+    (tset ! :image (love.graphics.newImage "src/howtolove/assets/panda.png"))
+    (tset ! :x 300)
+    (tset ! :y 20)
+    (tset ! :s 500)
+    (tset ! :w (!.image:getWidth))
+    (tset ! :h (!.image:getHeight))))
+  (tset ENV.Player :draw (fn [!] 
+    (love.graphics.draw !.image !.x !.y)))
+  (tset ENV.Player :update (fn [! dt w h]
+    (when (love.keyboard.isDown "left") (decf !.x (* !.s dt)))
+    (when (love.keyboard.isDown "right") (incf !.x (* !.s dt)))
+    (clamp !.x 0 (- w !.w))))
   (tset ENV :Enemy (ENV.Object:extend))
-  (tset ENV.Enemy :new (fn [self]
-    (tset self :image (love.graphics.newImage "src/howtolove/assets/snake.png"))
-    (tset self :x 325)
-    (tset self :y 450)
-    (tset self :s 100)
-    (tset self :w (self.image:getWidth))
-    (tset self :h (self.image:getHeight))))
-  (tset ENV.Enemy :draw (fn [self w h]
-    (love.graphics.draw self.image self.x self.y)))
-  (tset ENV.Enemy :update (fn [self dt w h]
-    (incf self.x (* self.s dt))
-    (when (clamp self.x 0 (- w self.w)) (set self.s (* self.s -1)))))
+  (tset ENV.Enemy :new (fn [!]
+    (tset ! :image (love.graphics.newImage "src/howtolove/assets/snake.png"))
+    (tset ! :x 325)
+    (tset ! :y 450)
+    (tset ! :s 100)
+    (tset ! :w (!.image:getWidth))
+    (tset ! :h (!.image:getHeight))))
+  (tset ENV.Enemy :draw (fn [! w h]
+    (love.graphics.draw !.image !.x !.y)))
+  (tset ENV.Enemy :update (fn [! dt w h]
+    (incf !.x (* !.s dt))
+    (when (clamp !.x 0 (- w !.w)) (set !.s (* !.s -1)))))
   (tset ENV :Bullet (ENV.Object:extend))
-  (tset ENV.Bullet :new (fn [self x y]
-    (tset self :image (love.graphics.newImage "src/howtolove/assets/bullet.png"))
-    (tset self :x x) 
-    (tset self :y y)
-    (tset self :s 700)
-    (tset self :w (self.image:getWidth))
-    (tset self :h (self.image:getHeight))))
-  (tset ENV.Bullet :draw (fn [self w h]
-    (love.graphics.draw self.image self.x self.y)))
-  (tset ENV.Bullet :update (fn [self dt w h]
-    (incf self.y (* self.s dt))))
+  (tset ENV.Bullet :new (fn [! x y]
+    (tset ! :image (love.graphics.newImage "src/howtolove/assets/bullet.png"))
+    (tset ! :x x) 
+    (tset ! :y y)
+    (tset ! :s 700)
+    (tset ! :w (!.image:getWidth))
+    (tset ! :h (!.image:getHeight))))
+  (tset ENV.Bullet :draw (fn [! w h]
+    (love.graphics.draw !.image !.x !.y)))
+  (tset ENV.Bullet :update (fn [! dt w h]
+    (incf !.y (* !.s dt))))
   (tset ENV :player (ENV.Player))
   (tset ENV :enemy (ENV.Enemy))
   (tset ENV :shots {})
@@ -547,7 +547,7 @@
       20 (load20)
       21 (load21)
       22 (load22)))
-(fn draw [self w h supercanvas]
+(fn draw [! w h supercanvas]
   (let [fh (: (love.graphics.getFont) :getHeight)]
     (love.graphics.clear 0.1 0.1 0.1 1)
     (love.graphics.setColor 0.9 0.9 0.9 1)
@@ -569,7 +569,7 @@
       18 (draw18 w h)
       21 (draw21 w h)
       22 (draw22 w h))))
-(fn update [self dt w h]
+(fn update [! dt w h]
   (case chapter
     5 (update5 dt)
     6 (update6 dt)
@@ -584,7 +584,7 @@
     19 (update19 dt)
     21 (update21 dt)
     22 (update22 dt)))
-(fn keypressed [self key]
+(fn keypressed [! key]
   (local old chapter)
   (match key
     :lalt (do (decf chapter 1) (clamp chapter 1 24))
@@ -592,11 +592,11 @@
   (when (~= old chapter) (load)))
 
 ;; TODO break each chapter into its own cartridge
-(tset Book :new (fn [self w h old]
-  (Book.super.new self) ;; discard old state
-  (tset self :draw draw)
-  (tset self :update update)
-  (tset self :keypressed keypressed)
+(tset Book :new (fn [! w h old]
+  (Book.super.new !) ;; discard old state
+  (tset ! :draw draw)
+  (tset ! :update update)
+  (tset ! :keypressed keypressed)
   (load)
-  self))
+  !))
 Book

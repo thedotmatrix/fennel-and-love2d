@@ -2,20 +2,20 @@
 (local Character (require "src.rochambullet.classes.character"))
 (local Enemy (require "src.rochambullet.classes.enemy"))
 (local Player (Character:extend))
-(tset Player :choose (fn [self t]
-  (set self.type t)
-  (set self.file (.. "src/rochambullet/assets/hand_" self.type ".png"))
-  (set self.i (love.graphics.newImage self.file))))
-(tset Player :new (fn [self x y]
-  (self:choose (coin "rock" (coin "paper" "scissors")))
-  (Player.super.new self x y 1 (/ math.pi -2) 0.4 self.file)
-  (self:aiming x (- y 1))
-  (set self.threat -1)
-  self))
-(tset Player :aiming (fn [self mx my]
-  (set self.aim (arctan mx my self.x self.y))
-  (set self.daim (digital self.aim))
-  (set self.angle self.daim)))
+(tset Player :choose (fn [! t]
+  (set !.type t)
+  (set !.file (.. "src/rochambullet/assets/hand_" !.type ".png"))
+  (set !.i (love.graphics.newImage !.file))))
+(tset Player :new (fn [! x y]
+  (!:choose (coin "rock" (coin "paper" "scissors")))
+  (Player.super.new ! x y 1 (/ math.pi -2) 0.4 !.file)
+  (!:aiming x (- y 1))
+  (set !.threat -1)
+  !))
+(tset Player :aiming (fn [! mx my]
+  (set !.aim (arctan mx my !.x !.y))
+  (set !.daim (digital !.aim))
+  (set !.angle !.daim)))
 (tset Player :draw (fn [pc]
   (let [stdarc  (* pc.size 2)
         arca    (- pc.aim (/ math.pi 4))

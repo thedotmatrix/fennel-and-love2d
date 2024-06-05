@@ -3,21 +3,21 @@
 (local fennel (require "lib.fennel"))
 (local Turn (Cartridge:extend))
 
-(fn update [self dt w h]
-  (tset self :turn? true)
-  (local take (math.floor self.turn))
-  (incf self.turn (/ 1.0 (+ 4.0 1.0)))
-  (if (~= take (math.floor self.turn))
+(fn update [! dt w h]
+  (tset ! :turn? true)
+  (local take (math.floor !.turn))
+  (incf !.turn (/ 1.0 (+ 4.0 1.0)))
+  (if (~= take (math.floor !.turn))
     (do 
-      (tset self :turn? false)
-      (Cartridge.load self self.caller.name true))
+      (tset ! :turn? false)
+      (Cartridge.load ! !.caller.name true))
     (do
-      (self.caller.update self dt w h)
-      (Cartridge.load self :src.rochambullet.cartridges.tick))))
+      (!.caller.update ! dt w h)
+      (Cartridge.load ! :src.rochambullet.cartridges.tick))))
 
-(tset Turn :new (fn [self w h old]
-  (Cartridge.new self old) ;; keep old state
-  (tset self :update update)
-  (when (not self.turn?) (tset self :turn 1.1))
-  self))
+(tset Turn :new (fn [! w h old]
+  (Cartridge.new ! old) ;; keep old state
+  (tset ! :update update)
+  (when (not !.turn?) (tset ! :turn 1.1))
+  !))
 Turn

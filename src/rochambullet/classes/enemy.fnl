@@ -1,11 +1,11 @@
 (import-macros {: digital} :mac.math)
 (local Character (require "src.rochambullet.classes.character"))
 (local Enemy (Character:extend))
-(tset Enemy :new (fn [self ex ey]
+(tset Enemy :new (fn [! ex ey]
   (let [ea  (love.math.random 0 (* 2 math.pi))
         ead (digital ea)
-        img (.. "src/rochambullet/assets/" self.type ".png")]
-    (Enemy.super.new self ex ey 1 ead 0.3 img))))
+        img (.. "src/rochambullet/assets/" !.type ".png")]
+    (Enemy.super.new ! ex ey 1 ead 0.3 img))))
 (tset Enemy :typeColor (fn [typ]
   (match typ 
     "rock"      (love.graphics.setColor 1 0 1 1)
@@ -18,20 +18,20 @@
     "paper"     (Enemy.typeColor "rock")
     "scissors"  (Enemy.typeColor "paper")
     _           (love.graphics.setColor 1 1 1 1))))
-(tset Enemy :draw (fn [self ox oy]
-  (Enemy.typeColor self.type)
-  (love.graphics.draw self.i self.x self.y 0 self.scale self.scale
-                      (+ self.ox (/ ox self.scale)) 
-                      (+ self.oy (/ oy self.scale)))
+(tset Enemy :draw (fn [! ox oy]
+  (Enemy.typeColor !.type)
+  (love.graphics.draw !.i !.x !.y 0 !.scale !.scale
+                      (+ !.ox (/ ox !.scale)) 
+                      (+ !.oy (/ oy !.scale)))
   (love.graphics.setColor 1 1 1 1)))
-(tset Enemy :draw* (fn [self offset] ;; TODO draw visible dupes only
-  (self:draw (* offset -1)  (* offset -1))
-  (self:draw (* offset 0)   (* offset -1))
-  (self:draw (* offset 1)   (* offset -1))
-  (self:draw (* offset -1)  (* offset 0))
-  (self:draw (* offset 0)   (* offset 0))
-  (self:draw (* offset 1)   (* offset 0))
-  (self:draw (* offset -1)  (* offset 1))
-  (self:draw (* offset 0)   (* offset 1))
-  (self:draw (* offset 1)   (* offset 1))))
+(tset Enemy :draw* (fn [! offset] ;; TODO draw visible dupes only
+  (!:draw (* offset -1)  (* offset -1))
+  (!:draw (* offset 0)   (* offset -1))
+  (!:draw (* offset 1)   (* offset -1))
+  (!:draw (* offset -1)  (* offset 0))
+  (!:draw (* offset 0)   (* offset 0))
+  (!:draw (* offset 1)   (* offset 0))
+  (!:draw (* offset -1)  (* offset 1))
+  (!:draw (* offset 0)   (* offset 1))
+  (!:draw (* offset 1)   (* offset 1))))
 Enemy
