@@ -1,6 +1,5 @@
 (local Object (require :lib.classic))
 (local MAT (Object:extend))
-
 (local fit (fn [w h ww wh] (math.min (/ ww w) (/ wh w))))
 
 (fn MAT.refresh [self]
@@ -44,19 +43,9 @@
   (set self.centr     (love.math.newTransform))
   (set self.transform (love.math.newTransform)))
 
-;; TODO split up
-(fn MAT.mouse [self t e x y ...]
-  (let [pressed       (= e :mousepressed)
-        released      (= e :mousereleased)
-        moved         (= e :mousemoved)
-        (tx ty) (self.centr:inverseTransformPoint 
-                  (self.scale:inverseTransformPoint 
-                    (self.trans:inverseTransformPoint x y)))
-        (dx dy)   (if moved (pick-values 2 ...) (values 0 0))
-        (tdx tdy) (self.scale:inverseTransformPoint dx dy)
-        (_ _ clicks)  (if pressed (pick-values 3 ...) 
-                                  (values 0 0 0))
-        dclicked      (= clicks 2)
+(fn MAT.mousepressed [self t x y button touch? presses]
+  (let [(tx ty) (self.transform:inverseTransformPoint x y)
+        double  (= presses 2)
         lmin          self.x
         lmax          (+ self.x t)
         rmin          (- (+ self.x self.w) t)
@@ -74,11 +63,21 @@
         dborder       (and  (> y dmin) (< y dmax) 
                             (> x lmin) (< x rmax))
         borders       (or lborder rborder uborder dborder)]
-    (when released                (set self.drag? false))
-    (when (and pressed uborder)   (set self.drag? true))
-    (when (and dclicked uborder)  (self:restore))
-    (when (and self.drag? moved)  (self:rearrange 
-      (+ self.x (- x self.mx)) (+ self.y (- y self.my))))
-    (when moved (do (set self.mx x) (set self.my y)))))
+    (when uborder (do 
+      (set self.drag? true)
+      (when double (self:restore))))))
+
+(fn MAT.mousereleased [self t x y ...]
+  (let [(tx ty) (self.transform:inverseTransformPoint x y)]
+    (set self.drag? false)))
+
+(fn MAT.mousemoved [self t x y dx dy ...]
+  (let [(tx ty)   (self.transform:inverseTransformPoint x y)
+        (tdx tdy) (self.scale:inverseTransformPoint dx dy)
+        dmx       (+ self.x (- x self.mx)) ;;TODO dx?
+        dmy       (+ self.y (- y self.my))]
+    (when self.drag? (self:rearrange dmx dmy))
+    (set self.mx x)
+    (set self.my y)))
 
 MAT

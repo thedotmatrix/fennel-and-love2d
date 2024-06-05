@@ -30,9 +30,9 @@
 
 ;; TODO no special cases, focus / check keys in event
 (fn WIN.event [self e ...] (match e
-  :mousepressed   (self.mat:mouse self.t e ...)
-  :mousereleased  (self.mat:mouse self.t e ...)
-  :mousemoved     (self.mat:mouse self.t e ...)
+  :mousepressed   (self.mat:mousepressed self.t ...)
+  :mousereleased  (self.mat:mousereleased self.t ...)
+  :mousemoved     (self.mat:mousemoved self.t ...)
   _               (self.cab:event e ...)))
 ;TODO mat transform event vars -> cab
 ;(if moved (self.cab:event e tx ty tdx tdx ...)
