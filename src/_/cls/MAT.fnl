@@ -1,28 +1,26 @@
 (local Object (require :lib.classic))
 (local MAT (Object:extend))
+(local transforms [:trans :scale :centr :transform])
 (local transset (fn [t ...] (t:setTransformation ...)))
-(local fit (fn [w h ww wh] (math.min (/ ww w) (/ wh w))))
 
 (fn MAT.refresh [self]
   (self.transform:reset)
-  (self.transform:apply self.trans)
-  (self.transform:apply self.scale)
-  (self.transform:apply self.centr))
+  (for [i 1 (- (length transforms) 1)]
+    (self.transform:apply (. self (. transforms i)))))
 
 (fn MAT.rearrange [self x y] 
   (set self.x x) (set self.y y) 
   (transset self.trans x y 0 1 1 0 0 0 0)
   (self:refresh))
 
-(fn MAT.resize [self w h] ;; TODO fix centering
-  (when (and (>= w self.ow) (>= h self.oh)) (do
-    (set self.w w)  (set self.h h)
-    (set self.s     (fit self.ow self.oh self.w self.h))
-    (transset self.scale 0 0 0 self.s self.s 0 0 0 0)
-    (set self.cx  (/ (- self.w (* self.s self.ow)) 2 self.os))
-    (set self.cy  (/ (- self.h (* self.s self.oh)) 2 self.os))
-    (transset self.centr self.cx self.cy 0 1 1 0 0 0 0)
-    (self:refresh))))
+(fn MAT.resize [self w h]
+  (set self.w w) (set self.h h)
+  (set self.s (math.min (/ self.w self.ow) (/ self.h self.oh)))
+  (transset self.scale 0 0 0 self.s self.s 0 0 0 0)
+  (set self.cx  (/ (- (/ self.w self.s) self.ow) 2))
+  (set self.cy  (/ (- (/ self.h self.s) self.oh) 2))
+  (transset self.centr self.cx self.cy 0 1 1 0 0 0 0)
+  (self:refresh))
 
 (fn MAT.restore [self mx my]
   (let [max?      (and (= self.w self.ww) (= self.h self.wh))
@@ -35,9 +33,8 @@
 (fn MAT.new [self ww wh w h]
   (set self.ww ww)    (set self.wh wh)
   (set self.ow w)     (set self.oh h)
-  (set self.os        (fit w h ww wh))
-  (each [_ v (pairs [:trans :scale :centr :transform])]
-    (tset self v (love.math.newTransform)))
+  (each [_ t (ipairs transforms)]
+    (tset self t (love.math.newTransform)))
   (self:rearrange 0 0)
   (self:resize w h))
 
