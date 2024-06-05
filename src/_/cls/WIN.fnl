@@ -28,15 +28,14 @@
 
 (fn WIN.update [self dt] (self.cab:update dt))
 
-;; TODO no special cases, focus / check keys in event
 (fn WIN.event [self e ...] (match e
-  :mousepressed   (self.mat:mousepressed self.t ...)
-  :mousereleased  (self.mat:mousereleased self.t ...)
-  :mousemoved     (self.mat:mousemoved self.t ...)
+  :mousepressed   (self.cab:event e 
+                    (self.mat:mousepressed self.t ...))
+  :mousereleased  (self.cab:event e
+                    (self.mat:mousereleased self.t ...))
+  :mousemoved     (self.cab:event e 
+                    (self.mat:mousemoved self.t ...))
   _               (self.cab:event e ...)))
-;TODO mat transform event vars -> cab
-;(if moved (self.cab:event e tx ty tdx tdx ...)
-            ;  (self.cab:event e tx ty ...))))
 ;TODO update window colors based on mat event
 ;(if borders (set self.color [0.8 0.8 0.8])
 ;                (set self.color [0.4 0.4 0.4]))

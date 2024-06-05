@@ -65,11 +65,13 @@
         borders       (or lborder rborder uborder dborder)]
     (when uborder (do 
       (set self.drag? true)
-      (when double (self:restore))))))
+      (when double (self:restore))))
+    (values tx ty button touch? presses)))
 
 (fn MAT.mousereleased [self t x y ...]
   (let [(tx ty) (self.transform:inverseTransformPoint x y)]
-    (set self.drag? false)))
+    (set self.drag? false)
+    (values tx ty ...)))
 
 (fn MAT.mousemoved [self t x y dx dy ...]
   (let [(tx ty)   (self.transform:inverseTransformPoint x y)
@@ -78,6 +80,7 @@
         dmy       (+ self.y (- y self.my))]
     (when self.drag? (self:rearrange dmx dmy))
     (set self.mx x)
-    (set self.my y)))
+    (set self.my y)
+    (values tx ty tdx tdy ...)))
 
 MAT
