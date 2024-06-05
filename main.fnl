@@ -1,8 +1,7 @@
 (import-macros {: flip} :mac.bool)
 
-;; TODO main window fullscreen full res
+;; TODO how to make this junk a special case of WIN?
 (var (w h) (values nil nil))
-;; TODO transform  -> translate (x y) + scale (x y dx dy)
 (local transform (love.math.newTransform))
 (var full? false)
 (fn resize []
@@ -26,33 +25,9 @@
                                 :minheight height})))
   (resize))
 
-;; TODO main is just a special case of WIN (especially events)
+;; TODO good for now... breakdown???
 (local WIN (require :src._.cls.WIN))
 (var win nil)
-(fn mouse [e x y ...]
-  (let [(tx ty)   (transform:inverseTransformPoint x y)
-        moved     (= e :mousemoved)
-        (dx dy)   (if moved (pick-values 2 ...) (values 0 0))
-        (tdx tdy) (transform:inverseTransformPoint dx dy)
-        outer     (or (< ty (/ h 18)) (> ty (* 17 (/ h 18))))]
-    ;(when (and (= e :mousepressed) outer) (fullscreen))
-    (if moved (win:event e tx ty tdx tdx ...)
-              (win:event e tx ty ...))))
-(fn touch [e id x y dx dy ...]
-  (let [(tx ty)   (transform:inverseTransformPoint x y)
-        (tdx tdy) (transform:inverseTransformPoint dx dy)]
-    (win:event e id tx ty tdx tdy ...)))
-(fn event [e ...] (match e ;; TODO substring case matching?
-  :mousepressed   (mouse e ...)
-  :mousereleased  (mouse e ...)
-  :mousemoved     (mouse e ...)
-  :touchpressed   (touch e ...)
-  :touchreleased  (touch e ...)
-  :touchmoved     (touch e ...)
-  :resize         (resize ...)
-  _               (win:event e ...)))
-
-;; TODO breakdown
 (fn love.load [args]
   (let [(ww wh) (love.window.getMode)] (set w ww) (set h wh))
   ;; TODO depends on res
@@ -72,6 +47,6 @@
     (love.window.setTitle title)
     (set win (WIN name ww wh s s)))
   (each [e _ (pairs love.handlers)]
-    (tset love.handlers e #(event e $...))))
+    (tset love.handlers e #(win:event e $...))))
 (fn love.draw [] (win:draw transform))
 (fn love.update [dt] (win:update dt))

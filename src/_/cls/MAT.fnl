@@ -23,10 +23,10 @@
     0 1 1 0 0 0 0)
   (self:refresh))
 
-(fn MAT.restore [self]
+(fn MAT.restore [self mousex mousey]
   (if (and (= self.w self.ww) (= self.h self.wh))
       (do (self:resize self.ow self.oh) ;; TODO no double do
-          (self:rearrange (- self.mx (/ self.ow 2)) self.my))
+          (self:rearrange (- mousex (/ self.ow 2)) mousey))
       (do (self:resize self.ww self.wh)
           (self:rearrange 0 0)))
   (self:refresh))
@@ -35,7 +35,6 @@
   (set self.ww ww)    (set self.wh wh)
   (set self.os        (fit w h ww wh))
   (set self.ow w)     (set self.oh h)
-  (set self.mx 0)     (set self.my 0)
   (set self.x 0)      (set self.y 0)
   (set self.cx 0)     (set self.cy 0)
   (set self.trans     (love.math.newTransform))
@@ -44,10 +43,9 @@
   (set self.transform (love.math.newTransform)))
 
 (fn MAT.mousepressed [self top? x y button touch? presses]
-  (let [(tx ty) (self.transform:inverseTransformPoint x y)
-        double  (= presses 2)]
+  (let [(tx ty) (self.transform:inverseTransformPoint x y)]
     (when top? (set self.drag? true))
-    (when (and top? double) (self:restore))
+    (when (and top? (= presses 2)) (self:restore x y))
     (values tx ty button touch? presses)))
 
 (fn MAT.mousereleased [self x y ...]
@@ -58,11 +56,9 @@
 (fn MAT.mousemoved [self x y dx dy ...]
   (let [(tx ty)   (self.transform:inverseTransformPoint x y)
         (tdx tdy) (self.scale:inverseTransformPoint dx dy)
-        dmx       (+ self.x (- x self.mx)) ;;TODO dx?
-        dmy       (+ self.y (- y self.my))]
+        dmx       (+ self.x dx) ;;TODO dx?
+        dmy       (+ self.y dy)]
     (when self.drag? (self:rearrange dmx dmy))
-    (set self.mx x)
-    (set self.my y)
     (values tx ty tdx tdy ...)))
 
 MAT
