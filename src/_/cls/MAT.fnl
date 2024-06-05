@@ -8,32 +8,32 @@
   (for [i 1 (- (length ts) 1)] (!.t:apply (. ! (. ts i)))))
 
 (fn MAT.rearrange [! x y]
-  (local (w h) (values (- !.ww !.w) (- !.wh !.h)))
+  (local (w h) (values (- !.parentw !.sw) (- !.parenth !.sh)))
   (when (not (or (< x 0) (> x w) (< y 0) (> y h)))
     (set !.x x) (set !.y y)
     (sett !.trans x y 0 1 1 0 0 0 0)
     (!:refresh)))
 
 (fn MAT.resize [! w h] (when (and (> w 0) (> h 0)) (do
-  (set !.w w) (set !.h h)
-  (set !.s (math.min (/ !.w !.ow) (/ !.h !.oh)))
+  (set !.sw w) (set !.sh h)
+  (set !.s (math.min (/ !.sw !.w) (/ !.sh !.h)))
   (sett !.scale 0 0 0 !.s !.s 0 0 0 0)
-  (set !.cx  (/ (- (/ !.w !.s) !.ow) 2))
-  (set !.cy  (/ (- (/ !.h !.s) !.oh) 2))
+  (set !.cx  (/ (- (/ !.sw !.s) !.w) 2))
+  (set !.cy  (/ (- (/ !.sh !.s) !.h) 2))
   (sett !.centr !.cx !.cy 0 1 1 0 0 0 0)
   (!:refresh))))
 
 (fn MAT.restore [! mx my]
-  (let [max?      (and (= !.w !.ww) (= !.h !.wh))
-        cmx       (- mx (/ !.ow 2))
-        (x y w h) (if max?  (values cmx my !.ow !.oh)
-                            (values 0 0 !.ww !.wh ))]
+  (let [max?      (and (= !.sw !.parentw) (= !.sh !.parenth))
+        cmx       (- mx (/ !.w 2))
+        (x y w h) (if max?  (values cmx my !.w !.h)
+                            (values 0 0 !.parentw !.parenth))]
     (!:resize w h)
     (!:rearrange x y)))
 
-(fn MAT.new [! ww wh x y w h]
-  (set !.ww ww)    (set !.wh wh)
-  (set !.ow w)     (set !.oh h)
+(fn MAT.new [! parentw parenth x y w h]
+  (set !.parentw parentw) (set !.parenth parenth)
+  (set !.w w)             (set !.h h)
   (each [_ t (ipairs ts)] (tset ! t (love.math.newTransform)))
   (!:resize w h)
   (!:rearrange x y))
@@ -53,7 +53,7 @@
   (let [(tx ty)   (!.t:inverseTransformPoint x y)
         (tdx tdy) (!.scale:inverseTransformPoint dx dy)
         (xdx ydy) (values (+ !.x dx) (+ !.y dy))
-        (wdx hdy) (values (+ !.w dx) (+ !.h dy))]
+        (wdx hdy) (values (+ !.sw dx) (+ !.sh dy))]
     (when (and top? (not !.bot?)) (set !.top? true))
     (when (and bot? (not !.top?)) (set !.bot? true))
     (when (and !.top? !.drag?) (!:rearrange xdx ydy))

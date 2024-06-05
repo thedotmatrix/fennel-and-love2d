@@ -26,6 +26,7 @@
   (resize))
 
 ;; TODO good for now... breakdown???
+(local CAB (require :src._.cls.CAB)) 
 (local WIN (require :src._.cls.WIN))
 (var win nil)
 (fn love.load [args]
@@ -45,7 +46,7 @@
         (ww wh) (love.window.getMode)
         s       (/ (math.min ww wh) 2)]
     (love.window.setTitle title)
-    (set win (WIN name ww wh s s)))
+    (set win (WIN ww wh s s (CAB name s s))))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(win:event e $...))))
 (fn love.draw [] (win:draw transform))

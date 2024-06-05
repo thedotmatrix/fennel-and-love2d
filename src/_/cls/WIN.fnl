@@ -1,20 +1,18 @@
 (local Object (require :lib.classic))
 (local WIN (Object:extend))
-;; TODO cab or window, inteface?
-(local CAB (require :src._.cls.CAB)) 
 (local MAT (require :src._.cls.MAT))
 
-(fn WIN.new [! name ww wh w h]
-  (set !.t       (/ (math.min ww wh) 64))
+(fn WIN.new [! parentw parenth w h child]
+  (set !.t       (/ (math.min parentw parenth) 64))
   (set !.color   [0.4 0.4 0.4])
-  (set !.cab     (CAB name w h))
-  (set !.mat     (MAT ww wh 1 !.t w h)))
+  (set !.mat     (MAT parentw parenth 1 !.t w h))
+  (set !.child   child))
 
 (fn WIN.draw [!]
   (love.graphics.applyTransform !.mat.trans)
   (love.graphics.setColor !.color)
   (let [(x y) (values -1 (* -1 !.t))
-        (iw ih) (values !.mat.w !.mat.h)
+        (iw ih) (values !.mat.sw !.mat.sh)
         (ow oh) (values (+ iw (* -2 x)) (+ ih (* -2 y)))
         stencil #(love.graphics.rectangle :fill 0 0 iw ih)]
     (love.graphics.rectangle :fill x y ow oh)
@@ -24,18 +22,18 @@
     (love.graphics.rectangle :fill 0 0 iw ih)
     (love.graphics.setColor 1 1 1 1))
   (love.graphics.origin)
-  (!.cab:draw !.mat.t)
+  (!.child:draw !.mat.t)
   (love.graphics.setStencilTest))
 
-(fn WIN.update [! dt] (!.cab:update dt))
+(fn WIN.update [! dt] (!.child:update dt))
 
 (fn WIN.decor8 [! e x y ...]
   (if (or (= e :mousepressed) (= e :mousemoved))
-    (let [(wmin wmax) (values !.mat.x (+ !.mat.x !.mat.w))
+    (let [(wmin wmax) (values !.mat.x (+ !.mat.x !.mat.sw))
           topmin      (- !.mat.y !.t) 
           topmax      !.mat.y
-          botmin      (+ !.mat.y !.mat.h)
-          botmax      (+ (+ !.mat.y !.mat.h) !.t)
+          botmin      (+ !.mat.y !.mat.sh)
+          botmax      (+ (+ !.mat.y !.mat.sh) !.t)
           top?        (and  (> y topmin) (< y topmax) 
                             (> x wmin) (< x wmax))
           bot?        (and  (> y botmin) (< y botmax) 
@@ -46,6 +44,6 @@
 (fn WIN.event [! e ...]
   (let [apply #((. !.mat e) !.mat (!:decor8 e $...))
         transform  (if (. !.mat e) apply #$)]
-    (!.cab:event e (transform ...))))
+    (!.child:event e (transform ...))))
 
 WIN
