@@ -1,8 +1,9 @@
 (import-macros {: flip} :mac.bool)
+(local MAT (require :src._.cls.MAT))
 
 ;; TODO how to make this junk a special case of WIN?
 (var (w h) (values nil nil))
-(local transform (love.math.newTransform))
+(var transform nil)
 (var full? false)
 (fn resize []
   (let [(sw sh) (love.window.getMode)
@@ -46,8 +47,11 @@
         (ww wh) (love.window.getMode)
         s       (/ (math.min ww wh) 2)]
     (love.window.setTitle title)
-    (set win (WIN ww wh s s (CAB name s s))))
+    (set transform (MAT ww wh 0 0 ww wh))
+    (set win  (WIN ww wh "parent" s s
+                (WIN s s "child" (/ s 2) (/ s 2)
+                  (CAB (/ s 2) (/ s 2) name (/ s 2) (/ s 2) nil)))))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(win:event e $...))))
-(fn love.draw [] (win:draw transform))
+(fn love.draw [] (win:draw nil transform))
 (fn love.update [dt] (win:update dt))
