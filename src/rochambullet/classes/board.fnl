@@ -35,7 +35,7 @@
   (love.graphics.setColor 1 1 1 1)
   ;(love.graphics.rectangle "line" 0 0 !.px !.px)
   (love.graphics.pop)))
-(tset Board :draw* (fn [!] ;; TODO inefficient, draw visible dupes only
+(tset Board :draw* (fn [!] ;; LATER inefficient, draw visible dupes only
   (!:draw (* !.px -1)  (* !.px -1))
   (!:draw (* !.px 0)   (* !.px -1))
   (!:draw (* !.px 1)   (* !.px -1))

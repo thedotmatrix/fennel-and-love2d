@@ -591,7 +591,7 @@
     :ralt (do (incf chapter 1) (clamp chapter 1 24)))
   (when (~= old chapter) (load)))
 
-;; TODO break each chapter into its own cartridge
+;; LATER break each chapter into its own cartridge
 (tset Book :new (fn [! w h old]
   (Book.super.new !) ;; discard old state
   (tset ! :draw draw)

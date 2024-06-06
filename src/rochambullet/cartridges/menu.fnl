@@ -124,7 +124,7 @@
   (when (< (!.music:getVolume) 0.5) (!.music:setVolume (+ (!.music:getVolume) (* dt 0.1))))
   (when (>= (!.player:anim dt !.board) 1.0) 
             (!.player:reset !.board))
-  ;; TODO class since duped across every update
+  ;; LATER class since duped across every update
   (let [tx (- (/ w 2) !.player.x)
         ty (- (/ h 2) !.player.y)]
     (!.followplayer:setTransformation tx ty 0 1 1 0 0 0 0))

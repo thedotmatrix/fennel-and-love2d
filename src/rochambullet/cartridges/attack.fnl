@@ -68,7 +68,7 @@
 (fn EvE [! dt w h]
   (local ones [])
   (local twos [])
-  ;; TODO spatial hashmap avoid polynomial checks
+  ;; LATER spatial hashmap avoid polynomial checks
   (for [i 1 (length !.enemies)]
     (for [j 1 (length !.enemies)]
       (when (~= i j)
@@ -79,7 +79,7 @@
             (table.insert twos {:i i :a a :b b :aa a.angle :ba b.angle})
             (when (< i j)
               (table.insert ones {:i i :a a :b b :aa a.angle :ba b.angle}))))))))
-  ;; TODO fun?
+  ;; LATER fun?
   (for [c (length twos) 1 -1]
     (let [collision (. twos c)
           oth       collision.b

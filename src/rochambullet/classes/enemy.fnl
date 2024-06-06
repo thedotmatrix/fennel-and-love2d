@@ -24,7 +24,7 @@
                       (+ !.ox (/ ox !.scale)) 
                       (+ !.oy (/ oy !.scale)))
   (love.graphics.setColor 1 1 1 1)))
-(tset Enemy :draw* (fn [! offset] ;; TODO draw visible dupes only
+(tset Enemy :draw* (fn [! offset] ;; LATER draw visible dupes only
   (!:draw (* offset -1)  (* offset -1))
   (!:draw (* offset 0)   (* offset -1))
   (!:draw (* offset 1)   (* offset -1))
