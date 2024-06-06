@@ -5,3 +5,4 @@
 /bld/appimage/squashfs-root
 *.private
 releases/
+*.sublime*

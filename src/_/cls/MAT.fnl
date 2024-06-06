@@ -7,13 +7,13 @@
   (!.t:reset)
   (for [i 1 (- (length ts) 1)] (!.t:apply (. ! (. ts i)))))
 
-(fn MAT.repose [! x y]
-  (set !.x x) (set !.y y)
+(fn MAT.repose [! tx ty]
+  (set (!.x !.y) (values tx ty))
   (sett !.trans !.x !.y 0 1 1 0 0 0 0)
   (!:refresh))
 
-(fn MAT.resize [! w h] (when (and w h)
-  (set !.sw w) (set !.sh h)
+(fn MAT.resize [! sw sh] (when (and sw sh)
+  (set (!.sw !.sh) (values sw sh))
   (set !.s (math.min (/ !.sw !.w) (/ !.sh !.h)))
   (sett !.scale 0 0 0 !.s !.s 0 0 0 0)
   (!:refresh)))
@@ -29,7 +29,7 @@
     (!:resize w h)))
 
 (fn MAT.new [! parent x y w h]
-  (set !.parent parent) (set !.w w) (set !.h h)
+  (set !.parent parent) (set (!.w !.h) (values w h))
   (each [_ t (ipairs ts)] (tset ! t (love.math.newTransform)))
   (!:repose x y)
   (!:resize w h)
