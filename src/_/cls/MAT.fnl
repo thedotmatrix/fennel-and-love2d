@@ -57,7 +57,7 @@
     (when (and !.top? (not !.drag?)) (set !.top? false))
     (when (and !.bot? (not !.drag?)) (set !.bot? false))
     ;; TODO block children from also repose/resize
-    (when (and !.top? !.drag?) (!:repose tx ty))
+    (when (and !.top? !.drag?) (!:repose tx ty idx idy))
     (when (and !.bot? !.drag?) (!:resize sw sh))
     (values ix iy idx idy ...)))
 
