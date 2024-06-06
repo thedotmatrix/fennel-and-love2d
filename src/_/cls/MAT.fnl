@@ -26,7 +26,6 @@
         cmx   (- mx (/ !.w 2))
         (x y) (if max? (values cmx my)  (values 0 0))
         (w h) (if max? (values !.w !.h) (values maxw maxh))]
-    (print maxw)
     (!:repose x y)
     (!:rescale w h)))
 

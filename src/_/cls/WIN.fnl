@@ -3,6 +3,7 @@
 (local MAT (require :src._.cls.MAT))
 
 (fn WIN.new [! parent name w h]
+  (set !.name name)
   (set !.border [0.4 0.4 0.4]) (set !.fill [0.2 0.2 0.2])
   (set !.mat (MAT parent.mat 0 (parent.mat:border) w h))
   (if parent.depth  (set !.depth (+ parent.depth 1))
@@ -11,6 +12,7 @@
                       (set !.child $1))))
 
 (fn WIN.draw [!]
+  ;(if (= !.name :main) (print !.mat.y))
   (love.graphics.applyTransform !.mat.trans)
   (let [(x y)   (values 1 (!.mat.parent:border))
         (iw ih) (values !.mat.sw !.mat.sh)

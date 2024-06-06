@@ -24,11 +24,13 @@
     (when within? (love.mouse.setRelativeMode true))
     (mousemoved ! top? bot? x y dx dy ...))))
 
-(fn windowmove [! _ _ dx dy] (when (and dx dy)
-  (let [(wx wy) (love.window.getPosition)]
-    (love.window.setPosition (+ wx dx) (+ wy dy)))))
+(fn windowmove [repose] (fn [! tx ty dx dy repose?] 
+  (when (and dx dy) 
+    (let [(wx wy) (love.window.getPosition)]
+      (love.window.setPosition (+ wx dx) (+ wy dy))))
+  (when repose? (repose ! tx ty dx dy))))
 
-(fn windowfull [! _ _] ;;TODO maxi/mini-mize?
+(fn windowfull [restore] (fn [! mx my] ;;TODO maxi/mini-mize?
   (if (not _G.web?)
       (love.window.setFullscreen (flip fullscreen?) :desktop)
       (let [(sw sh) (love.window.getMode)
@@ -36,8 +38,8 @@
             height  (if fullscreen? h sh)
             opts    (opt width height)]
         (love.window.updateMode width height opts)))
-  (!.parent:rescale (love.window.getMode))
-  (!:rescale (love.window.getMode)))
+  (!:repose 0 0 0 0 true)
+  (!:rescale (love.window.getMode))))
 
 (fn load []
   (let [file    :conf.fnl
@@ -61,11 +63,13 @@
   (love.graphics.setFont font)
   (set _G.font font) ; TODO globals?
   (set _G.web? (= :web (. args 1)))
-  (set main (WIN {:mat (MAT nil 0 0 w h)} :main w h))
+  (set main (WIN {:mat (MAT nil 0 0 0 (+ w w))} :main w h))
   (local mousemoved         main.mat.mousemoved)
+  (local repose             main.mat.repose)
+  (local restore            main.mat.restore)
   (set main.mat.mousemoved  (windowmouse mousemoved))
-  (set main.mat.repose      windowmove)
-  (set main.mat.restore     windowfull)
+  (set main.mat.repose      (windowmove repose))
+  (set main.mat.restore     (windowfull restore))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(main:event e $...)))
   (load))
