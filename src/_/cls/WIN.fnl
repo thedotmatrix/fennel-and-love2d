@@ -2,20 +2,17 @@
 (local WIN (Object:extend))
 (local MAT (require :src._.cls.MAT))
 
-(fn WIN.t [mat] (/ (math.min mat.w mat.h) 64))
-
 (fn WIN.new [! parent name w h]
   (set !.border [0.4 0.4 0.4]) (set !.fill [0.2 0.2 0.2])
-  (set !.mat (MAT parent.mat 0 (!.t parent.mat) w h))
+  (set !.mat (MAT parent.mat 0 (parent.mat:border) w h))
   (if parent.depth  (set !.depth (+ parent.depth 1))
-    ;1 (!.t parent.mat)
-                    (set !.depth -1))
+                    (set !.depth 0))
   (set !.child #(when (and $1 $1.is ($1:is WIN))
                       (set !.child $1))))
 
 (fn WIN.draw [!]
   (love.graphics.applyTransform !.mat.trans)
-  (let [(x y)   (values 1 (!.t !.mat.parent))
+  (let [(x y)   (values 1 (!.mat.parent:border))
         (iw ih) (values !.mat.sw !.mat.sh)
         (ow oh) (values (+ iw (* 2 x)) (+ ih (* 2 y)))
         stencil #(love.graphics.rectangle :fill 0 0 iw ih)]
@@ -35,7 +32,7 @@
 (fn WIN.decor8 [! e x y ...]
   (if (or (= e :mousepressed) (= e :mousemoved))
     (let [(wmin wmax) (values !.mat.x (+ !.mat.x !.mat.sw))
-          thickness   (!.t !.mat.parent)
+          thickness   (!.mat.parent:border)
           topmin      (- !.mat.y thickness) 
           topmax      !.mat.y
           botmin      (+ !.mat.y !.mat.sh)

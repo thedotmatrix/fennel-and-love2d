@@ -24,18 +24,20 @@
     (when within? (love.mouse.setRelativeMode true))
     (mousemoved ! top? bot? x y dx dy ...))))
 
-(fn windowmove [! _ _ dx dy]
+(fn windowmove [! _ _ dx dy] (when (and dx dy)
   (let [(wx wy) (love.window.getPosition)]
-    (love.window.setPosition (+ wx dx) (+ wy dy))))
+    (love.window.setPosition (+ wx dx) (+ wy dy)))))
 
-(fn windowfull [] ;; TODO maximize/minimize instead?
+(fn windowfull [! _ _] ;;TODO maxi/mini-mize?
   (if (not _G.web?)
       (love.window.setFullscreen (flip fullscreen?) :desktop)
       (let [(sw sh) (love.window.getMode)
             width   (if fullscreen? w sw)
             height  (if fullscreen? h sh)
             opts    (opt width height)]
-        (love.window.updateMode width height opts))))
+        (love.window.updateMode width height opts)))
+  (!.parent:rescale (love.window.getMode))
+  (!:rescale (love.window.getMode)))
 
 (fn load []
   (let [file    :conf.fnl

@@ -3,8 +3,9 @@
 (local ts [:trans :scale :t])
 (local sett (fn [t ...] (t:setTransformation ...)))
 
-(fn MAT.refresh [!]
-  (!.t:reset)
+(fn MAT.border [!] (/ (math.max !.w !.h) 64))
+
+(fn MAT.refresh [!] (!.t:reset)
   (for [i 1 (- (length ts) 1)] (!.t:apply (. ! (. ts i)))))
 
 (fn MAT.repose [! tx ty]
@@ -12,7 +13,7 @@
   (sett !.trans !.x !.y 0 1 1 0 0 0 0)
   (!:refresh))
 
-(fn MAT.resize [! sw sh] (when (and sw sh)
+(fn MAT.rescale [! sw sh] (when (and sw sh)
   (set (!.sw !.sh) (values sw sh))
   (set !.s (math.min (/ !.sw !.w) (/ !.sh !.h)))
   (sett !.scale 0 0 0 !.s !.s 0 0 0 0)
@@ -23,16 +24,17 @@
         maxh  (/ !.parent.sh !.parent.s)
         max?  (and (>= !.sw maxw) (>= !.sh maxh))
         cmx   (- mx (/ !.w 2))
-        (x y) (if max? (values cmx my) (values 0 0))
+        (x y) (if max? (values cmx my)  (values 0 0))
         (w h) (if max? (values !.w !.h) (values maxw maxh))]
+    (print maxw)
     (!:repose x y)
-    (!:resize w h)))
+    (!:rescale w h)))
 
 (fn MAT.new [! parent x y w h]
   (set !.parent parent) (set (!.w !.h) (values w h))
   (each [_ t (ipairs ts)] (tset ! t (love.math.newTransform)))
   (!:repose x y)
-  (!:resize w h)
+  (!:rescale w h)
   (!:refresh))
 
 (fn MAT.mousepressed [! top? bot? x y button touch? presses]
@@ -56,9 +58,9 @@
     (when (and bot? (not !.top?)) (set !.bot? true))
     (when (and !.top? (not !.drag?)) (set !.top? false))
     (when (and !.bot? (not !.drag?)) (set !.bot? false))
-    ;; TODO block children from also repose/resize
+    ;; TODO block children from also repose/rescale
     (when (and !.top? !.drag?) (!:repose tx ty idx idy))
-    (when (and !.bot? !.drag?) (!:resize sw sh))
+    (when (and !.bot? !.drag?) (!:rescale sw sh))
     (values ix iy idx idy ...)))
 
 MAT
