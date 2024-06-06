@@ -3,7 +3,9 @@
 (local ts [:trans :scale :t])
 (local sett (fn [t ...] (t:setTransformation ...)))
 
-(fn MAT.border [!] (/ (math.max !.w !.h) 64))
+(fn MAT.border [! recur?]
+  (local b (if (and !.max? recur?) 0 (/ (math.max !.w !.h) 64)))
+  (if (not (and recur? !.parent)) b (+ b (!.parent:border recur?))))
 
 (fn MAT.refresh [!] (!.t:reset)
   (for [i 1 (- (length ts) 1)] (!.t:apply (. ! (. ts i)))))
@@ -14,7 +16,7 @@
   (!:refresh))
 
 (fn MAT.rescale [! sw sh] (when (and sw sh)
-  (set (!.sw !.sh) (values sw sh))
+  (set (!.sw !.sh) (values sw (- sh (!:border true))))
   (set !.s (math.min (/ !.sw !.w) (/ !.sh !.h)))
   (sett !.scale 0 0 0 !.s !.s 0 0 0 0)
   (!:refresh)))
@@ -22,14 +24,17 @@
 (fn MAT.restore [! mx my]
   (let [maxw  (/ !.parent.sw !.parent.s)
         maxh  (/ !.parent.sh !.parent.s)
-        max?  (and (>= !.sw maxw) (>= !.sh maxh))
+        max?  false
+        ;max?  (and (>= !.sw maxw) (>= !.sh maxh))
         cmx   (- mx (/ !.w 2))
         (x y) (if max? (values cmx my)  (values 0 0))
         (w h) (if max? (values !.w !.h) (values maxw maxh))]
-    (!:repose x y)
+    (set !.max? (not max?))
+    (!:repose x y) 
     (!:rescale w h)))
 
 (fn MAT.new [! parent x y w h]
+  (set !.max? (not parent))
   (set !.parent parent) (set (!.w !.h) (values w h))
   (each [_ t (ipairs ts)] (tset ! t (love.math.newTransform)))
   (!:repose x y)

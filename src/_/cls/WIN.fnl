@@ -12,7 +12,6 @@
                       (set !.child $1))))
 
 (fn WIN.draw [!]
-  ;(if (= !.name :main) (print !.mat.y))
   (love.graphics.applyTransform !.mat.trans)
   (let [(x y)   (values 1 (!.mat.parent:border))
         (iw ih) (values !.mat.sw !.mat.sh)

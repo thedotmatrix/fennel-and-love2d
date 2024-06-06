@@ -28,7 +28,7 @@
   (when (and dx dy) 
     (let [(wx wy) (love.window.getPosition)]
       (love.window.setPosition (+ wx dx) (+ wy dy))))
-  (when repose? (repose ! tx ty dx dy))))
+  (when repose? (repose ! tx ty))))
 
 (fn windowfull [restore] (fn [! mx my] ;;TODO maxi/mini-mize?
   (if (not _G.web?)
@@ -38,6 +38,8 @@
             height  (if fullscreen? h sh)
             opts    (opt width height)]
         (love.window.updateMode width height opts)))
+  ;; TODO call restore if main.parent can be initialized max
+  (set !.max? true)
   (!:repose 0 0 0 0 true)
   (!:rescale (love.window.getMode))))
 
