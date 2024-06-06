@@ -7,16 +7,16 @@
   (!.t:reset)
   (for [i 1 (- (length ts) 1)] (!.t:apply (. ! (. ts i)))))
 
-(fn MAT.rearrange [! x y]
+(fn MAT.repose [! x y]
   (set !.x x) (set !.y y)
   (sett !.trans !.x !.y 0 1 1 0 0 0 0)
   (!:refresh))
 
-(fn MAT.resize [! w h] 
+(fn MAT.resize [! w h] (when (and w h)
   (set !.sw w) (set !.sh h)
   (set !.s (math.min (/ !.sw !.w) (/ !.sh !.h)))
   (sett !.scale 0 0 0 !.s !.s 0 0 0 0)
-  (!:refresh))
+  (!:refresh)))
 
 (fn MAT.restore [! mx my]
   (let [maxw  (/ !.parent.sw !.parent.s)
@@ -25,21 +25,22 @@
         cmx   (- mx (/ !.w 2))
         (x y) (if max? (values cmx my) (values 0 0))
         (w h) (if max? (values !.w !.h) (values maxw maxh))]
-    (!:rearrange x y)
+    (!:repose x y)
     (!:resize w h)))
 
 (fn MAT.new [! parent x y w h]
   (set !.parent parent) (set !.w w) (set !.h h)
   (each [_ t (ipairs ts)] (tset ! t (love.math.newTransform)))
-  (!:rearrange x y)
+  (!:repose x y)
   (!:resize w h)
   (!:refresh))
 
 (fn MAT.mousepressed [! top? bot? x y button touch? presses]
   (let [(tx ty) (!.t:inverseTransformPoint x y)]
     (when (or top? bot?) (set !.drag? true))
-    (when (and top? (= presses 2)) (!:restore x y))
-    (values tx ty button touch? presses)))
+    (if (and top? (= presses 2))
+      (do (!:restore x y) (values tx ty nil false 0))
+      (values tx ty button touch? presses))))
 
 (fn MAT.mousereleased [! x y ...]
   (let [(tx ty) (!.t:inverseTransformPoint x y)]
@@ -53,10 +54,11 @@
         (sw sh) (values (+ !.sw idx) (+ !.sh idy))]
     (when (and top? (not !.bot?)) (set !.top? true))
     (when (and bot? (not !.top?)) (set !.bot? true))
-    (when (and !.top? !.drag?) (!:rearrange tx ty))
-    (when (and !.bot? !.drag?) (!:resize sw sh))
     (when (and !.top? (not !.drag?)) (set !.top? false))
     (when (and !.bot? (not !.drag?)) (set !.bot? false))
+    ;; TODO block children from also repose/resize
+    (when (and !.top? !.drag?) (!:repose tx ty))
+    (when (and !.bot? !.drag?) (!:resize sw sh))
     (values ix iy idx idy ...)))
 
 MAT

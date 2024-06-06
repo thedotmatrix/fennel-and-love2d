@@ -6,29 +6,22 @@
 (var main nil)
 (var (w h) (values nil nil))
 (var transform nil)
-(var full? false)
+(var fullscreen? false)
+(local opt #{ :fullscreen (flip fullscreen?)
+              :fullscreentype :exclusive
+              :minwidth $1 :minheight $2})
 
-(fn resize []
-  (let [(sw sh) (love.window.getMode)
-        width   (if (or (not _G.web?) full?) sw w)
-        height  (if (or (not _G.web?) full?) sh h)
-        s       (math.min (/ width w) (/ height h))
-        mx      (/ (- sw (* s w)) 2)
-        my      (/ (- sh (* s h)) 2)]
-    (transform:setTransformation mx my 0 s s 0 0 0 0)))
+(fn movewindow [] ;; TODO needs to be relative change
+  (love.window.setPosition (love.mouse.getPosition)))
 
-(fn fullscreen [] ;; TODO clean up nasty table def
+(fn fullwindow []
   (if (not _G.web?)
-      (love.window.setFullscreen (flip full?) :desktop)
-      (let [(sw sh)       (love.window.getMode)
-            width         (if full? w sw)
-            height        (if full? h sh)]
-        (love.window.updateMode width height {
-                                :fullscreen (flip full?)
-                                :fullscreentype :exclusive
-                                :minwidth width 
-                                :minheight height})))
-  (resize))
+      (love.window.setFullscreen (flip fullscreen?) :desktop)
+      (let [(sw sh) (love.window.getMode)
+            width   (if fullscreen? w sw)
+            height  (if fullscreen? h sh)
+            opts    (opt width height)]
+        (love.window.updateMode width height opts))))
 
 (fn love.load [args]
   (let [(ww wh) (love.window.getMode)] (set w ww) (set h wh))
@@ -43,11 +36,13 @@
         format  "%s"
         name    (format:format (title:lower))
         (ww wh) (love.window.getMode)
-        s       (/ (math.min ww wh) 2)]
+        s       (/ (math.min ww wh) 1)]
     (love.window.setTitle title)
     (local m          (MAT nil 0 0 ww wh))
     (local t          (+ (WIN.t m) 1))
-    (set main         (WIN {:mat m} :main (- ww 2) (- wh t)))
+    (set main         (WIN {:mat m} :main ww wh))
+    (set main.mat.repose  movewindow)
+    (set main.mat.restore fullwindow)
     (local parent     (WIN main :parent s s))
     (local child      (WIN parent :child (/ s 2) (/ s 2)))
     (local grandchild (CAB child name (/ s 2) (/ s 2)))

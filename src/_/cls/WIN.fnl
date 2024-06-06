@@ -6,8 +6,9 @@
 
 (fn WIN.new [! parent name w h]
   (set !.border [0.4 0.4 0.4]) (set !.fill [0.2 0.2 0.2])
-  (set !.mat (MAT parent.mat 1 (!.t parent.mat) w h))
+  (set !.mat (MAT parent.mat 0 (!.t parent.mat) w h))
   (if parent.depth  (set !.depth (+ parent.depth 1))
+    ;1 (!.t parent.mat)
                     (set !.depth -1))
   (set !.child #(when (and $1 $1.is ($1:is WIN))
                       (set !.child $1))))
