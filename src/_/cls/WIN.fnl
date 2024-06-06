@@ -4,20 +4,24 @@
 (local t #(/ (math.min $1 $2) 64))
 (local (border fill) (values [0.4 0.4 0.4] [0.2 0.2 0.2]))
 
-(fn WIN.new [! parentw parenth name w h win]
-  (set !.mat (MAT parentw parenth 1 (t parentw parenth) w h))
-  (when (and win win.is (win:is WIN)) (set !.child win)))
+(fn WIN.new [! parent name w h]
+  (local thickness (t parent.mat.w parent.mat.h))
+  (set !.mat (MAT parent.mat 1 thickness w h))
+  (if parent.depth  (set !.depth (+ parent.depth 1))
+                    (set !.depth -1))
+  (set !.child #(when (and $1 $1.is ($1:is WIN))
+                      (set !.child $1))))
 
 (fn WIN.draw [!]
   (love.graphics.applyTransform !.mat.trans)
-  (let [(x y) (values 1 (t !.mat.parentw !.mat.parenth))
+  (let [(x y) (values 1 (t !.mat.parent.w !.mat.parent.h))
         (iw ih) (values !.mat.sw !.mat.sh)
         (ow oh) (values (+ iw (* 2 x)) (+ ih (* 2 y)))
         stencil #(love.graphics.rectangle :fill 0 0 iw ih)]
     (love.graphics.setColor border)
     (love.graphics.rectangle :fill (* -1 x) (* -1 y) ow oh)
-    (love.graphics.stencil stencil :increment 1)
-    (love.graphics.setStencilTest :greater 0)
+    (love.graphics.stencil stencil :increment 1 true)
+    (love.graphics.setStencilTest :greater !.depth)
     (love.graphics.setColor fill)
     (love.graphics.rectangle :fill 0 0 iw ih)
     (love.graphics.setColor 1 1 1 1))
@@ -30,7 +34,7 @@
 (fn WIN.decor8 [! e x y ...]
   (if (or (= e :mousepressed) (= e :mousemoved))
     (let [(wmin wmax) (values !.mat.x (+ !.mat.x !.mat.sw))
-          thickness   (t !.mat.parentw !.mat.parenth)
+          thickness   (t !.mat.parent.w !.mat.parent.h)
           topmin      (- !.mat.y thickness) 
           topmax      !.mat.y
           botmin      (+ !.mat.y !.mat.sh)

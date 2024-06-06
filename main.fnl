@@ -1,3 +1,4 @@
+;; main.fnl
 (import-macros {: flip} :mac.bool)
 (local MAT (require :src._.cls.MAT))
 
@@ -47,13 +48,15 @@
         (ww wh) (love.window.getMode)
         s       (/ (math.min ww wh) 2)]
     (love.window.setTitle title)
-    (set transform (MAT ww wh 0 0 ww wh))
-    (set win
-      (WIN ww wh "parent" s s
-        (WIN s s "child" (/ s 2) (/ s 2)
-          (CAB (/ s 2) (/ s 2) name (/ s 2) (/ s 2) nil))))
-  )
+    (local mat        (MAT nil 0 0 ww wh))
+    (local main       (WIN {:mat mat} :main ww wh))
+    (set win          (WIN main :parent s s))
+    (local child      (WIN win :child (/ s 2) (/ s 2)))
+    (local grandchild (CAB child name (/ s 2) (/ s 2)))
+    (main.child win)
+    (win.child child)
+    (child.child grandchild))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(win:event e $...))))
-(fn love.draw [] (win:draw transform.t))
+(fn love.draw [] (win:draw))
 (fn love.update [dt] (win:update dt))

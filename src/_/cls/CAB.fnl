@@ -4,8 +4,8 @@
 (local CAB (WIN:extend))
 (local CRT (require :src._.cls.CRT))
 
-(fn CAB.new [! parentw parenth name w h child]
-  (CAB.super.new ! parentw parenth name w h child)
+(fn CAB.new [! parent name w h child]
+  (CAB.super.new ! parent name w h child)
   (set !.dev? false)
   (set !.dev {:cartridge nil :canvas nil})
   (set !.dev.cartridge (CRT :_ :repl))
@@ -16,7 +16,7 @@
   (set !.game.canvas (love.graphics.newCanvas w h))
   (!.game.canvas:setFilter :nearest :nearest))
 
-(fn CAB.draw [!]
+(fn CAB.draw [!] ;;TODO center
   (love.graphics.push)
   (love.graphics.origin)
   (love.graphics.setCanvas !.game.canvas)

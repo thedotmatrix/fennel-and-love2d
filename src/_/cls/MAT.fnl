@@ -12,26 +12,27 @@
   (sett !.trans !.x !.y 0 1 1 0 0 0 0)
   (!:refresh))
 
-(fn MAT.resize [! w h]
+(fn MAT.resize [! w h] 
   (set !.sw w) (set !.sh h)
   (set !.s (math.min (/ !.sw !.w) (/ !.sh !.h)))
   (sett !.scale 0 0 0 !.s !.s 0 0 0 0)
   (!:refresh))
 
 (fn MAT.restore [! mx my]
-  (let [max?      (and (= !.sw !.parentw) (= !.sh !.parenth))
-        cmx       (- mx (/ !.w 2))
-        (x y w h) (if max?  (values cmx my !.w !.h)
-                            (values 0 0 !.parentw !.parenth))]
-    (!:resize w h)
-    (!:rearrange x y)))
+  (let [maxw  (/ !.parent.sw !.parent.s)
+        maxh  (/ !.parent.sh !.parent.s)
+        max?  (and (>= !.sw maxw) (>= !.sh maxh))
+        cmx   (- mx (/ !.w 2))
+        (x y) (if max? (values cmx my) (values 0 0))
+        (w h) (if max? (values !.w !.h) (values maxw maxh))]
+    (!:rearrange x y)
+    (!:resize w h)))
 
-(fn MAT.new [! parentw parenth x y w h]
-  (set !.parentw parentw) (set !.parenth parenth)
-  (set !.w w)             (set !.h h)
+(fn MAT.new [! parent x y w h]
+  (set !.parent parent) (set !.w w) (set !.h h)
   (each [_ t (ipairs ts)] (tset ! t (love.math.newTransform)))
-  (!:resize w h)
   (!:rearrange x y)
+  (!:resize w h)
   (!:refresh))
 
 (fn MAT.mousepressed [! top? bot? x y button touch? presses]
