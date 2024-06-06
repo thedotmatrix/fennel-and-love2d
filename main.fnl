@@ -9,7 +9,7 @@
               :fullscreentype :exclusive
               :minwidth $1 :minheight $2})
 
-(fn mousewindow [mousemoved] (fn [! top? bot? x y dx dy ...]
+(fn windowmouse [mousemoved] (fn [! top? bot? x y dx dy ...]
   (when (not (and mx my)) (set (mx my) (values x y)))
   (let [(ww wh)   (love.window.getMode)
         mxin?     (and (> mx 0) (< mx (- ww 0)))
@@ -24,11 +24,11 @@
     (when within? (love.mouse.setRelativeMode true))
     (mousemoved ! top? bot? x y dx dy ...))))
 
-(fn movewindow [! _ _ dx dy]
+(fn windowmove [! _ _ dx dy]
   (let [(wx wy) (love.window.getPosition)]
     (love.window.setPosition (+ wx dx) (+ wy dy))))
 
-(fn fullwindow [] ;; TODO maximize/minimize instead?
+(fn windowfull [] ;; TODO maximize/minimize instead?
   (if (not _G.web?)
       (love.window.setFullscreen (flip fullscreen?) :desktop)
       (let [(sw sh) (love.window.getMode)
@@ -37,6 +37,21 @@
             opts    (opt width height)]
         (love.window.updateMode width height opts))))
 
+(fn load []
+  (let [file    :conf.fnl
+        info    (love.filesystem.getInfo file)
+        title   (if info ((love.filesystem.lines file)) :_)
+        format  "%s"
+        name    (format:format (title:lower))
+        s       (/ (math.min w h) 1)]
+    (love.window.setTitle title)
+    (local parent     (WIN main :parent s s))
+    (local child      (WIN parent :child (/ s 2) (/ s 2)))
+    (local grandchild (CAB child name (/ s 2) (/ s 2)))
+    (main.child parent)
+    (parent.child child)
+    (child.child grandchild)))
+
 (fn love.load [args]
   (set (w h) (love.window.getMode))
   (local font (love.graphics.newFont 12 :mono)) ; TODO dynamic
@@ -44,33 +59,17 @@
   (love.graphics.setFont font)
   (set _G.font font) ; TODO globals?
   (set _G.web? (= :web (. args 1)))
-  (let [file    :conf.fnl
-        info    (love.filesystem.getInfo file)
-        title   (if info ((love.filesystem.lines file)) :_)
-        format  "%s"
-        name    (format:format (title:lower))
-        (ww wh) (love.window.getMode)
-        s       (/ (math.min ww wh) 1)]
-    (love.window.setTitle title)
-    (local m          (MAT nil 0 0 ww wh))
-    (local t          (+ (WIN.t m) 1))
-    (set main         (WIN {:mat m} :main ww wh))
-    (local mousemoved         main.mat.mousemoved)
-    (set main.mat.mousemoved  (mousewindow mousemoved))
-    (set main.mat.repose      movewindow)
-    (set main.mat.restore     fullwindow)
-    (local parent     (WIN main :parent s s))
-    (local child      (WIN parent :child (/ s 2) (/ s 2)))
-    (local grandchild (CAB child name (/ s 2) (/ s 2)))
-    (main.child parent)
-    (parent.child child)
-    (child.child grandchild))
+  (set main (WIN {:mat (MAT nil 0 0 w h)} :main w h))
+  (local mousemoved         main.mat.mousemoved)
+  (set main.mat.mousemoved  (windowmouse mousemoved))
+  (set main.mat.repose      windowmove)
+  (set main.mat.restore     windowfull)
   (each [e _ (pairs love.handlers)]
-    (tset love.handlers e #(main:event e $...))))
+    (tset love.handlers e #(main:event e $...)))
+  (load))
 
 (fn love.draw [] 
-  (main:draw) 
-  (love.graphics.reset)
+  (love.graphics.push) (main:draw) (love.graphics.pop)
   (when (and mx my) (love.graphics.circle :line mx my 4)))
 
 (fn love.update [dt] (main:update dt))
