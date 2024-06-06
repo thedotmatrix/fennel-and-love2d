@@ -4,8 +4,10 @@
 (local sett (fn [t ...] (t:setTransformation ...)))
 
 (fn MAT.border [! recur?]
-  (local b (if (and !.max? recur?) 0 (/ (math.max !.w !.h) 64)))
-  (if (not (and recur? !.parent)) b (+ b (!.parent:border recur?))))
+  (local b (if  (and !.max? recur?) 
+                0   (/ (math.max !.w !.h) 64)))
+  (if (not (and recur? !.parent)) 
+                b   (+ b (!.parent:border recur?))))
 
 (fn MAT.refresh [!] (!.t:reset)
   (for [i 1 (- (length ts) 1)] (!.t:apply (. ! (. ts i)))))
