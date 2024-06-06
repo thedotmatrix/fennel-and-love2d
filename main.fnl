@@ -1,11 +1,13 @@
-;; main.fnl
+; main.fnl
 (import-macros {: flip} :mac.bool)
 (local MAT (require :src._.cls.MAT))
-
-;; TODO how to make this junk a special case of WIN?
+(local WIN (require :src._.cls.WIN))
+(local CAB (require :src._.cls.CAB))
+(var main nil)
 (var (w h) (values nil nil))
 (var transform nil)
 (var full? false)
+
 (fn resize []
   (let [(sw sh) (love.window.getMode)
         width   (if (or (not _G.web?) full?) sw w)
@@ -14,6 +16,7 @@
         mx      (/ (- sw (* s w)) 2)
         my      (/ (- sh (* s h)) 2)]
     (transform:setTransformation mx my 0 s s 0 0 0 0)))
+
 (fn fullscreen [] ;; TODO clean up nasty table def
   (if (not _G.web?)
       (love.window.setFullscreen (flip full?) :desktop)
@@ -27,18 +30,12 @@
                                 :minheight height})))
   (resize))
 
-;; TODO good for now... breakdown???
-(local CAB (require :src._.cls.CAB)) 
-(local WIN (require :src._.cls.WIN))
-(var win nil)
 (fn love.load [args]
   (let [(ww wh) (love.window.getMode)] (set w ww) (set h wh))
-  ;; TODO depends on res
-  (local font (love.graphics.newFont 12 :mono))
+  (local font (love.graphics.newFont 12 :mono)) ; TODO dynamic
   (font:setFilter :nearest :nearest)
   (love.graphics.setFont font)
-  ;; TODO globals?
-  (set _G.font font)
+  (set _G.font font) ; TODO globals?
   (set _G.web? (= :web (. args 1)))
   (let [file    :conf.fnl
         info    (love.filesystem.getInfo file)
@@ -48,15 +45,18 @@
         (ww wh) (love.window.getMode)
         s       (/ (math.min ww wh) 2)]
     (love.window.setTitle title)
-    (local mat        (MAT nil 0 0 ww wh))
-    (local main       (WIN {:mat mat} :main ww wh))
-    (set win          (WIN main :parent s s))
-    (local child      (WIN win :child (/ s 2) (/ s 2)))
+    (local m          (MAT nil 0 0 ww wh))
+    (local t          (+ (WIN.t m) 1))
+    (set main         (WIN {:mat m} :main (- ww 2) (- wh t)))
+    (local parent     (WIN main :parent s s))
+    (local child      (WIN parent :child (/ s 2) (/ s 2)))
     (local grandchild (CAB child name (/ s 2) (/ s 2)))
-    (main.child win)
-    (win.child child)
+    (main.child parent)
+    (parent.child child)
     (child.child grandchild))
   (each [e _ (pairs love.handlers)]
-    (tset love.handlers e #(win:event e $...))))
-(fn love.draw [] (win:draw))
-(fn love.update [dt] (win:update dt))
+    (tset love.handlers e #(main:event e $...))))
+
+(fn love.draw [] (main:draw))
+
+(fn love.update [dt] (main:update dt))
