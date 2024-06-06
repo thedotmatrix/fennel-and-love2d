@@ -10,6 +10,7 @@
   (set !.callback (!.live:reload !.safe))
   ((!.live:load :_) :error))
 
+;; TODO this should be wrapping all the stuff above
 (fn CRT.safely [! f ...]
   (when (and f (xpcall f #(!:unsafe $ (traceback)) ...))
         (when (or (~= !.live.game :_) (~= !.live.mode :error))

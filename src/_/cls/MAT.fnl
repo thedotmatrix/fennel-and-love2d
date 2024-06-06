@@ -1,31 +1,21 @@
 (local Object (require :lib.classic))
 (local MAT (Object:extend))
-(local ts [:trans :scale :centr :t])
+(local ts [:trans :scale :t])
 (local sett (fn [t ...] (t:setTransformation ...)))
 
 (fn MAT.refresh [!]
   (!.t:reset)
-  ; (love.graphics.applyTransform parenttransform.trans)
-  ; (love.graphics.applyTransform transform.trans)
-  ; (love.graphics.applyTransform parenttransform.scale)
-  ; (love.graphics.applyTransform parenttransform.centr)
-  ; (love.graphics.applyTransform transform.scale)
-  ; (love.graphics.applyTransform transform.centr)
   (for [i 1 (- (length ts) 1)] (!.t:apply (. ! (. ts i)))))
 
 (fn MAT.rearrange [! x y]
-  (local (w h) (values (- !.parentw !.sw) (- !.parenth !.sh)))
   (set !.x x) (set !.y y)
-  (sett !.trans x y 0 1 1 0 0 0 0)
+  (sett !.trans !.x !.y 0 1 1 0 0 0 0)
   (!:refresh))
 
 (fn MAT.resize [! w h]
   (set !.sw w) (set !.sh h)
   (set !.s (math.min (/ !.sw !.w) (/ !.sh !.h)))
   (sett !.scale 0 0 0 !.s !.s 0 0 0 0)
-  (set !.cx  (/ (- (/ !.sw !.s) !.w) 2))
-  (set !.cy  (/ (- (/ !.sh !.s) !.h) 2))
-  (sett !.centr !.cx !.cy 0 1 1 0 0 0 0)
   (!:refresh))
 
 (fn MAT.restore [! mx my]
@@ -56,16 +46,16 @@
     (values tx ty ...)))
 
 (fn MAT.mousemoved [! top? bot? x y dx dy ...]
-  (let [(tx ty)   (!.t:inverseTransformPoint x y)
-        (tdx tdy) (!.scale:inverseTransformPoint dx dy)
-        (xdx ydy) (values (+ !.x dx) (+ !.y dy))
-        (wdx hdy) (values (+ !.sw dx) (+ !.sh dy))]
+  (let [(ix iy)   (!.t:inverseTransformPoint x y)
+        (idx idy) (!.scale:inverseTransformPoint dx dy)
+        (tx ty) (values (+ !.x idx) (+ !.y idy))
+        (sw sh) (values (+ !.sw idx) (+ !.sh idy))]
     (when (and top? (not !.bot?)) (set !.top? true))
     (when (and bot? (not !.top?)) (set !.bot? true))
-    (when (and !.top? !.drag?) (!:rearrange xdx ydy))
-    (when (and !.bot? !.drag?) (!:resize wdx hdy))
+    (when (and !.top? !.drag?) (!:rearrange tx ty))
+    (when (and !.bot? !.drag?) (!:resize sw sh))
     (when (and !.top? (not !.drag?)) (set !.top? false))
     (when (and !.bot? (not !.drag?)) (set !.bot? false))
-    (values tx ty tdx tdy ...)))
+    (values ix iy idx idy ...)))
 
 MAT

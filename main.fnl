@@ -48,10 +48,12 @@
         s       (/ (math.min ww wh) 2)]
     (love.window.setTitle title)
     (set transform (MAT ww wh 0 0 ww wh))
-    (set win  (WIN ww wh "parent" s s
-                (WIN s s "child" (/ s 2) (/ s 2)
-                  (CAB (/ s 2) (/ s 2) name (/ s 2) (/ s 2) nil)))))
+    (set win
+      (WIN ww wh "parent" s s
+        (WIN s s "child" (/ s 2) (/ s 2)
+          (CAB (/ s 2) (/ s 2) name (/ s 2) (/ s 2) nil))))
+  )
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(win:event e $...))))
-(fn love.draw [] (win:draw nil transform))
+(fn love.draw [] (win:draw transform.t))
 (fn love.update [dt] (win:update dt))

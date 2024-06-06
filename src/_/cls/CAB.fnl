@@ -16,23 +16,19 @@
   (set !.game.canvas (love.graphics.newCanvas w h))
   (!.game.canvas:setFilter :nearest :nearest))
 
-(fn CAB.draw [! parenttransform transform]
+(fn CAB.draw [!]
+  (love.graphics.push)
+  (love.graphics.origin)
   (love.graphics.setCanvas !.game.canvas)
   (!.game.cartridge:draw !.game.canvas)
   (love.graphics.setCanvas !.dev.canvas)
   (!.dev.cartridge:draw !.dev.canvas)
   (love.graphics.setCanvas)
-  (love.graphics.applyTransform parenttransform.trans)
-  (love.graphics.applyTransform transform.trans)
-  (love.graphics.applyTransform parenttransform.scale)
-  (love.graphics.applyTransform parenttransform.centr)
-  (love.graphics.applyTransform transform.scale)
-  (love.graphics.applyTransform transform.centr)
+  (love.graphics.pop)
   (love.graphics.draw !.game.canvas)
   (love.graphics.setColor 1 1 1 0.9)
   (when !.dev? (love.graphics.draw !.dev.canvas))
-  (love.graphics.setColor 1 1 1 1)
-  (love.graphics.origin))
+  (love.graphics.setColor 1 1 1 1))
   
 (fn CAB.update [! dt] 
   (!.game.cartridge:update dt)

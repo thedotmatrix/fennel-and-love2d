@@ -4,31 +4,25 @@
 (local t #(/ (math.min $1 $2) 64))
 (local (border fill) (values [0.4 0.4 0.4] [0.2 0.2 0.2]))
 
-(fn WIN.new [! parentw parenth name w h child]
-  (set !.name name)
-  (set !.mat (MAT parentw parenth 0 (t parentw parenth) w h))
-  (when (and child child.is (child:is WIN))
-    (set !.child child)))
+(fn WIN.new [! parentw parenth name w h win]
+  (set !.mat (MAT parentw parenth 1 (t parentw parenth) w h))
+  (when (and win win.is (win:is WIN)) (set !.child win)))
 
-(fn WIN.draw [! parenttransform transform]
-  (love.graphics.push)
-  (when transform (love.graphics.applyTransform transform.trans))
+(fn WIN.draw [!]
   (love.graphics.applyTransform !.mat.trans)
-  (when transform (love.graphics.applyTransform transform.scale))
-  (when transform (love.graphics.applyTransform transform.centr))
-  (love.graphics.setColor border)
   (let [(x y) (values 1 (t !.mat.parentw !.mat.parenth))
         (iw ih) (values !.mat.sw !.mat.sh)
         (ow oh) (values (+ iw (* 2 x)) (+ ih (* 2 y)))
         stencil #(love.graphics.rectangle :fill 0 0 iw ih)]
+    (love.graphics.setColor border)
     (love.graphics.rectangle :fill (* -1 x) (* -1 y) ow oh)
-    (love.graphics.stencil stencil :replace 1)
+    (love.graphics.stencil stencil :increment 1)
     (love.graphics.setStencilTest :greater 0)
     (love.graphics.setColor fill)
     (love.graphics.rectangle :fill 0 0 iw ih)
     (love.graphics.setColor 1 1 1 1))
-  (love.graphics.pop)
-  (when !.child (!.child:draw transform !.mat))
+  (love.graphics.applyTransform !.mat.scale)
+  (when !.child (!.child:draw))
   (love.graphics.setStencilTest))
 
 (fn WIN.update [! dt] (when !.child (!.child:update dt)))
