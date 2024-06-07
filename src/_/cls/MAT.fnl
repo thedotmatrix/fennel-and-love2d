@@ -3,9 +3,8 @@
 (local ts [:trans :scale :t])
 (local sett (fn [t ...] (t:setTransformation ...)))
 
-(fn MAT.border [! recur?]
-  (local b (if  (and !.max? recur?) 
-                0   (/ (math.max !.w !.h) 64)))
+(fn MAT.border [! recur?] ;; TODO should be in window
+  (local b (/ (math.max !.w !.h) 64))
   (if (not (and recur? !.parent)) 
                 b   (+ b (!.parent:border recur?))))
 
@@ -18,36 +17,35 @@
   (!:refresh))
 
 (fn MAT.rescale [! sw sh] (when (and sw sh)
-  (set (!.sw !.sh) (values sw (- sh (!:border true))))
+  (set (!.sw !.sh) (values sw sh))
   (set !.s (math.min (/ !.sw !.w) (/ !.sh !.h)))
   (sett !.scale 0 0 0 !.s !.s 0 0 0 0)
   (!:refresh)))
 
-(fn MAT.restore [! mx my]
-  (let [maxw  (/ !.parent.sw !.parent.s)
-        maxh  (/ !.parent.sh !.parent.s)
-        max?  false
-        ;max?  (and (>= !.sw maxw) (>= !.sh maxh))
-        cmx   (- mx (/ !.w 2))
-        (x y) (if max? (values cmx my)  (values 0 0))
+(fn MAT.restore [!]
+  ;; TODO get parent out of matrix
+  (let [maxw  (-  (/ !.parent.sw !.parent.s) 2)
+        maxh  (-  (/ !.parent.sh !.parent.s) 
+                  (* 2 (!.parent:border false)))
+        max?  (and (>= !.sw maxw) (>= !.sh maxh))
+        (x y) (values 1 (!.parent:border false))
         (w h) (if max? (values !.w !.h) (values maxw maxh))]
-    (set !.max? (not max?))
     (!:repose x y) 
     (!:rescale w h)))
 
 (fn MAT.new [! parent x y w h]
-  (set !.max? (not parent))
-  (set !.parent parent) (set (!.w !.h) (values w h))
+  (set !.parent parent)
+  (set (!.w !.h) (values w h))
   (each [_ t (ipairs ts)] (tset ! t (love.math.newTransform)))
   (!:repose x y)
-  (!:rescale w h)
+  (!:rescale !.w !.h)
   (!:refresh))
 
 (fn MAT.mousepressed [! top? bot? x y button touch? presses]
   (let [(tx ty) (!.t:inverseTransformPoint x y)]
     (when (or top? bot?) (set !.drag? true))
     (if (and top? (= presses 2))
-      (do (!:restore x y) (values tx ty nil false 0))
+      (do (!:restore) (values tx ty nil false 0))
       (values tx ty button touch? presses))))
 
 (fn MAT.mousereleased [! x y ...]
@@ -64,7 +62,6 @@
     (when (and bot? (not !.top?)) (set !.bot? true))
     (when (and !.top? (not !.drag?)) (set !.top? false))
     (when (and !.bot? (not !.drag?)) (set !.bot? false))
-    ;; TODO block children from also repose/rescale
     (when (and !.top? !.drag?) (!:repose tx ty idx idy))
     (when (and !.bot? !.drag?) (!:rescale sw sh))
     (values ix iy idx idy ...)))

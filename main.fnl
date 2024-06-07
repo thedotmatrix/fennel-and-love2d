@@ -15,13 +15,14 @@
         mxin?     (and (> mx 0) (< mx (- ww 0)))
         myin?     (and (> my 0) (< my (- wh 0)))
         within?   (and mxin? myin?)
-        relative? (love.mouse.getRelativeMode)]
-    (when (and relative? (not !.drag?)) (if within? 
-      (set (mx my) (values (+ mx dx) (+ my dy)))
-      (do (love.mouse.setRelativeMode false))
-          (love.mouse.setPosition mx my)))
-    (when (not relative?) (set (mx my) (values x y)))
+        relate? (love.mouse.getRelativeMode)]
+    (when (and relate? (or (not !.drag?) (and !.drag? bot?)))
+      (if within? (set (mx my) (values (+ mx dx) (+ my dy)))
+                  (do (love.mouse.setRelativeMode false))
+                      (love.mouse.setPosition mx my)))
+    (when (not relate?) (set (mx my) (values x y)))
     (when within? (love.mouse.setRelativeMode true))
+    ;; TODO block children during window move
     (mousemoved ! top? bot? x y dx dy ...))))
 
 (fn windowmove [repose] (fn [! tx ty dx dy repose?] 
@@ -30,7 +31,7 @@
       (love.window.setPosition (+ wx dx) (+ wy dy))))
   (when repose? (repose ! tx ty))))
 
-(fn windowfull [restore] (fn [! mx my] ;;TODO maxi/mini-mize?
+(fn windowfull [restore] (fn [!] ;;TODO maxi/mini-mize?
   (if (not _G.web?)
       (love.window.setFullscreen (flip fullscreen?) :desktop)
       (let [(sw sh) (love.window.getMode)
@@ -38,10 +39,15 @@
             height  (if fullscreen? h sh)
             opts    (opt width height)]
         (love.window.updateMode width height opts)))
-  ;; TODO call restore if main.parent can be initialized max
-  (set !.max? true)
-  (!:repose 0 0 0 0 true)
-  (!:rescale (love.window.getMode))))
+  ;; TODO call restore when parent matrix problem fixed
+  (let [(pw ph) (love.window.getMode)
+        maxw    (- pw 2)
+        maxh    (- ph (* 2 (!.parent:border false)))
+        max?    (and (>= !.sw maxw) (>= !.sh maxh))
+        (x y)   (values 1 (!.parent:border false))
+        (w h)   (if max? (values !.w !.h) (values maxw maxh))]
+    (!:repose x y) 
+    (!:rescale w h))))
 
 (fn load []
   (let [file    :conf.fnl

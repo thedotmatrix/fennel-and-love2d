@@ -4,8 +4,11 @@
 (local CAB (WIN:extend))
 (local CRT (require :src._.cls.CRT))
 
-(fn CAB.new [! parent name w h child]
-  (CAB.super.new ! parent name w h child)
+(fn CAB.new [! parent name ww wh child]
+  (CAB.super.new ! parent name ww wh child)
+  (local (bw bh) (values 1 (- (parent.mat:border true) 
+                              (parent.mat:border false))))
+  (local (w h) (values (- ww bw) (- wh (* 2 bh))))
   (set !.dev? false)
   (set !.dev {:cartridge nil :canvas nil})
   (set !.dev.cartridge (CRT :_ :repl))
