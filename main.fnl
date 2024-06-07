@@ -16,7 +16,7 @@
         myin?     (and (> my 0) (< my (- wh 0)))
         within?   (and mxin? myin?)
         relate? (love.mouse.getRelativeMode)]
-    (when (and relate? (or (not !.drag?) (and !.drag? bot?)))
+    (when (and relate? (not !.drag?))
       (if within? (set (mx my) (values (+ mx dx) (+ my dy)))
                   (do (love.mouse.setRelativeMode false))
                       (love.mouse.setPosition mx my)))
@@ -77,6 +77,7 @@
   (local restore            main.mat.restore)
   (set main.mat.mousemoved  (windowmouse mousemoved))
   (set main.mat.repose      (windowmove repose))
+  (set main.mat.rescale     #$) ;; TODO resize event only!
   (set main.mat.restore     (windowfull restore))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(main:event e $...)))
