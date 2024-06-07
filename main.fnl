@@ -77,7 +77,6 @@
   (local restore            main.mat.restore)
   (set main.mat.mousemoved  (windowmouse mousemoved))
   (set main.mat.repose      (windowmove repose))
-  (set main.mat.rescale     #$) ;; TODO resize event only!
   (set main.mat.restore     (windowfull restore))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(main:event e $...)))
