@@ -1,13 +1,10 @@
 (import-macros {: flip} :mac.bool)
-(local MAT (require :src._.cls.MAT))
-(local WIN (require :src._.cls.WIN))
-(local CAB (require :src._.cls.CAB))
 (local BOX (require :src._.cls.BOX))
-(var (main mx my w h) (values nil nil nil nil nil))
-(var fullscreen? false)
-(local opt #{ :fullscreen (flip fullscreen?)
-              :fullscreentype :exclusive
-              :minwidth $1 :minheight $2})
+(local CAB (require :src._.cls.CAB))
+(local WIN (require :src._.cls.WIN))
+(var (main mx my w h fs?) (values nil nil nil nil nil false))
+(local opt #{:fullscreen (flip fs?) :fullscreentype :exclusive
+             :minwidth $1 :minheight $2})
 
 (fn windowmouse [mousemoved] (fn [! x y dx dy ...]
   (when (not (and mx my)) (set (mx my) (values x y)))
@@ -16,29 +13,26 @@
         myin?     (and (> my 0) (< my (- wh 0)))
         within?   (and mxin? myin?)
         relate? (love.mouse.getRelativeMode)]
-    (when (and relate? (not !.drag?))
-      (if within? (set (mx my) (values (+ mx dx) (+ my dy)))
-                  (do (love.mouse.setRelativeMode false))
-                      (love.mouse.setPosition mx my)))
+    (when relate? (if within? 
+      (set (mx my) (values (+ mx dx) (+ my dy)))
+      (do (love.mouse.setRelativeMode false))
+          (love.mouse.setPosition mx my)))
     (when (not relate?) (set (mx my) (values x y)))
     (when within? (love.mouse.setRelativeMode true))
-    ;; TODO block children during window move
-    (!.child:mousemoved mx my dx dy ...))))
+    (mousemoved ! mx my dx dy ...)))) ;; TODO block children
 
 (fn windowmove [repose] (fn [! tx ty dx dy repose?] 
-  (when (and dx dy) 
-    (let [(wx wy) (love.window.getPosition)]
-      (love.window.setPosition (+ wx dx) (+ wy dy))))
+  (when (and dx dy) (let [(wx wy) (love.window.getPosition)]
+    (love.window.setPosition (+ wx dx) (+ wy dy))))
   (when repose? (repose ! tx ty))))
 
-(fn windowfull [restore] (fn [!] ;;TODO maxi/mini-mize?
-  (if (not _G.web?)
-      (love.window.setFullscreen (flip fullscreen?) :desktop)
-      (let [(sw sh) (love.window.getMode)
-            width   (if fullscreen? w sw)
-            height  (if fullscreen? h sh)
-            opts    (opt width height)]
-        (love.window.updateMode width height opts)))
+(fn windowfull [restore] (fn [!] (if (not _G.web?)
+  (love.window.setFullscreen (flip fs?) :desktop)
+  (let [(sw sh) (love.window.getMode)
+        width   (if fs? w sw)
+        height  (if fs? h sh)
+        opts    (opt width height)]
+    (love.window.updateMode width height opts)))
   ;; TODO call restore when parent matrix problem fixed
   (let [(pw ph) (love.window.getMode)
         maxw    (- pw 2)
@@ -57,18 +51,9 @@
         name    (format:format (title:lower))
         s       (/ (math.min w h) 1)]
     (love.window.setTitle title)
-    ;(local parent     (WIN main :parent s s))
-    ;(local child      (WIN parent :child (/ s 2) (/ s 2)))
-    ;(local grandchild (CAB child name (/ s 2) (/ s 2)))
-    ;(main.child parent)
-    ;(parent.child child)
-    ;(child.child grandchild)
-    (local parent (BOX 0 0 1 1 main [0.8 0.8 0.8]))
-    (local child (BOX 0.5 0.5 0.5 0.5 parent [0.6 0.6 0.6]))
-    (local grand (BOX 0.5 0.5 0.5 0.5 child [0.4 0.4 0.4]))
-    (set main.child parent)
-    (set parent.child child)
-    (set child.child grand)))
+    (local parent     (WIN main :parent 0.75 1))
+    (local child      (WIN parent :child 0.75 1))
+    (local grandchild (CAB child name))))
 
 (fn love.load [args]
   (set (w h) (love.window.getMode))
@@ -77,19 +62,18 @@
   (love.graphics.setFont font)
   (set _G.font font) ; TODO globals?
   (set _G.web? (= :web (. args 1)))
-  (set main (BOX))
-  (local mousemoved         main.mousemoved)
-  (local repose             main.repose)
-  (local restore            main.restore)
+  (set main (WIN {:inner (BOX) :depth -1} :main 1 1))
+  (local mousemoved     main.mousemoved)
+  (local repose         main.repose)
+  (local restore        main.restore)
   (set main.mousemoved  (windowmouse mousemoved))
-  ;(set main.repose      (windowmove repose))
-  ;(set main.restore     (windowfull restore))
+  ;(set main.repose         (windowmove repose))
+  ;(set main.restore        (windowfull restore))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(main:event e $...)))
   (load))
 
-(fn love.draw [] 
-  (love.graphics.push) (main:draw) (love.graphics.pop)
+(fn love.draw [] (main:draw)
   (when (and mx my) (love.graphics.circle :line mx my 4)))
 
 (fn love.update [dt] (main:update dt))

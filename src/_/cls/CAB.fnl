@@ -3,12 +3,12 @@
 (local WIN (require :src._.cls.WIN))
 (local CAB (WIN:extend))
 (local CRT (require :src._.cls.CRT))
+(local scale 2)
 
-(fn CAB.new [! parent name ww wh child]
-  (CAB.super.new ! parent name ww wh child)
-  (local (bw bh) (values 1 (- (parent.mat:border true) 
-                              (parent.mat:border false))))
-  (local (w h) (values (- ww bw) (- wh (* 2 bh))))
+(fn CAB.new [! parent name]
+  (CAB.super.new ! parent name 1 1)
+  (local w (/ (parent.inner:abs :w) scale))
+  (local h (/ (parent.inner:abs :h) scale))
   (set !.dev? false)
   (set !.dev {:cartridge nil :canvas nil})
   (set !.dev.cartridge (CRT :_ :repl))
@@ -19,7 +19,7 @@
   (set !.game.canvas (love.graphics.newCanvas w h))
   (!.game.canvas:setFilter :nearest :nearest))
 
-(fn CAB.draw [!] ;;TODO center
+(fn CAB.draw [!]
   (love.graphics.push)
   (love.graphics.origin)
   (love.graphics.setCanvas !.game.canvas)
@@ -28,23 +28,30 @@
   (!.dev.cartridge:draw !.dev.canvas)
   (love.graphics.setCanvas)
   (love.graphics.pop)
+  (love.graphics.push)
+  (love.graphics.scale scale)
   (love.graphics.draw !.game.canvas)
   (love.graphics.setColor 1 1 1 0.9)
   (when !.dev? (love.graphics.draw !.dev.canvas))
-  (love.graphics.setColor 1 1 1 1))
+  (love.graphics.setColor 1 1 1 1)
+  (love.graphics.pop))
   
 (fn CAB.update [! dt] 
   (!.game.cartridge:update dt)
   (!.dev.cartridge:update dt))
 
 (fn CAB.event [! e ...] (match e
+  :mousemoved     (!:mouse e ...)
+  :mousepressed   (!:mouse e ...)
+  :mousereleased  (!:mouse e ...)
   :keypressed     (!:keypressed ...)
   :textinput      (!:textinput ...)
   _               (!.game.cartridge:event e ...)))
 
+(fn CAB.mouse [! e x y ...]
+  (!.game.cartridge:event e (/ x scale) (/ y scale)))
+
 (fn CAB.keypressed [! key ...] (match key
-  ;; TODO if window open, window resize; otherwise quit
-  :escape (love.event.quit)
   :lctrl (flip !.dev?)
   _ (let [focus (if !.dev? !.dev !.game)]
       (focus.cartridge:event :keypressed key ...))))
