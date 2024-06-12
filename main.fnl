@@ -1,15 +1,15 @@
-; main.fnl
 (import-macros {: flip} :mac.bool)
 (local MAT (require :src._.cls.MAT))
 (local WIN (require :src._.cls.WIN))
 (local CAB (require :src._.cls.CAB))
+(local BOX (require :src._.cls.BOX))
 (var (main mx my w h) (values nil nil nil nil nil))
 (var fullscreen? false)
 (local opt #{ :fullscreen (flip fullscreen?)
               :fullscreentype :exclusive
               :minwidth $1 :minheight $2})
 
-(fn windowmouse [mousemoved] (fn [! top? bot? x y dx dy ...]
+(fn windowmouse [mousemoved] (fn [! x y dx dy ...]
   (when (not (and mx my)) (set (mx my) (values x y)))
   (let [(ww wh)   (love.window.getMode)
         mxin?     (and (> mx 0) (< mx (- ww 0)))
@@ -23,7 +23,7 @@
     (when (not relate?) (set (mx my) (values x y)))
     (when within? (love.mouse.setRelativeMode true))
     ;; TODO block children during window move
-    (mousemoved ! top? bot? x y dx dy ...))))
+    (!.child:mousemoved mx my dx dy ...))))
 
 (fn windowmove [repose] (fn [! tx ty dx dy repose?] 
   (when (and dx dy) 
@@ -57,12 +57,18 @@
         name    (format:format (title:lower))
         s       (/ (math.min w h) 1)]
     (love.window.setTitle title)
-    (local parent     (WIN main :parent s s))
-    (local child      (WIN parent :child (/ s 2) (/ s 2)))
-    (local grandchild (CAB child name (/ s 2) (/ s 2)))
-    (main.child parent)
-    (parent.child child)
-    (child.child grandchild)))
+    ;(local parent     (WIN main :parent s s))
+    ;(local child      (WIN parent :child (/ s 2) (/ s 2)))
+    ;(local grandchild (CAB child name (/ s 2) (/ s 2)))
+    ;(main.child parent)
+    ;(parent.child child)
+    ;(child.child grandchild)
+    (local parent (BOX 0 0 1 1 main [0.8 0.8 0.8]))
+    (local child (BOX 0.5 0.5 0.5 0.5 parent [0.6 0.6 0.6]))
+    (local grand (BOX 0.5 0.5 0.5 0.5 child [0.4 0.4 0.4]))
+    (set main.child parent)
+    (set parent.child child)
+    (set child.child grand)))
 
 (fn love.load [args]
   (set (w h) (love.window.getMode))
@@ -71,13 +77,13 @@
   (love.graphics.setFont font)
   (set _G.font font) ; TODO globals?
   (set _G.web? (= :web (. args 1)))
-  (set main (WIN {:mat (MAT nil 0 0 0 (+ w w))} :main w h))
-  (local mousemoved         main.mat.mousemoved)
-  (local repose             main.mat.repose)
-  (local restore            main.mat.restore)
-  (set main.mat.mousemoved  (windowmouse mousemoved))
-  (set main.mat.repose      (windowmove repose))
-  (set main.mat.restore     (windowfull restore))
+  (set main (BOX))
+  (local mousemoved         main.mousemoved)
+  (local repose             main.repose)
+  (local restore            main.restore)
+  (set main.mousemoved  (windowmouse mousemoved))
+  ;(set main.repose      (windowmove repose))
+  ;(set main.restore     (windowfull restore))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(main:event e $...)))
   (load))

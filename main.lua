@@ -6,6 +6,9 @@ local search = function(env)
     if love.filesystem.getInfo(path) then
       return function(...)
         local code = love.filesystem.read(path)
+        if module_name=="main" then 
+          code = "; main.fnl\n" .. code 
+        end
         return fennel.eval(code, {env=env}, ...)
       end, path
     end
