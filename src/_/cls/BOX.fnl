@@ -1,19 +1,23 @@
 (local Object (require :lib.classic))
 (local BOX (Object:extend))
 
-(fn BOX.abs [! d] (if !.parent (!.parent:abs d) (. ! d)))
+(fn BOX.abs [! d] 
+  (if !.parent (!.parent:abs d) (. ! d)))
 
-(fn BOX.box [!] (values 
-  (* (!:abs :w) (- 1 !.w) !.x)
-  (* (!:abs :h) (- 1 !.h) !.y) ;; TODO why not !.w?
-  (+ (* (!:abs :w) (- 1 !.w) !.x) (* (!:abs :w) 1))
-  (+ (* (!:abs :h) (- 1 !.h) !.y) (* (!:abs :h) !.h))))
+(fn BOX.box [!] 
+  (values 
+    (* (!:abs :w) (- 1 !.w) !.x)
+    (* (!:abs :h) (- 1 !.h) !.y) ;; TODO why not !.w?
+    (+ (* (!:abs :w) (- 1 !.w) !.x) (* (!:abs :w) 1))
+    (+ (* (!:abs :h) (- 1 !.h) !.y) (* (!:abs :h) !.h))))
 
-(fn BOX.refresh [!] (when !.parent (let [(x y _ _) (!:box)]
-  (!.transform:setTransformation x y 0 !.w !.h))))
+(fn BOX.refresh [!]
+  (when !.parent (let [(x y _ _) (!:box)]
+    (!.transform:setTransformation x y 0 !.w !.h))))
 
-(fn BOX.inside? [! x y] (let [(l u r d) (!:box)]
-  (and (> x l) (< x r) (> y u) (< y d))))
+(fn BOX.in? [! x y]
+  (let [(l u r d) (!:box)]
+    (and (> x l) (< x r) (> y u) (< y d))))
 
 (fn BOX.new [! x y w h parent]
   (let [(x y)   (if (and x y) (values x y) (values 0 0))
