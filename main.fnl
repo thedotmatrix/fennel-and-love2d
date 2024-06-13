@@ -13,7 +13,7 @@
         myin?     (and (> my 0) (< my (- wh 0)))
         within?   (and mxin? myin?)
         relate? (love.mouse.getRelativeMode)]
-    (when relate? (if within? 
+    (when (and relate? (not !.drag?)) (if within? 
       (set (mx my) (values (+ mx dx) (+ my dy)))
       (do (love.mouse.setRelativeMode false))
           (love.mouse.setPosition mx my)))
@@ -21,27 +21,19 @@
     (when within? (love.mouse.setRelativeMode true))
     (mousemoved ! mx my dx dy ...)))) ;; TODO block children
 
-(fn windowmove [repose] (fn [! tx ty dx dy repose?] 
+(fn windowmove [repose] (fn [! dx dy] 
   (when (and dx dy) (let [(wx wy) (love.window.getPosition)]
     (love.window.setPosition (+ wx dx) (+ wy dy))))
-  (when repose? (repose ! tx ty))))
+  (repose ! dx dy)))
 
-(fn windowfull [restore] (fn [!] (if (not _G.web?)
-  (love.window.setFullscreen (flip fs?) :desktop)
-  (let [(sw sh) (love.window.getMode)
-        width   (if fs? w sw)
-        height  (if fs? h sh)
-        opts    (opt width height)]
-    (love.window.updateMode width height opts)))
-  ;; TODO call restore when parent matrix problem fixed
-  (let [(pw ph) (love.window.getMode)
-        maxw    (- pw 2)
-        maxh    (- ph (* 2 (!.parent:border false)))
-        max?    (and (>= !.sw maxw) (>= !.sh maxh))
-        (x y)   (values 1 (!.parent:border false))
-        (w h)   (if max? (values !.w !.h) (values maxw maxh))]
-    (!:repose x y) 
-    (!:rescale w h))))
+(fn windowfull [restore] (fn [!]
+  (if (not _G.web?)
+    (love.window.setFullscreen (flip fs?) :desktop)
+    (let [(sw sh) (love.window.getMode)
+          width   (if fs? w sw)
+          height  (if fs? h sh)
+          opts    (opt width height)]
+      (love.window.updateMode width height opts)))))
 
 (fn load []
   (let [file    :conf.fnl
@@ -51,8 +43,8 @@
         name    (format:format (title:lower))
         s       (/ (math.min w h) 1)]
     (love.window.setTitle title)
-    (local parent     (WIN main :parent 0.75 1))
-    (local child      (WIN parent :child 0.75 1))
+    (local parent     (WIN main 0.75 1))
+    (local child      (WIN parent 0.75 1))
     (local grandchild (CAB child name))))
 
 (fn love.load [args]
@@ -62,13 +54,13 @@
   (love.graphics.setFont font)
   (set _G.font font) ; TODO globals?
   (set _G.web? (= :web (. args 1)))
-  (set main (WIN {:inner (BOX) :depth -1} :main 1 1))
-  (local mousemoved     main.mousemoved)
-  (local repose         main.repose)
-  (local restore        main.restore)
-  (set main.mousemoved  (windowmouse mousemoved))
-  ;(set main.repose         (windowmove repose))
-  ;(set main.restore        (windowfull restore))
+  (set main (WIN {:inner (BOX) :depth -1} 1 1))
+  (local mousemoved       main.mousemoved)
+  (local repose           main.outer.repose)
+  (local restore          main.outer.restore)
+  (set main.mousemoved    (windowmouse mousemoved))
+  (set main.outer.repose  (windowmove repose))
+  (set main.outer.restore (windowfull restore))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(main:event e $...)))
   (load))
@@ -76,4 +68,8 @@
 (fn love.draw [] (main:draw)
   (when (and mx my) (love.graphics.circle :line mx my 4)))
 
-(fn love.update [dt] (main:update dt))
+(fn love.update [dt]
+  (main:update dt))
+  ;; TODO this doesnt work if its in windowfull
+  ;; TODO doesnt align with non-main window input to rescale
+  ;(main.outer.parent:rescale (love.window.getMode)))

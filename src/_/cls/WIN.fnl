@@ -2,14 +2,13 @@
 (local WIN (Object:extend))
 (local BOX (require :src._.cls.BOX))
 
-(fn WIN.new [! parent name w h]
-  (set !.name name)
+(fn WIN.new [! parent w h]
   (set !.border [0.4 0.4 0.4])
   (set !.fill [0.2 0.2 0.2])
-  (set !.top   (BOX 0 0 w 0.05 parent.inner))
-  (set !.outer (BOX 0 0 w h parent.inner))
-  (set !.inner (BOX 0.5 0.5 0.99 0.90 !.outer))
-  (set !.bot   (BOX 0 1 w 0.05 parent.inner))
+  (set !.top   (BOX parent.inner 0 0 w 0.05))
+  (set !.outer (BOX parent.inner 0 0 w h))
+  (set !.bot   (BOX parent.inner 0 1 w 0.05))
+  (set !.inner (BOX !.outer 0.5 0.5 0.99 0.90 ))
   (set !.depth (+ parent.depth 1))
   (set parent.child !))
 
@@ -31,7 +30,7 @@
 (fn WIN.mousepressed [! x y button touch? presses]
   (set !.drag? (or (!.top:in? x y) (!.bot:in? x y)))
   (if (and (!.top:in? x y) (= presses 2))
-      (do (!:restore) false) true))
+      (do (!.outer:restore) false) true))
 
 (fn WIN.mousereleased [! x y ...] 
   (set !.drag? false) (set !.top? false) (set !.bot? false)
@@ -45,8 +44,8 @@
   (when (and (!.bot:in? x y) (not !.top?)) (set !.bot? true))
   (when (and !.top? (not !.drag?)) (set !.top? false))
   (when (and !.bot? (not !.drag?)) (set !.bot? false))
-  (when (and !.top? !.drag?) (!:repose dx dy))
-  (when (and !.bot? !.drag?) (!:rescale dx dy))
+  (when (and !.top? !.drag?) (!.outer:repose dx dy))
+  (when (and !.bot? !.drag?) (!.outer:rescale dx dy))
   (not (or !.top? !.bot? !.drag?)))
 
 (fn WIN.event [! e ...]
