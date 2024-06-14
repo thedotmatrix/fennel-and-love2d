@@ -4,11 +4,11 @@
 
 (fn WIN.new [! parent w h]
   (set !.border [0.4 0.4 0.4])
-  (set !.fill [0.2 0.2 0.2])
-  (set !.top   (BOX parent.inner 0 0 w 0.05))
+  (set !.fill   [0.2 0.2 0.2])
   (set !.outer (BOX parent.inner 0 0 w h))
-  (set !.bot   (BOX parent.inner 0 1 w 0.05))
-  (set !.inner (BOX !.outer 0.5 0.5 0.99 0.90 ))
+  (set !.top   (BOX !.outer 0 0 1 0.05))
+  (set !.bot   (BOX !.outer 0 1 1 0.05))
+  (set !.inner (BOX !.outer 0.5 0.5 0.99 0.90))
   (set !.depth (+ parent.depth 1))
   (set parent.child !))
 
@@ -53,9 +53,9 @@
         (love.event.quit)) ;; TODO close windows then quit
     (let [in    #((. !.inner e) !.inner $...)
           out   #((. !.outer e) !.outer $...)
-          go?   (if (. ! e) ((. ! e) ! ...) true)
           apply #(in (out $...))
-          trans (if (. BOX e) apply #$)]
+          trans (if (. BOX e) apply #$)
+          go?   (if (. ! e) ((. ! e) ! (out ...)) true)]
       (when (and go? !.child) (!.child:event e (trans ...)))))
 
 WIN
