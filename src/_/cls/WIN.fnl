@@ -53,7 +53,7 @@
         (love.event.quit)) ;; TODO close windows then quit
     (let [in    #((. !.inner e) !.inner $...)
           out   #((. !.outer e) !.outer $...)
-          go?   (if (. ! e) ((. ! e) ! (out ...)) true)
+          go?   (if (. ! e) ((. ! e) ! ...) true)
           apply #(in (out $...))
           trans (if (. BOX e) apply #$)]
       (when (and go? !.child) (!.child:event e (trans ...)))))

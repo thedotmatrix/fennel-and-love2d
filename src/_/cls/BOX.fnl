@@ -1,13 +1,13 @@
 (local Object (require :lib.classic))
 (local BOX (Object:extend))
 
-;; TODO accum?
-(fn BOX.abs [! d] (if !.parent (!.parent:abs d) (. ! d)))
+(fn BOX.abs [! d] ;; TODO accum?
+  (if !.parent (!.parent:abs d) (. ! d)))
 
 (fn BOX.box [!] (values 
   (* (!:abs :w) (- 1 !.w) !.x)
-  (* (!:abs :h) (- 1 !.h) !.y) ;; TODO why not !.w?
-  (+ (* (!:abs :w) (- 1 !.w) !.x) (* (!:abs :w) 1))
+  (* (!:abs :h) (- 1 !.h) !.y)
+  (+ (* (!:abs :w) (- 1 !.w) !.x) (* (!:abs :w) !.w))
   (+ (* (!:abs :h) (- 1 !.h) !.y) (* (!:abs :h) !.h))))
 
 (fn BOX.in? [! x y] (let [(l u r d) (!:box)]
