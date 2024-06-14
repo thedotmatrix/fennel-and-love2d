@@ -15,11 +15,11 @@
 (fn WIN.draw [!]
   (love.graphics.push)
   (love.graphics.setColor !.border)
-  (love.graphics.push) (!.outer:draw) (love.graphics.pop)
-  (love.graphics.stencil #(!.outer:draw) :increment 1 true)
-  (love.graphics.setStencilTest :greater !.depth)
+  (!.outer:draw true)
   (love.graphics.setColor !.fill)
-  (!.inner:draw) 
+  (love.graphics.push) (!.inner:draw true) (love.graphics.pop)
+  (love.graphics.stencil #(!.inner:draw) :increment 1 true)
+  (love.graphics.setStencilTest :greater !.depth)
   (love.graphics.setColor 1 1 1 1)
   (when !.child (!.child:draw))
   (love.graphics.setStencilTest)
@@ -45,7 +45,7 @@
   (when (and !.top? (not !.drag?)) (set !.top? false))
   (when (and !.bot? (not !.drag?)) (set !.bot? false))
   (when (and !.top? !.drag?) (!.outer:repose dx dy))
-  (when (and !.bot? !.drag?) (!.outer:rescale dx dy))
+  (when (and !.bot? !.drag?) (!.outer:reshape dx dy))
   (not (or !.top? !.bot? !.drag?)))
 
 (fn WIN.event [! e ...]

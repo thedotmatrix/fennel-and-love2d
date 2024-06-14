@@ -71,5 +71,5 @@
 (fn love.update [dt]
   (main:update dt))
   ;; TODO this doesnt work if its in windowfull
-  ;; TODO doesnt align with non-main window input to rescale
-  ;(main.outer.parent:rescale (love.window.getMode)))
+  ;; TODO doesnt align with non-main window input to reshape
+  ;(main.outer.parent:reshape (love.window.getMode)))
