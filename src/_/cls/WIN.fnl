@@ -10,7 +10,8 @@
   (set !.bot   (BOX !.outer 0 1 1 0.05))
   (set !.inner (BOX !.outer 0.5 0.5 0.99 0.90))
   (set !.depth (+ parent.depth 1))
-  (set parent.child !))
+  (set !.children [])
+  (table.insert parent.children !))
 
 (fn WIN.draw [!]
   (love.graphics.push)
@@ -21,11 +22,12 @@
   (love.graphics.stencil #(!.inner:draw) :increment 1 true)
   (love.graphics.setStencilTest :greater !.depth)
   (love.graphics.setColor 1 1 1 1)
-  (when !.child (!.child:draw))
+  (each [_ child (ipairs !.children)] (child:draw))
   (love.graphics.setStencilTest)
   (love.graphics.pop))
 
-(fn WIN.update [! dt] (when !.child (!.child:update dt)))
+(fn WIN.update [! dt] 
+  (each [_ child (ipairs !.children)] (child:update)))
 
 (fn WIN.mousepressed [! x y button touch? presses]
   (set !.drag? (or (!.top:in? x y) (!.bot:in? x y)))
@@ -49,13 +51,14 @@
   (not (or !.top? !.bot? !.drag?)))
 
 (fn WIN.event [! e ...]
-  (when (and (= e :keypressed) (= ... :escape)) 
-        (love.event.quit)) ;; TODO close windows then quit
-    (let [in    #((. !.inner e) !.inner $...)
-          out   #((. !.outer e) !.outer $...)
-          apply #(in (out $...))
-          trans (if (. BOX e) apply #$)
-          go?   (if (. ! e) ((. ! e) ! (out ...)) true)]
-      (when (and go? !.child) (!.child:event e (trans ...)))))
+  (when (and (= e :keypressed) (= ... :escape))
+        (love.event.quit))
+  (let [in    #((. !.inner e) !.inner $...)
+        out   #((. !.outer e) !.outer $...)
+        apply #(in (out $...))
+        trans (if (. BOX e) apply #$)
+        go?   (if (. ! e) ((. ! e) ! (out ...)) true)]
+    (when go? (each [_ child (ipairs !.children)] 
+      (child:event e (trans ...))))))
 
 WIN
