@@ -15,9 +15,9 @@
   (love.graphics.setColor !.border) (!.outer:draw true)
   (love.graphics.printf !.name 0 0 (!.outer:aw) :center)
   (love.graphics.stencil #(!.inner:draw) :increment 1 true)
+  (love.graphics.setStencilTest :greater !.depth)
   (love.graphics.setColor !.fill) (!.inner:draw true)
   (love.graphics.setColor 1 1 1 1)
-  (love.graphics.setStencilTest :greater !.depth)
   (each [_ s (ipairs !.subs)] (s:draw))
   (love.graphics.setStencilTest) (love.graphics.pop))
 
@@ -32,7 +32,7 @@
   (set [!.drag? !.top? !.bot?] [false false false]) true)
 
 (fn WIN.mousemoved [! x y dx dy ...]
-  (if (or (!.top:in? x y) (!.bot:in? x y))
+  (if (or (!.top:in? x y) (!.bot:in? x y true))
       (set !.border [0.6 0.6 0.6])
       (set !.border [0.4 0.4 0.4]))
   (when (and (!.top:in? x y) (not !.bot?)) (set !.top? true))

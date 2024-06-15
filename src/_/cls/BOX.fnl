@@ -6,28 +6,28 @@
 
 (fn BOX.ah [!] (if !.parent (!.parent:ah) !.h))
 
-(fn BOX.box [!] (values
-  (* (!:aw) (- 1 !.w) !.x) (* (!:ah) (- 1 !.h) !.y)
-  (+ (* (!:aw) (- 1 !.w) !.x) (* (!:aw) !.w))
-  (+ (* (!:ah) (- 1 !.h) !.y) (* (!:ah) !.h))))
+(fn BOX.box [!] 
+  (values
+    (* (!:aw) (- 1 !.w) !.x) (* (!:ah) (- 1 !.h) !.y)
+    (+ (* (!:aw) (- 1 !.w) !.x) (* (!:aw) !.w))
+    (+ (* (!:ah) (- 1 !.h) !.y) (* (!:ah) !.h))))
 
-(fn BOX.in? [! x y] (let [(left top right bot) (!:box)]
-  (and (> x left) (< x right) (> y top) (< y bot))))
+(fn BOX.in? [! x y] 
+  (let [(left top right bot) (!:box)]
+    (and (> x left) (< x right) (> y top) (< y bot))))
 
-(fn BOX.refresh [!] (when !.parent (let [(x y _ _) (!:box)]
-  (!.t:setTransformation x y 0 !.w !.h))))
+(fn BOX.refresh [!] 
+  (when !.parent (let [(x y _ _) (!:box)]
+    (!.t:setTransformation x y 0 !.w !.h))))
 
 (fn BOX.new [! p x y w h]
-  (let [(ww wh)   (love.window.getMode)
-        [x y]     (if (and x y) [x y] [0 0])
-        [w h]     (if (and w h) [w h] [ww wh])]
-    (set [!.x !.y !.w !.h !.ow !.oh] [x y w h w h])
-    (set [!.t !.parent] [(love.math.newTransform) p]))
+  (set [!.x !.y !.w !.h !.ow !.oh] [x y w h w h])
+  (set [!.t !.parent] [(love.math.newTransform) p])
   (!:refresh))
 
-(fn BOX.draw [! l?]
+(fn BOX.draw [! l?] ;; TODO refresh aw/ah down not up
   (when (not l?) (love.graphics.push))
-  (love.graphics.applyTransform !.t)
+  (!:refresh) (love.graphics.applyTransform !.t)
   (love.graphics.rectangle :fill 0 0 (!:aw) (!:ah))
   (love.graphics.setColor 0 0 0 1)
   (when l? (love.graphics.rectangle :line 0 0 (!:aw) (!:ah)))

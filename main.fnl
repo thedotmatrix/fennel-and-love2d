@@ -6,10 +6,10 @@
 (local opt #{:fullscreen (flip fs?) :fullscreentype :exclusive
              :minwidth $1 :minheight $2})
 
-;; TODO w and h buggy when fullscreen
 (fn windowmouse [mousemoved] (fn [! x y dx dy ...]
   (when (not (and mx my)) (set [mx my] [x y]))
-  (let [mxin?     (and (> mx 0) (< mx (- w 0)))
+  (let [[w h]     [!.outer.parent.w !.outer.parent.h]
+        mxin?     (and (> mx 0) (< mx (- w 0)))
         myin?     (and (> my 0) (< my (- h 0)))
         within?   (and mxin? myin?)
         relate? (love.mouse.getRelativeMode)]
@@ -29,6 +29,7 @@
   (if (not _G.web?)
     (love.window.setFullscreen (flip fs?) :desktop)
     (let [(sw sh) (love.window.getMode)
+          [w h]   [!.parent.ow !.parent.oh]
           [nw nh] [(if fs? w sw) (if fs? h sh)]]
       (love.window.updateMode nw nh (opt nw nh))))
   (!.parent:restore (love.window.getMode))))
@@ -42,10 +43,10 @@
     (local grandchild (CAB child name))))
 
 (fn love.load [args]
-  (set (w h) (love.window.getMode))
   (love.graphics.setFont (love.graphics.newFont 16 :mono))
   (set _G.web? (= :web (. args 1))) ; TODO globals?
-  (set main (WIN {:inner (BOX) :depth -1 :subs []} :main 1 1))
+  (local win (BOX nil 0 0 (love.window.getMode)))
+  (set main (WIN {:inner win :depth -1 :subs []} :main 1 1))
   (local mousemoved       main.mousemoved)
   (set main.mousemoved    (windowmouse mousemoved))
   (set main.outer.repose  (windowmove))
@@ -55,7 +56,7 @@
     (tset love.handlers e #(main:event e $...)))
   (load))
 
-(fn love.draw [] (main:draw) (when (and mx my)
-  (love.graphics.circle :line mx my 4)))
+(fn love.draw [] (main:draw) 
+  (when (and mx my) (love.graphics.circle :line mx my 4)))
 
 (fn love.update [dt] (main:update dt))
