@@ -27,7 +27,7 @@
 (fn CRT.update [! dt] (!:safely 
   !.live.rom.update !.callback !.live.ram dt))
 
-(fn CRT.event [! e ...] (!:safely 
-  (. !.live.rom e) !.callback !.live.ram ...))
+(fn CRT.event [! e ...] (!:safely
+  !.live.rom.event !.live.rom !.callback !.live.ram e ...))
 
 CRT

@@ -44,7 +44,6 @@
   (not (or !.top? !.bot? !.drag?)))
 
 (fn WIN.event [! e ...]
-  (when (= ... :escape) (love.event.quit))
   (let [in    #((. !.inner e) !.inner $...)
         out   #((. !.outer e) !.outer $...)
         apply #(in (out $...))

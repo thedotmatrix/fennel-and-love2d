@@ -5,7 +5,7 @@
 (local CRT (require :src._.cls.CRT))
 (local scale 2)
 
-(fn CAB.new [! parent name]
+(fn CAB.new [! parent name] ;; TODO obsolete delete
   (CAB.super.new ! parent name scale scale)
   (set !.parent parent)
   (local [w h] [(/ !.outer.aw scale) (/ !.outer.ah scale)])
