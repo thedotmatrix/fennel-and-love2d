@@ -35,8 +35,7 @@
       (do (!.outer:restore) false) true))
 
 (fn WIN.mousereleased [! x y ...] 
-  (set !.drag? false) (set !.top? false) (set !.bot? false)
-  true)
+  (set (!.drag? !.top? !.bot?) (values nil nil nil)) true)
 
 (fn WIN.mousemoved [! x y dx dy ...]
   (if (or (!.top:in? x y) (!.bot:in? x y))
@@ -51,8 +50,7 @@
   (not (or !.top? !.bot? !.drag?)))
 
 (fn WIN.event [! e ...]
-  (when (and (= e :keypressed) (= ... :escape))
-        (love.event.quit))
+  (when (= ... :escape) (love.event.quit))
   (let [in    #((. !.inner e) !.inner $...)
         out   #((. !.outer e) !.outer $...)
         apply #(in (out $...))

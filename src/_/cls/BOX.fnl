@@ -30,19 +30,18 @@
   (when line? (love.graphics.rectangle :line 0 0 w h))
   (love.graphics.setColor 1 1 1 1))
 
-(fn BOX.repose [! idx idy] ;; TODO give dx/dy
+(fn BOX.repose [! idx idy]
   (let [(dx dy)   (values (* idx !.w) (* idy !.h))
         (x y _ _) (!:box)]
     (when (< !.w 1) (set !.x (/ (+ x dx) (- 1 !.w) !.absw)))
     (when (< !.h 1) (set !.y (/ (+ y dy) (- 1 !.h) !.absh))))
   (!:refresh))
 
-(fn BOX.reshape [! idx idy] ;; TODO give dx/dy
-  (let [(dx dy) (values (* idx !.w) (* idy !.h))]
-    (set !.w (+ !.w (/ dx !.absw)))
-    (set !.h (+ !.h (/ dy !.absh)))
-    (when (not (and (= !.w 1) (= !.h 1)))
-          (set (!.ow !.oh) (values !.w !.h))))
+(fn BOX.reshape [! idx idy]
+  (set !.w (+ !.w (/ (* idx !.w) !.absw)))
+  (set !.h (+ !.h (/ (* idy !.h) !.absh)))
+  (when (not (and (= !.w 1) (= !.h 1)))
+        (set (!.ow !.oh) (values !.w !.h)))
   (!:refresh))
 
 (fn BOX.restore [!]
