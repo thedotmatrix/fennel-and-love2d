@@ -6,13 +6,13 @@
 (local scale 2)
 
 (fn CAB.scale [!] ;; TODO better handle scaling?
-  (/ (!.parent.inner:abs :w) (!.game.canvas:getWidth)))
+  (/ !.parent.inner.absw (!.game.canvas:getWidth)))
 
 (fn CAB.new [! parent name]
   (CAB.super.new ! parent 1 1)
   (set !.parent parent)
-  (local w (/ (parent.inner:abs :w) scale))
-  (local h (/ (parent.inner:abs :h) scale))
+  (local w (/ !.parent.inner.absw scale))
+  (local h (/ !.parent.inner.absh scale))
   (set !.dev? false)
   (set !.dev {:cartridge nil :canvas nil})
   (set !.dev.cartridge (CRT :_ :repl))
