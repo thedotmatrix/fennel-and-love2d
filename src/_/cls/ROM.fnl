@@ -3,7 +3,7 @@
 
 (fn ROM.mix [a b !]
   (a:implement b)
-  (when ! (a.load !))
+  (when ! (a.load !)) ;; TODO RST load/draw, ROM update/event
   a)
 
 (fn ROM.load [!])
