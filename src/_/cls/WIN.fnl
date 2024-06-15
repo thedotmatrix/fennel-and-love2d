@@ -13,7 +13,7 @@
 
 (fn WIN.draw [!] (love.graphics.push)
   (love.graphics.setColor !.border) (!.outer:draw true)
-  (love.graphics.printf !.name 0 0 (!.outer:aw) :center)
+  (love.graphics.printf !.name 0 0 !.outer.aw :center)
   (love.graphics.stencil #(!.inner:draw) :increment 1 true)
   (love.graphics.setStencilTest :greater !.depth)
   (love.graphics.setColor !.fill) (!.inner:draw true)

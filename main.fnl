@@ -43,6 +43,7 @@
     (local grandchild (CAB child name))))
 
 (fn love.load [args]
+  (love.graphics.setDefaultFilter :nearest :nearest)
   (love.graphics.setFont (love.graphics.newFont 16 :mono))
   (set _G.web? (= :web (. args 1))) ; TODO globals?
   (local win (BOX nil 0 0 (love.window.getMode)))
@@ -56,7 +57,9 @@
     (tset love.handlers e #(main:event e $...)))
   (load))
 
-(fn love.draw [] (main:draw) 
+(fn love.draw [] 
+  (love.graphics.applyTransform main.outer.parent.t)
+  (main:draw) 
   (when (and mx my) (love.graphics.circle :line mx my 4)))
 
 (fn love.update [dt] (main:update dt))

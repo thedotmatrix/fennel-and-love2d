@@ -6,22 +6,20 @@
 (local scale 2)
 
 (fn CAB.scale [!] ;; TODO better handle scaling?
-  (/ (!.outer:aw) (!.game.canvas:getWidth)))
+  (/ !.outer.aw (!.game.canvas:getWidth)))
 
 (fn CAB.new [! parent name]
   (CAB.super.new ! parent name 1 1)
   (set !.parent parent)
-  (local w (/ (!.outer:aw) scale))
-  (local h (/ (!.outer:ah) scale))
+  (local w (/ !.outer.aw scale))
+  (local h (/ !.outer.ah scale))
   (set !.dev? false)
   (set !.dev {:cartridge nil :canvas nil})
   (set !.dev.cartridge (CRT :_ :repl))
   (set !.dev.canvas (love.graphics.newCanvas (/ w 2) h))
-  (!.dev.canvas:setFilter :nearest :nearest)
   (set !.game {:cartridge nil :canvas nil})
   (set !.game.cartridge (CRT name :main))
-  (set !.game.canvas (love.graphics.newCanvas w h))
-  (!.game.canvas:setFilter :nearest :nearest))
+  (set !.game.canvas (love.graphics.newCanvas w h)))
 
 (fn CAB.draw [!]
   (love.graphics.push)
