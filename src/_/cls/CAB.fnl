@@ -9,7 +9,7 @@
   (/ !.parent.inner.absw (!.game.canvas:getWidth)))
 
 (fn CAB.new [! parent name]
-  (CAB.super.new ! parent 1 1)
+  (CAB.super.new ! parent name 1 1)
   (set !.parent parent)
   (local w (/ !.parent.inner.absw scale))
   (local h (/ !.parent.inner.absh scale))

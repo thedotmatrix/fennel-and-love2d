@@ -15,12 +15,12 @@
 
 (fn BOX.new [! p x y w h]
   (let [(ww wh)   (love.window.getMode)
-        (x y)     (if (and x y) (values x y) (values 0 0))
-        (w h)     (if (and w h) (values w h) (values ww wh))
-        (pw ph)   (if p (values p.absw p.absh) (values w h))]
-    (set (!.x !.y !.w !.h)          (values x y w h))
-    (set (!.ow !.oh !.absw !.absh)  (values w h pw ph))
-    (set !.t (love.math.newTransform)) (set !.parent p))
+        [x y]     (if (and x y) [x y] [0 0])
+        [w h]     (if (and w h) [w h] [ww wh])
+        [pw ph]   (if p [p.absw p.absh] [w h])]
+    (set [!.x !.y !.w !.h]         [x y w h])
+    (set [!.ow !.oh !.absw !.absh] [w h pw ph])
+    (set [!.t !.parent] [(love.math.newTransform) p]))
   (!:refresh))
 
 (fn BOX.draw [! l?] 
@@ -39,14 +39,13 @@
 (fn BOX.reshape [! idx idy]
   (incf !.w (/ (* idx !.w) !.absw))
   (incf !.h (/ (* idy !.h) !.absh))
-  (when (not (and (= !.w 1) (= !.h 1)))
-        (set (!.ow !.oh) (values !.w !.h)))
+  (when (~= [!.w !.h] [1 1]) (set [!.ow !.oh] [!.w !.h]))
   (!:refresh))
 
 (fn BOX.restore [!]
   (if (and (>= !.w 1) (>= !.h 1))
-      (set (!.x !.y !.w !.h) (values !.x !.y !.ow !.oh))
-      (set (!.x !.y !.w !.h) (values 0 0 1 1)))
+      (set [!.x !.y !.w !.h] [!.x !.y !.ow !.oh])
+      (set [!.x !.y !.w !.h] [0 0 1 1]))
   (!:refresh))
 
 (fn BOX.itp [! x y ...]

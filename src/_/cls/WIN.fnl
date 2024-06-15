@@ -2,19 +2,18 @@
 (local WIN (Object:extend))
 (local BOX (require :src._.cls.BOX))
 
-(fn WIN.new [! parent w h]
-  (set !.border [0.4 0.4 0.4])
-  (set !.fill   [0.2 0.2 0.2])
+(fn WIN.new [! parent name w h] ;; TODO multi-sub/focus
+  (set !.border [0.4 0.4 0.4]) (set !.fill [0.2 0.2 0.2])
   (set !.outer (BOX parent.inner 0 0 w h))
   (set !.top   (BOX !.outer 0 0 1 0.05))
   (set !.bot   (BOX !.outer 0 1 1 0.05))
   (set !.inner (BOX !.outer 0.5 0.5 0.99 0.90))
-  (set !.depth (+ parent.depth 1))
-  (set !.subs [])
-  (table.insert parent.subs !))
+  (set !.name name) (set !.depth (+ parent.depth 1))
+  (set !.subs []) (table.insert parent.subs !))
 
 (fn WIN.draw [!] (love.graphics.push)
   (love.graphics.setColor !.border) (!.outer:draw true)
+  (love.graphics.printf !.name 0 0 !.outer.absw :center)
   (love.graphics.stencil #(!.inner:draw) :increment 1 true)
   (love.graphics.setColor !.fill) (!.inner:draw true)
   (love.graphics.setColor 1 1 1 1)
@@ -30,7 +29,7 @@
       (do (!.outer:restore) false) true))
 
 (fn WIN.mousereleased [! x y ...] 
-  (set (!.drag? !.top? !.bot?) (values nil nil nil)) true)
+  (set [!.drag? !.top? !.bot?] [false false false]) true)
 
 (fn WIN.mousemoved [! x y dx dy ...]
   (if (or (!.top:in? x y) (!.bot:in? x y))
