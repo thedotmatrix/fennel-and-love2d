@@ -10,24 +10,19 @@
   (set !.bot   (BOX !.outer 0 1 1 0.05))
   (set !.inner (BOX !.outer 0.5 0.5 0.99 0.90))
   (set !.depth (+ parent.depth 1))
-  (set !.children [])
-  (table.insert parent.children !))
+  (set !.subs [])
+  (table.insert parent.subs !))
 
-(fn WIN.draw [!]
-  (love.graphics.push)
-  (love.graphics.setColor !.border)
-  (!.outer:draw true)
-  (love.graphics.setColor !.fill)
-  (love.graphics.push) (!.inner:draw true) (love.graphics.pop)
+(fn WIN.draw [!] (love.graphics.push)
+  (love.graphics.setColor !.border) (!.outer:draw true)
   (love.graphics.stencil #(!.inner:draw) :increment 1 true)
-  (love.graphics.setStencilTest :greater !.depth)
+  (love.graphics.setColor !.fill) (!.inner:draw true)
   (love.graphics.setColor 1 1 1 1)
-  (each [_ child (ipairs !.children)] (child:draw))
-  (love.graphics.setStencilTest)
-  (love.graphics.pop))
+  (love.graphics.setStencilTest :greater !.depth)
+  (each [_ s (ipairs !.subs)] (s:draw))
+  (love.graphics.setStencilTest) (love.graphics.pop))
 
-(fn WIN.update [! dt] 
-  (each [_ child (ipairs !.children)] (child:update)))
+(fn WIN.update [! dt] (each [_ s (ipairs !.subs)] (s:update)))
 
 (fn WIN.mousepressed [! x y button touch? presses]
   (set !.drag? (or (!.top:in? x y) (!.bot:in? x y)))
@@ -56,7 +51,7 @@
         apply #(in (out $...))
         trans (if (. BOX e) apply #$)
         go?   (if (. ! e) ((. ! e) ! (out ...)) true)]
-    (when go? (each [_ child (ipairs !.children)] 
-      (child:event e (trans ...))))))
+    (when go? (each [_ s (ipairs !.subs)]
+      (s:event e (trans ...))))))
 
 WIN

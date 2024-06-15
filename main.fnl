@@ -54,7 +54,7 @@
   (love.graphics.setFont font)
   (set _G.font font) ; TODO globals?
   (set _G.web? (= :web (. args 1)))
-  (set main (WIN {:inner (BOX) :depth -1 :children {}} 1 1))
+  (set main (WIN {:inner (BOX) :depth -1 :subs []} 1 1))
   (local mousemoved       main.mousemoved)
   (local repose           main.outer.repose)
   (local restore          main.outer.restore)

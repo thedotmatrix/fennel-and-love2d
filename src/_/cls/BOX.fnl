@@ -1,7 +1,8 @@
+(import-macros {: incf} :mac.math)
 (local Object (require :lib.classic))
 (local BOX (Object:extend))
 
-(fn BOX.box [!] (values ;; TODO avoid (- 1 !.w/h) ?
+(fn BOX.box [!] (values
   (* !.absw (- 1 !.w) !.x) (* !.absh (- 1 !.h) !.y)
   (+ (* !.absw (- 1 !.w) !.x) (* !.absw !.w))
   (+ (* !.absh (- 1 !.h) !.y) (* !.absh !.h))))
@@ -22,24 +23,22 @@
     (set !.t (love.math.newTransform)) (set !.parent p))
   (!:refresh))
 
-(fn BOX.draw [! line?]
-  (local (w h) (values !.absw !.absh))
+(fn BOX.draw [! l?] 
+  (when (not l?) (love.graphics.push))
   (love.graphics.applyTransform !.t)
-  (love.graphics.rectangle :fill 0 0 w h)
+  (love.graphics.rectangle :fill 0 0 !.absw !.absh)
   (love.graphics.setColor 0 0 0 1)
-  (when line? (love.graphics.rectangle :line 0 0 w h))
-  (love.graphics.setColor 1 1 1 1))
+  (when l? (love.graphics.rectangle :line 0 0 !.absw !.absh))
+  (when (not l?) (love.graphics.pop)))
 
 (fn BOX.repose [! idx idy]
-  (let [(dx dy)   (values (* idx !.w) (* idy !.h))
-        (x y _ _) (!:box)]
-    (when (< !.w 1) (set !.x (/ (+ x dx) (- 1 !.w) !.absw)))
-    (when (< !.h 1) (set !.y (/ (+ y dy) (- 1 !.h) !.absh))))
+  (when (< !.w 1) (incf !.x (/ (* idx !.w) (- 1 !.w) !.absw)))
+  (when (< !.h 1) (incf !.y (/ (* idy !.h) (- 1 !.h) !.absh)))
   (!:refresh))
 
 (fn BOX.reshape [! idx idy]
-  (set !.w (+ !.w (/ (* idx !.w) !.absw)))
-  (set !.h (+ !.h (/ (* idy !.h) !.absh)))
+  (incf !.w (/ (* idx !.w) !.absw))
+  (incf !.h (/ (* idy !.h) !.absh))
   (when (not (and (= !.w 1) (= !.h 1)))
         (set (!.ow !.oh) (values !.w !.h)))
   (!:refresh))
@@ -53,9 +52,11 @@
 (fn BOX.itp [! x y ...]
   (let [(ix iy) (!.t:inverseTransformPoint x y)]
     (values ix iy ...)))
-;; TODO more pattern match/reduce
+
 (fn BOX.mousepressed [! x y ...] (!:itp x y ...))
+
 (fn BOX.mousereleased [! x y ...] (!:itp x y ...))
+
 (fn BOX.mousemoved [! x y dx dy ...]
   (!:itp x y (/ dx !.w) (/ dy !.h) ...))
 
