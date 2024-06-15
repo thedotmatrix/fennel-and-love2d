@@ -6,33 +6,38 @@
 (local opt #{:fullscreen (flip fs?) :fullscreentype :exclusive
              :minwidth $1 :minheight $2})
 
+(fn windowexit [mousereleased] (fn [! ...] (when !.drag? (do 
+  (love.mouse.setRelativeMode false)
+  (love.mouse.setPosition mx my)
+  (set !.drag? false)
+  (mousereleased ! ...))) true))
+
 (fn windowmouse [mousemoved] (fn [! x y dx dy ...]
   (when (not (and mx my)) (set [mx my] [x y]))
   (let [[w h]     [!.outer.parent.w !.outer.parent.h]
         mxin?     (and (> mx 0) (< mx (- w 0)))
         myin?     (and (> my 0) (< my (- h 0)))
         within?   (and mxin? myin?)
-        relate? (love.mouse.getRelativeMode)]
+        relate?   (love.mouse.getRelativeMode)]
     (when (and relate? (not !.drag?)) (if within? 
       (set [mx my] [(+ mx dx) (+ my dy)])
-      (do (love.mouse.setRelativeMode false))
-          (love.mouse.setPosition mx my)))
+      (do (set !.drag? true) (!:mousereleased))))
     (when (not relate?) (set [mx my] [x y]))
     (when within? (love.mouse.setRelativeMode true))
-    (mousemoved ! mx my dx dy ...)))) ;; TODO block children
+    (mousemoved ! mx my dx dy ...))))
 
-(fn windowmove [] (fn [! dx dy] (when (and dx dy)
+(fn windowmove [! dx dy ...] (when (and dx dy)
   (let [(wx wy) (love.window.getPosition)]
-    (love.window.setPosition (+ wx dx) (+ wy dy))))))
+    (love.window.setPosition (+ wx dx) (+ wy dy)))))
 
-(fn windowfull [] (fn [!]
+(fn windowfull [! ...]
   (if (not _G.web?)
     (love.window.setFullscreen (flip fs?) :desktop)
     (let [(sw sh) (love.window.getMode)
           [w h]   [!.parent.ow !.parent.oh]
           [nw nh] [(if fs? w sw) (if fs? h sh)]]
       (love.window.updateMode nw nh (opt nw nh))))
-  (!.parent:restore (love.window.getMode))))
+  (!.parent:restore (love.window.getMode)))
 
 (fn load []
   (let [info  (love.filesystem.getInfo :conf.fnl)
@@ -42,16 +47,17 @@
     (local child      (WIN parent :child 0.75 1))
     (local grandchild (CAB child name))))
 
-(fn love.load [args]
+(fn love.load [args] (set _G.web? (= :web (. args 1)))
   (love.graphics.setDefaultFilter :nearest :nearest)
   (love.graphics.setFont (love.graphics.newFont 16 :mono))
-  (set _G.web? (= :web (. args 1)))
   (local win (BOX nil 0 0 (love.window.getMode)))
   (set main (WIN {:inner win :depth -1 :subs []} :main 1 1))
-  (local mousemoved       main.mousemoved)
+  (local mousemoved main.mousemoved)
+  (local mousereleased main.mousereleased)
   (set main.mousemoved    (windowmouse mousemoved))
-  (set main.outer.repose  (windowmove))
-  (set main.outer.restore (windowfull))
+  (set main.mousereleased (windowexit mousereleased))
+  (set main.outer.repose  windowmove)
+  (set main.outer.restore windowfull)
   (set main.outer.reshape #nil)
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(main:event e $...)))
