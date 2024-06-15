@@ -15,12 +15,12 @@
           rompath (f1:format :/ :/ :/ :.fnl)
           rominfo (love.filesystem.getInfo rompath)
           romreq  #(require (f1:format :. :. :. ""))
-          newrom  #(ROM.mix (romreq) !.rom !.ram)
+          newrom  #(ROM.mix (romreq) !.rom)
           f2 (.. "src%s" !.game "%srst%s" mode "%s")
           rstpath (f2:format :/ :/ :/ :.fnl)
           rstinfo (love.filesystem.getInfo rstpath)
           rstreq  #(require (f2:format :. :. :. ""))
-          newrst  #(RST.mix (rstreq) !.rst)]
+          newrst  #(RST.mix (rstreq) !.rst !.ram mode)]
       (set !.mode mode)
       (when rominfo (set !.rom (newrom)))
       (when rstinfo (set !.rst (newrst))))))

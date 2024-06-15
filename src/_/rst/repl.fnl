@@ -1,6 +1,24 @@
 (import-macros {: decf : incf} :mac.math)
+(local fennel (require :lib.fennel))
 (local RST (require :src._.cls.RST))
 (local REPL (RST:extend))
+
+(fn out [!] (fn [xs] 
+  (icollect [_ x (ipairs xs) :into !.output] x)))
+
+(fn err [!] (fn [_errtype msg]
+  (each [line (msg:gmatch "([^\n]+)")]
+    (table.insert !.output [[0.9 0.4 0.5] line]))))
+
+(fn REPL.load [!]
+  (set !.input [])
+  (set !.output [])
+  (set _G.print (fn [...] ((out !) [...])))
+  (when (not _G.web?) (do ;; TODO love.js repl?
+    (set !.repl (coroutine.create (partial fennel.repl)))
+    (coroutine.resume !.repl {:readChunk  coroutine.yield 
+                              :onValues   (out !)
+                              :onError    (err !)}))))
 
 (fn REPL.draw [! canvas]
   (let [w     (canvas:getWidth)
