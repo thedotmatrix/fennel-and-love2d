@@ -13,7 +13,7 @@
 
 (fn WIN.draw [!] (love.graphics.push)
   (love.graphics.setColor !.border) (!.outer:draw true)
-  (love.graphics.printf !.name 0 0 !.outer.absw :center)
+  (love.graphics.printf !.name 0 0 (!.outer:aw) :center)
   (love.graphics.stencil #(!.inner:draw) :increment 1 true)
   (love.graphics.setColor !.fill) (!.inner:draw true)
   (love.graphics.setColor 1 1 1 1)
@@ -26,7 +26,7 @@
 (fn WIN.mousepressed [! x y button touch? presses]
   (set !.drag? (or (!.top:in? x y) (!.bot:in? x y)))
   (if (and (!.top:in? x y) (= presses 2))
-      (do (!.outer:restore) false) true))
+      (do (!.outer:restore 1 1) false) true))
 
 (fn WIN.mousereleased [! x y ...] 
   (set [!.drag? !.top? !.bot?] [false false false]) true)

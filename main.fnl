@@ -6,6 +6,7 @@
 (local opt #{:fullscreen (flip fs?) :fullscreentype :exclusive
              :minwidth $1 :minheight $2})
 
+;; TODO w and h buggy when fullscreen
 (fn windowmouse [mousemoved] (fn [! x y dx dy ...]
   (when (not (and mx my)) (set [mx my] [x y]))
   (let [mxin?     (and (> mx 0) (< mx (- w 0)))
@@ -20,18 +21,17 @@
     (when within? (love.mouse.setRelativeMode true))
     (mousemoved ! mx my dx dy ...)))) ;; TODO block children
 
-(fn windowmove [repose] (fn [! dx dy] (when (and dx dy)
+(fn windowmove [] (fn [! dx dy] (when (and dx dy)
   (let [(wx wy) (love.window.getPosition)]
-    (love.window.setPosition (+ wx dx) (+ wy dy)))
-  (repose ! dx dy))))
+    (love.window.setPosition (+ wx dx) (+ wy dy))))))
 
-(fn windowfull [restore] (fn [!]
+(fn windowfull [] (fn [!]
   (if (not _G.web?)
     (love.window.setFullscreen (flip fs?) :desktop)
     (let [(sw sh) (love.window.getMode)
           [nw nh] [(if fs? w sw) (if fs? h sh)]]
       (love.window.updateMode nw nh (opt nw nh))))
-  (main.outer.parent:reshape (love.window.getMode))))
+  (!.parent:restore (love.window.getMode))))
 
 (fn load []
   (let [info  (love.filesystem.getInfo :conf.fnl)
@@ -47,11 +47,10 @@
   (set _G.web? (= :web (. args 1))) ; TODO globals?
   (set main (WIN {:inner (BOX) :depth -1 :subs []} :main 1 1))
   (local mousemoved       main.mousemoved)
-  (local repose           main.outer.repose)
-  (local restore          main.outer.restore)
   (set main.mousemoved    (windowmouse mousemoved))
-  (set main.outer.repose  (windowmove repose))
-  (set main.outer.restore (windowfull restore))
+  (set main.outer.repose  (windowmove))
+  (set main.outer.restore (windowfull))
+  (set main.outer.reshape #nil)
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(main:event e $...)))
   (load))

@@ -6,3 +6,4 @@
 *.private
 releases/
 *.sublime*
+.lines.sh
