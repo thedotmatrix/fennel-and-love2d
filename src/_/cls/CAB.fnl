@@ -5,14 +5,10 @@
 (local CRT (require :src._.cls.CRT))
 (local scale 2)
 
-(fn CAB.scale [!] ;; TODO better handle scaling?
-  (/ !.outer.aw (!.game.canvas:getWidth)))
-
 (fn CAB.new [! parent name]
-  (CAB.super.new ! parent name 1 1)
+  (CAB.super.new ! parent name scale scale)
   (set !.parent parent)
-  (local w (/ !.outer.aw scale))
-  (local h (/ !.outer.ah scale))
+  (local [w h] [(/ !.outer.aw scale) (/ !.outer.ah scale)])
   (set !.dev? false)
   (set !.dev {:cartridge nil :canvas nil})
   (set !.dev.cartridge (CRT :_ :repl))
@@ -31,7 +27,7 @@
   (love.graphics.setCanvas)
   (love.graphics.pop)
   (love.graphics.push)
-  (love.graphics.scale (!:scale))
+  (love.graphics.applyTransform !.outer.t)
   (love.graphics.draw !.game.canvas)
   (love.graphics.setColor 1 1 1 0.9)
   (when !.dev? (love.graphics.draw !.dev.canvas))
@@ -51,7 +47,7 @@
   _               (!.game.cartridge:event e ...)))
 
 (fn CAB.mouse [! e x y ...]
-  (!.game.cartridge:event e (/ x (!:scale)) (/ y (!:scale))))
+  (!.game.cartridge:event e (/ x scale) (/ y scale)))
 
 (fn CAB.keypressed [! key ...] (match key
   :lctrl (flip !.dev?)

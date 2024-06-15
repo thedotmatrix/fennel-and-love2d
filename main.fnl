@@ -45,7 +45,7 @@
 (fn love.load [args]
   (love.graphics.setDefaultFilter :nearest :nearest)
   (love.graphics.setFont (love.graphics.newFont 16 :mono))
-  (set _G.web? (= :web (. args 1))) ; TODO globals?
+  (set _G.web? (= :web (. args 1)))
   (local win (BOX nil 0 0 (love.window.getMode)))
   (set main (WIN {:inner win :depth -1 :subs []} :main 1 1))
   (local mousemoved       main.mousemoved)
