@@ -1,8 +1,6 @@
 (local RST (require :src._.cls.RST))
 (local Empty (RST:extend))
 
-(fn Empty.load [!] )
-
 (fn Empty.draw [! w h]
   (love.graphics.setColor 0.1 0.1 0.1 1)
   (love.graphics.rectangle :fill 0 0 w h)

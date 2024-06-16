@@ -1,9 +1,9 @@
 (local Object (require :lib.classic))
 (local RST (Object:extend))
 
-(fn RST.mix [a b ! mode]
+(fn RST.mix [a b ! ...]
   (a:implement b)
-  (when ! (a.load !))
+  (when (and ! a.load) (a.load ! ...))
   a)
 
 (fn RST.load [!])

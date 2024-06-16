@@ -10,7 +10,7 @@
   (set !.rst (RST:extend)))
 
 (fn ST8.load [! game] (when game (set !.game game))
-  (fn [mode]
+  (fn [mode cab ...]
     (let [f1 (.. "src%s" !.game "%srom%s" mode "%s")
           rompath (f1:format :/ :/ :/ :.fnl)
           rominfo (love.filesystem.getInfo rompath)
@@ -20,16 +20,16 @@
           rstpath (f2:format :/ :/ :/ :.fnl)
           rstinfo (love.filesystem.getInfo rstpath)
           rstreq  #(require (f2:format :. :. :. ""))
-          newrst  #(RST.mix (rstreq) !.rst !.ram mode)]
+          newrst  #(RST.mix (rstreq) !.rst !.ram cab $...)]
       (set !.mode mode)
       (when rominfo (set !.rom (newrom)))
-      (when rstinfo (set !.rst (newrst))))))
+      (when rstinfo (set !.rst (newrst ...))))))
 
 (fn ST8.reload [! other] (fn []
   (set !.game    other.game)
   (set !.mode    other.mode)
   (set !.ram     (RAM other.ram))
-  (set !.rom     (ROM.mix other.rom !.rom))
+  (set !.rom     (ROM.mix other.rom !.rom !.ram))
   (set !.rst     (RST.mix other.rst !.rst))))
 
 ST8

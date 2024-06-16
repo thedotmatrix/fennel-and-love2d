@@ -2,29 +2,31 @@
 (local BOX (require :src._.cls.BOX))
 (local CAB (require :src._.cls.CAB))
 (local RST (require :src._.cls.RST))
-(local WIN (require :src._.cls.WIN))
 (local Main (RST:extend))
 
+;; TODO live.ram/cab anti-pattern?
 (fn Main.load [!]
   (local b (BOX nil 0 0 (love.window.getMode)))
-  (local w {:inner b :depth -1 :subs []})
-  (set !.win (WIN w :main 0 0 1 1))
-  (set !.win.outer.repose  Main.move)
-  (set !.win.outer.restore Main.full)
-  (set !.win.outer.reshape #nil)
-  (let [info  (love.filesystem.getInfo :conf.fnl)
+  ;TODO no box here put in pane
+  (local w {:live {:ram {:inner b :depth -1 :subs []}}})
+  (set !.win (CAB :_ :pane w :main 0 0 1 1))
+  (set !.win.live.ram.outer.repose  Main.move)
+  (set !.win.live.ram.outer.restore Main.full)
+  (set !.win.live.ram.outer.reshape #nil)
+  (let [info (love.filesystem.getInfo :conf.fnl)
         conf (if info ((love.filesystem.lines :conf.fnl)) :__)
-        name  (conf:lower)]
-    (local devwin     (WIN !.win :dev 0 0 0.5 1))
-    (local gamewin    (WIN !.win :game 1 1 0.5 1))
-    (local dev        (CAB :_ :repl))
-    (local game       (CAB name :main))
-    (table.insert devwin.subs dev)
-    (table.insert gamewin.subs game)))
+        name (conf:lower)]
+    (local dp   (CAB :_ :pane !.win :dev 0 0 0.5 1))
+    (local gp   (CAB :_ :pane !.win :game 1 1 0.5 1))
+    (local dev  (CAB :_ :repl))
+    (local game (CAB name :main))
+    (table.insert dp.live.ram.subs dev)
+    (table.insert gp.live.ram.subs game)
+    ))
 
 (fn Main.draw [!]
-  (love.graphics.applyTransform !.win.outer.parent.t)
-  (!.win:draw)
+  (love.graphics.applyTransform !.win.live.ram.outer.parent.t)
+  (!.win:draw !.win.live.ram.inner.aw !.win.live.ram.inner.ah)
   (when (and !.mx !.my)
     (love.graphics.circle :line !.mx !.my 4)))
 

@@ -16,17 +16,18 @@
               (do ((!.safe:reload !.live))
                   (set !.callback (!.live:load))))))
 
-(fn CAB.new [! game mode]
+(fn CAB.new [! game mode ...]
   (set !.live (ST8)) (set !.safe (ST8))
-  (!:safely (!.live:load game) mode))
+  (!:safely (!.live:load game) mode ! ...))
 
 (fn CAB.draw [! w h] (!:safely
   !.live.rst.draw !.live.ram w h))
 
-(fn CAB.update [! dt] (!:safely 
+(fn CAB.update [! dt] (!:safely
   !.live.rom.update !.callback !.live.ram dt))
 
-(fn CAB.event [! e ...] (!:safely
-  !.live.rom.event !.live.rom !.callback !.live.ram e ...))
+(fn CAB.event [! e ...] (if !.live.rom.event (!:safely 
+  !.live.rom.event !.callback !.live.ram !.live.rom e ...)
+  (!:safely (. !.live.rom e) !.callback !.live.ram ...)))
 
 CAB
