@@ -9,8 +9,7 @@
 (set ROM.update nil)
 
 (fn ROM.event [!! ! rom e ...]
-  (when (. ROM e) ((. ROM e) !! ! ...)))
-(set ROM.event nil)
+  (when (. rom e) ((. rom e) !! ! ...)))
 
 (fn ROM.any_love_event [!! ! ...])
 (set ROM.any_love_event nil)

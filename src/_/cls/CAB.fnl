@@ -26,8 +26,7 @@
 (fn CAB.update [! dt] (!:safely
   !.live.rom.update !.callback !.live.ram dt))
 
-(fn CAB.event [! e ...] (if !.live.rom.event (!:safely 
-  !.live.rom.event !.callback !.live.ram !.live.rom e ...)
-  (!:safely (. !.live.rom e) !.callback !.live.ram ...)))
+(fn CAB.event [! e ...] (!:safely
+  !.live.rom.event !.callback !.live.ram !.live.rom e ...))
 
 CAB
