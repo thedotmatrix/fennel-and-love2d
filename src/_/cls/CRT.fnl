@@ -10,7 +10,6 @@
   (set !.callback (!.live:reload !.safe))
   ((!.live:load :_) :error))
 
-;; TODO this should be wrapping all the stuff above
 (fn CRT.safely [! f ...]
   (when (and f (xpcall f #(!:unsafe $ (traceback)) ...))
         (when (or (~= !.live.game :_) (~= !.live.mode :error))
@@ -21,8 +20,8 @@
   (set !.live (ST8)) (set !.safe (ST8))
   (!:safely (!.live:load game) mode))
 
-(fn CRT.draw [! canvas] (!:safely 
-  !.live.rst.draw !.live.ram canvas))
+(fn CRT.draw [! w h] (!:safely
+  !.live.rst.draw !.live.ram w h))
 
 (fn CRT.update [! dt] (!:safely 
   !.live.rom.update !.callback !.live.ram dt))

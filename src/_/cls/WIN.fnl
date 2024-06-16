@@ -2,15 +2,16 @@
 (local WIN (Object:extend))
 (local BOX (require :src._.cls.BOX))
 
-(fn WIN.new [! parent name w h] ;; TODO multi-sub/focus
+(fn WIN.new [! parent name x y w h] ;; TODO multi-sub/focus
   (set !.border [0.4 0.4 0.4]) (set !.fill [0.2 0.2 0.2])
-  (set !.outer (BOX parent.inner 0 0 w h))
+  (set !.outer (BOX parent.inner x y w h))
   (set !.top   (BOX !.outer 0 0 1 0.05))
   (set !.bot   (BOX !.outer 0 1 1 0.05))
   (set !.inner (BOX !.outer 0.5 0.5 0.99 0.90))
   (set !.name name) (set !.depth (+ parent.depth 1))
   (set !.subs []) (table.insert parent.subs !))
 
+;; TODO stencil buggy with multiple children
 (fn WIN.draw [!] (love.graphics.push)
   (love.graphics.setColor !.border) (!.outer:draw true)
   (love.graphics.printf !.name 0 0 !.outer.aw :center)
@@ -18,10 +19,11 @@
   (love.graphics.setStencilTest :greater !.depth)
   (love.graphics.setColor !.fill) (!.inner:draw true)
   (love.graphics.setColor 1 1 1 1)
-  (each [_ s (ipairs !.subs)] (s:draw))
+  (each [_ s (ipairs !.subs)] (s:draw !.inner.aw !.inner.ah))
   (love.graphics.setStencilTest) (love.graphics.pop))
 
-(fn WIN.update [! dt] (each [_ s (ipairs !.subs)] (s:update)))
+(fn WIN.update [! dt]
+  (each [_ s (ipairs !.subs)] (s:update dt)))
 
 (fn WIN.mousepressed [! x y button touch? presses]
   (set !.drag? (or (!.top:in? x y) (!.bot:in? x y)))

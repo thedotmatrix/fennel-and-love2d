@@ -3,32 +3,32 @@
 (local RST (require :src._.cls.RST))
 (local REPL (RST:extend))
 
-(fn out [!] (fn [xs] 
-  (icollect [_ x (ipairs xs) :into !.output] x)))
-
-(fn err [!] (fn [_errtype msg]
-  (each [line (msg:gmatch "([^\n]+)")]
-    (table.insert !.output [[0.9 0.4 0.5] line]))))
-
 (fn REPL.load [!]
   (set !.input [])
   (set !.output [])
-  (set _G.print (fn [...] ((out !) [...])))
+  (set _G.print (fn [...] ((REPL.out !) [...])))
   (when (not _G.web?) (do ;; TODO love.js repl?
     (set !.repl (coroutine.create (partial fennel.repl)))
     (coroutine.resume !.repl {:readChunk  coroutine.yield 
-                              :onValues   (out !)
-                              :onError    (err !)}))))
+                              :onValues   (REPL.out !)
+                              :onError    (REPL.err !)}))))
 
-(fn REPL.draw [! canvas]
-  (let [w     (canvas:getWidth)
-        h     (canvas:getHeight)
-        f     (love.graphics.getFont)
+(fn REPL.out [!] (fn [xs]
+  (icollect [_ x (ipairs xs) :into !.output] x)))
+
+(fn REPL.err [!] (fn [_errtype msg]
+  (each [line (msg:gmatch "([^\n]+)")]
+    (table.insert !.output [[0.9 0.4 0.5] line]))))
+
+(fn REPL.draw [! w h]
+  (let [f     (love.graphics.getFont)
         fh    (f:getHeight)
         limit (math.ceil (* (/ h fh) 0.75))
         len   (length !.output)
         fps   (.. "FPS: " (love.timer.getFPS))]
-    (love.graphics.clear 0 0 0 1)
+    (love.graphics.setColor 0 0 0 1)
+    (love.graphics.rectangle :fill 0 0 w h)
+    (love.graphics.setColor 1 1 1 1)
     (love.graphics.printf fps 0 0 w :left)
     (var i len)
     (var lst (if (> (- len limit) 0) (- len limit) 1))
