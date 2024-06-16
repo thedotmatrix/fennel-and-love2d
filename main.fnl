@@ -1,11 +1,11 @@
-(local CRT (require :src._.cls.CRT))
+(local CAB (require :src._.cls.CAB))
 (var main nil)
 
 (fn love.load [args] 
   (set _G.web? (= :web (. args 1)))
   (love.graphics.setDefaultFilter :nearest :nearest)
   (love.graphics.setFont (love.graphics.newFont 16 :mono))
-  (set main (CRT :_ :main))
+  (set main (CAB :_ :main))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(main:event e $...))))
 

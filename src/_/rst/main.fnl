@@ -1,6 +1,6 @@
 (import-macros {: flip} :mac.bool)
 (local BOX (require :src._.cls.BOX))
-(local CRT (require :src._.cls.CRT))
+(local CAB (require :src._.cls.CAB))
 (local RST (require :src._.cls.RST))
 (local WIN (require :src._.cls.WIN))
 (local Main (RST:extend))
@@ -17,8 +17,8 @@
         name  (conf:lower)]
     (local devwin     (WIN !.win :dev 0 0 0.5 1))
     (local gamewin    (WIN !.win :game 1 1 0.5 1))
-    (local dev        (CRT :_ :repl))
-    (local game       (CRT name :main))
+    (local dev        (CAB :_ :repl))
+    (local game       (CAB name :main))
     (table.insert devwin.subs dev)
     (table.insert gamewin.subs game)))
 
