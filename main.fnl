@@ -3,8 +3,8 @@
 
 (fn love.load [args] 
   (set _G.web? (= :web (. args 1)))
-  (love.graphics.setDefaultFilter :nearest :nearest)
-  (love.graphics.setFont (love.graphics.newFont 16 :mono))
+  ;; TODO resolution, filtering, font, for style + performance
+  (love.graphics.setFont (love.graphics.newFont 24 :mono))
   (set main (CAB :_ :main))
   (each [e _ (pairs love.handlers)]
     (tset love.handlers e #(main:event e $...))))
